@@ -216,6 +216,7 @@ export function advanceOneTick(previous: WorldState): WorldState {
         decision('eating', citizen.reason);
         announce('foodEaten', citizen, citizen.name + ': ăn 1 food tại kho chung.');
       } else {
+        stats.failedActions += 1;
         citizen.activity = 'waitingForFood';
         citizen.reason = 'Kho không còn food; đang chờ người nông dân thu hoạch.';
       }
