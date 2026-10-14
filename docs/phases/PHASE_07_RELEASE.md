@@ -1,5 +1,7 @@
 # PHASE 07 — MVP release and operational handoff
 
+**Tóm tắt tiếng Việt:** Đóng gói và phát hành bản web chơi được; CI xanh, mở URL thật, xác minh save/reload, liệt kê giới hạn còn tồn tại.
+
 **Status:** NOT STARTED · **Requires:** phases 00–06 gates fully passed.
 **Intent:** Ship a real playable browser game, not a zip of hopeful source code.
 

@@ -2,6 +2,10 @@
 
 **Purpose:** Prevent each coding session from inventing a different time model, data model or physics. This is a *minimal contract*, not a framework specification. Initial formulas are tunable once tests and playtests produce evidence.
 
+## Tóm tắt dành cho chủ dự án (tiếng Việt)
+
+Đây là bộ **luật bất biến** để AI/code ở nhiều phiên không tự bịa một cơ chế khác mỗi lần. Game tách riêng mô phỏng với phần vẽ; cùng seed và chuỗi thao tác phải ra cùng kết quả. 1 tick tương đương 1 giờ game. Tài nguyên/tiền không được âm hoặc bị dùng hai lần; NPC chết không thể hành động; lưu game phải giữ cả trạng thái bộ random để tải lại không đổi lịch sử. Mỗi phase chỉ triển khai phần luật nó cần.
+
 ## 1. Absolute rules
 
 - Canonical `WorldState` is plain, serializable JSON-compatible data. No Phaser sprites, React components, promises, timers, maps/sets requiring special JSON support, circular references or DOM nodes.

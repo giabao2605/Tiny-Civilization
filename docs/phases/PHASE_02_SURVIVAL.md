@@ -1,5 +1,7 @@
 # PHASE 02 — Survival, finite resources, and meaningful decisions
 
+**Tóm tắt tiếng Việt:** NPC có đói, mệt, sức khỏe, làm nghề để tạo thức ăn/gỗ có giới hạn; hết tài nguyên phải gây hậu quả thật.
+
 **Status:** NOT STARTED · **Requires:** phase 01.
 **Intent:** Turn schedules into actual life. Hungry agents must acquire food or suffer; jobs have explicit production and costs. One full causal loop becomes visible.
 

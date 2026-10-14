@@ -1,5 +1,7 @@
 # PHASE 01 — Living world: a watchable vertical slice
 
+**Tóm tắt tiếng Việt:** Có bản đồ 48×48 và 20 NPC có lịch sinh hoạt, biết đi tới mục tiêu; xem được lý do hành động, pause và đổi tốc độ.
+
 **Status:** NOT STARTED · **Requires:** phase 00 gate passed.
 **Intent:** Make the first actual playable view. Twenty citizens follow understandable spatial/routine goals on a 48×48 seeded map. No survival economy yet.
 

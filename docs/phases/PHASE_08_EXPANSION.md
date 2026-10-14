@@ -1,5 +1,7 @@
 # PHASE 08 — Optional post-MVP: settlements, trade, diplomacy and conflict
 
+**Tóm tắt tiếng Việt:** **Tạm hoãn sau MVP.** Chỉ xem xét nhiều làng, giao thương và chiến tranh nếu game 1 làng đã đủ hay và chạy ổn.
+
 **Status:** DEFERRED (not part of MVP) · **Requires:** playable phase-07 public game + user feedback.
 **Purpose:** Preserve ambition without forcing kingdoms/war into the first release. Do not execute simply because this document exists.
 

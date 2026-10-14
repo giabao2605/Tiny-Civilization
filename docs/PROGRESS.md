@@ -1,5 +1,7 @@
 # Tiny Civilization — Progress / handoff log
 
+**Lưu ý tiếng Việt:** Đây là bảng tiến độ thật, không phải bảng mục tiêu. Hiện chưa viết game, chưa chạy test gameplay và chưa có website public. Chỉ có bộ tài liệu kế hoạch đã commit.
+
 **Updated:** 2026-10-14
 **Current stage:** Planning complete, implementation NOT started.
 **Authoritative roadmap:** [MASTER_PLAN](MASTER_PLAN.md)

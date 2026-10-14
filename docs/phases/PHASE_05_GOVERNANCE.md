@@ -1,5 +1,7 @@
 # PHASE 05 — Governance, shocks and visible collective consequences
 
+**Tóm tắt tiếng Việt:** Có trưởng làng, chính sách giới hạn và hai loại biến cố tác động thật tới kinh tế/sức khỏe. Chưa làm chiến tranh.
+
 **Status:** NOT STARTED · **Requires:** social/economic stability through phase 04.
 **Intent:** Town decisions and small disasters create real history without implementing nations, diplomacy or battles.
 

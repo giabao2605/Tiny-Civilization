@@ -3,6 +3,16 @@
 **Version:** 1.0 · **Date:** 2026-10-14 · **Status:** Approved as a starting design hypothesis, not yet playtested.
 **Document hierarchy:** This file owns scope, priorities, phase gates and non-goals. `SIMULATION_CONTRACT.md` owns state/time/invariants. Each `phases/PHASE_XX.md` owns implementation tasks, deliverables and acceptance tests. `PROGRESS.md` tracks factual execution status.
 
+## 0. Tóm tắt định hướng (tiếng Việt)
+
+- **Đây là game quan sát xã hội**, không phải game điều khiển lính. Người chơi theo dõi một làng nhỏ, chọn NPC, xem lý do họ hành động và hậu quả tích lũy thành lịch sử.
+- **Làm cho vui và chơi được trước:** phase 01 phải có map + 20 NPC thực sự đi theo mục tiêu; phase 02 phải có chu trình sản xuất → ăn uống → sinh tồn; phase 03 mới nâng 100 dân.
+- **Không overengineering:** một làng 48×48, hai tài nguyên food/wood và tiền; không server, không AI trả phí, không vi dịch vụ, không hàng chục mặt hàng.
+- **Công nghệ:** React/TypeScript/Vite + Phaser, nhưng luật game chạy độc lập đồ họa và có thể test trong Node.
+- **Kiểm chứng:** world có seed, kết quả tái lập được; pause không tăng tick, save/load không làm lệch trạng thái, hàng tồn/tiền không âm, chết không thể tiếp tục làm việc.
+- **Chất lượng trước mở rộng:** hoàn thành phase 00–07 mới gọi là MVP. Phase 08 (nhiều làng, chiến tranh) tạm hoãn, chỉ làm nếu chơi thử chứng minh có giá trị.
+- **Theo dõi thật:** xem [PROGRESS](PROGRESS.md) để biết đã code/test được gì. Mọi mục trong plan hiện là dự kiến, không phải chức năng đã xây.
+
 ## 1. Product definition
 
 **Pitch:** A living pixel-art settlement in the browser. The player acts as an observer, watches individual citizens make decisions, reads why events happened, and optionally intervenes through limited world-level decisions later. Systems should generate understandable stories rather than present scripted scenes pretending to be a simulation.

@@ -1,5 +1,7 @@
 # PHASE 06 — Save/load, legibility, balancing and performance
 
+**Tóm tắt tiếng Việt:** Kiểm tra và nâng chất lượng: save/load đúng kết quả mô phỏng, test nhiều seed, cân bằng, đo hiệu năng và làm UI dễ theo dõi.
+
 **Status:** NOT STARTED · **Requires:** phase 05 feature-complete vertical slice.
 **Intent:** Make the simulation reliable and comfortable to *play*, not just technically possible to run.
 

@@ -1,5 +1,7 @@
 # PHASE 03 — Economy, construction and 100-agent scale
 
+**Tóm tắt tiếng Việt:** Nâng lên 100 NPC; thêm nhà ở, xây dựng, tiền và giao dịch đơn giản; tuyệt đối không tự nhân đôi tài nguyên/tiền.
+
 **Status:** NOT STARTED · **Requires:** phase 02 survival loop is correct.
 **Intent:** Evolve one village toward 100 residents with real but understandable transfers of goods and money. Complex capitalism simulator not required.
 

@@ -1,5 +1,7 @@
 # PHASE 04 — Relationships, households and emergent stories
 
+**Tóm tắt tiếng Việt:** NPC ghi nhớ quan hệ, kết bạn/mâu thuẫn, lập hộ gia đình, sinh/lão/tử theo luật hợp lý; tránh drama ngẫu nhiên vô căn cứ.
+
 **Status:** NOT STARTED · **Requires:** functioning survival + money/housing loop from phase 03.
 **Intent:** Citizens remember encounters, form social ties and produce meaningful conflicts. Emergence matters more than chatty fake dialogue.
 
