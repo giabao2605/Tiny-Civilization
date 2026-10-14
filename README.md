@@ -2,7 +2,7 @@
 
 **Tiny Civilization** là game web pixel-art mô phỏng một ngôi làng tự vận hành. Người chơi là người quan sát: dân làng có nghề, nhu cầu, tiền, quan hệ và chịu hậu quả từ quyết định của chính họ. Câu chuyện xuất hiện từ quy luật mô phỏng, không phải các dòng sự kiện bịa sẵn.
 
-**Trạng thái: Phase 00, 01 và 02 đã merge vào `main` (Phase 02 qua PR #3, merge `0c8db616`). Phase 03 đã triển khai trên feature branch, đang kiểm tra CI cuối tại `feat/phase-03-economy`, [PR #4](https://github.com/giabao2605/Tiny-Civilization/pull/4) (PR nháp, chờ xác nhận CI cuối; chưa merge).** Xem `docs/PROGRESS.md` để biết bằng chứng thực tế.
+**Trạng thái: Phase 00–02 đã merge vào `main`. Phase 03 DONE trên branch `feat/phase-03-economy`, [PR #4](https://github.com/giabao2605/Tiny-Civilization/pull/4) đã có CI PASS và sẵn sàng review nhưng CHƯA MERGE.** Xem `docs/PROGRESS.md` để biết bằng chứng thực tế.
 
 ## Đọc tài liệu theo thứ tự
 
@@ -83,7 +83,7 @@ Cấu hình lúc này không chứa backend, database, đăng nhập, lưu game 
 - NPC sở hữu ví, food/wood trong túi và nghề nghiệp. Một chợ có kho hàng và ngân quỹ hữu hạn. Người sản xuất phải mang hàng đến chợ để bán, nhận tiền thật, và chỉ mua được khi đủ tiền.
 - Thu hoạch tài nguyên hữu hạn; xây nhà tiêu 8 wood một lần ngay lúc khởi công. Thợ xây cần đến nơi, làm đủ 8 giờ và được trả tiền từ quỹ chợ thật.
 - Inspector hiển thị wallet, túi đồ, nhà, nghề, quyết định và giao dịch; dashboard hiển thị dân số, tình trạng nhà, cung-cầu, hàng hóa, tiền và xây dựng.
-- Phase 03 được kiểm thử bằng GitHub Actions với các kịch bản 20/50/100 NPC, chi tiết trong PROGRESS; chưa merge; chưa có hệ thống social, save/load hoàn chỉnh, backend hoặc release.
+- Phase 03 đã PASS 10 seed × 720 tick cho cả ba mức dân số và 42 unit / 4 Chromium E2E tests, chi tiết trong PROGRESS; chưa merge; chưa có hệ thống social, save/load hoàn chỉnh, backend hoặc release.
 
 Để kiểm chứng, dùng npm ci, npm run typecheck, npm run lint, npm run test, npm run build và npm run test:e2e. Kết quả thực tế được ghi trong docs/PROGRESS.md và GitHub Actions của PR #4, không suy luận từ source code.
 
