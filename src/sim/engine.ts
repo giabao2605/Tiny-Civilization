@@ -124,6 +124,20 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
     housing(world).homeless + ' cư dân chưa được phân nhà, phải nghỉ tại quảng trường.');
   const construction = world.constructions.find((c) => c.status === 'active');
   if (construction) assignBuilder(world, construction);
+  // Dependents can only consume a guardian's food while both are at home.
+  // A gifted ration must not be immediately sold by an otherwise well-fed caregiver.
+  const guardiansWithHungryDependents = new Set<number>();
+  const citizensById = new Map(world.citizens.map(c => [c.id, c]));
+  for (const child of world.citizens) {
+    if (!child.alive || child.age >= BALANCE.adultAge ||
+      child.hunger > BALANCE.childFeedThreshold + BALANCE.hungerPerHour) continue;
+    const household = world.households.find(h => h.id === child.householdId);
+    for (const id of household?.members ?? []) {
+      const guardian = citizensById.get(id);
+      if (guardian?.alive && guardian.age >= BALANCE.adultAge)
+        guardiansWithHungryDependents.add(id);
+    }
+  }
   const occupancy = new Map<number, number>();
   for (const citizen of world.citizens) {
     if (citizen.alive && citizen.goal === 'work' && citizen.workNodeId !== null) {
@@ -186,6 +200,7 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
       else if (citizen.job === 'farmer' || citizen.job === 'woodcutter') requested = 'work';
       else requested = 'home';
     } else if (citizen.needMode === 'rest') requested = 'home';
+    else if (citizen.inventory.food > 0 && guardiansWithHungryDependents.has(citizen.id)) requested = 'home';
     else if (canSell('food') || canSell('wood')) requested = 'sell';
     else if (construction?.status === 'active' && construction.builderId === citizen.id &&
         hour >= 6 && hour < 20) requested = 'build';
