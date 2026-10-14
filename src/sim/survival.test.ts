@@ -193,4 +193,66 @@ describe('Phase 02 resource accounting and living needs', () => {
     const later = advanceTicks(after, 5);
     expect(later.citizens[0]!.route).toHaveLength(0);
   });
+  it('a woodcutter depletes a real forest, then chooses a second source', () => {
+    const world = createWorld(12345);
+    world.tick = 6;
+    const forests = world.resourceNodes.filter((node) => node.kind === 'forest');
+    const [first, second] = forests;
+    first!.stock = 1;
+    second!.stock = 0;
+    const cutter = world.citizens.find((citizen) => citizen.job === 'woodcutter')!;
+    cutter.hunger = 100;
+    cutter.energy = 100;
+    cutter.goal = 'work';
+    cutter.activity = 'atWork';
+    cutter.workNodeId = first!.id;
+    cutter.workHours = BALANCE.woodActionHours - 1;
+    cutter.tile = { ...first!.tile };
+    cutter.destination = { ...first!.tile };
+    cutter.route = [];
+    const depleted = advanceOneTick(world);
+    expect(depleted.resourceNodes.find((node) => node.id === first!.id)!.stock).toBe(0);
+    expect(depleted.events.some((event) => event.type === 'depleted' && event.citizenId === cutter.id)).toBe(true);
+    expect(depleted.inventory.wood).toBe(BALANCE.initialWood + 1);
+    const restored = { ...depleted, resourceNodes: depleted.resourceNodes.map((node) =>
+      node.id === second!.id ? { ...node, stock: 3 } : node) };
+    const rerouted = advanceOneTick(restored);
+    const movedCutter = rerouted.citizens.find((citizen) => citizen.id === cutter.id)!;
+    expect(movedCutter.goal).toBe('work');
+    expect(movedCutter.destination).toEqual(second!.tile);
+    invariants(rerouted);
+  });
+
+  it('critical fatigue takes precedence over scheduled work, then recovers at home', () => {
+    const world = createWorld(12345);
+    world.tick = 6;
+    const resident = world.citizens[0]!;
+    resident.energy = 0;
+    resident.hunger = 98;
+    const after = advanceOneTick(world);
+    const resting = after.citizens[0]!;
+    expect(resting.goal).toBe('home');
+    expect(resting.activity).toBe('rest');
+    expect(resting.actionDuration).toBe(1);
+    expect(resting.energy).toBe(BALANCE.energyDayRestRecovery);
+    expect(resting.workHours).toBe(0);
+  });
+
+  it('health only recovers under qualifying rest, never unconditionally', () => {
+    const world = noSupply();
+    world.tick = 11;
+    const resident = world.citizens[0]!;
+    resident.health = 49;
+    resident.hunger = 100;
+    resident.energy = 0;
+    const after = advanceOneTick(world);
+    expect(after.citizens[0]!.health).toBe(50);
+    expect(after.events.some((event) => event.type === 'recovery' && event.citizenId === resident.id)).toBe(true);
+    const noRest = noSupply();
+    noRest.tick = 11;
+    noRest.citizens[0]!.health = 49;
+    noRest.citizens[0]!.hunger = 0;
+    expect(advanceOneTick(noRest).citizens[0]!.health).toBe(49);
+  });
+
 });
