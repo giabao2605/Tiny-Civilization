@@ -2,9 +2,15 @@ import { GRID_WIDTH, isValidTile, tileIndex, type TilePosition } from './grid';
 import { walkable, type WorldState } from './world';
 
 // Stable neighbor ordering gives stable shortest paths for a given map.
+// Diagnostics are observational only: they never influence path selection or WorldState.
+let pathfindingCalls = 0;
+export function resetPathfindingDiagnostics(): void { pathfindingCalls = 0; }
+export function getPathfindingDiagnostics(): number { return pathfindingCalls; }
+
 const DIRECTIONS = [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 }];
 
 export function findPath(world: Pick<WorldState, 'tiles'>, start: TilePosition, end: TilePosition): TilePosition[] | null {
+  pathfindingCalls += 1;
   if (!isValidTile(start) || !isValidTile(end) || !walkable(world, start) || !walkable(world, end)) return null;
   const first = tileIndex(start)!;
   const last = tileIndex(end)!;
