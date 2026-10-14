@@ -12,6 +12,13 @@ body { margin: 0; min-width: 320px; background: radial-gradient(ellipse at 50% -
 button, input { font: inherit; }
 button { cursor: pointer; }
 button:focus-visible, input:focus-visible { outline: 2px solid #f5d99d; outline-offset: 3px; }
+.social-panel { padding: 12px 0; border-top: 1px solid #49614d; }
+.social-panel p { font-size: 12px; color: #b7c9b3; }
+.relationship-list { list-style: none; padding: 0; display: grid; gap: 10px; }
+.relationship-list li { display: grid; gap: 4px; font-size: 12px; padding: 8px; border: 1px solid #445e48; border-radius: 8px; }
+.relationship-list small { color: #b4c7a9; line-height: 1.5; }
+.household-members { display: flex; flex-wrap: wrap; gap: 8px; }
+.event-card select { display: block; width: 100%; margin: 10px 0; padding: 9px; border: 1px solid #526750; background: #193428; color: #e8eccc; border-radius: 8px; }
 .site-shell { max-width: 1480px; padding: 0 34px; margin: auto; }
 .topbar { min-height: 90px; display: flex; justify-content: space-between; align-items: center; gap: 20px; border-bottom: 1px solid #3a4d3b; }
 .brand-lockup { display: flex; align-items: center; gap: 14px; }
