@@ -213,3 +213,31 @@ test('governance leader, bounded policy rejection, visible crop shock and crisis
   await page.screenshot({ path: testInfo.outputPath('phase-05-governance-desktop.png'), fullPage: true });
   expect(failures).toEqual([]);
 });
+
+test('valid UI emergency aid transfers owned food and enforces cooldown in dev crisis fixture', async ({ page }, testInfo) => {
+  const failures = collectErrors(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/?fixture=governance-food-shortage');
+  await expect(page.getByTestId('governance-leader').getByRole('button')).toBeVisible({ timeout: 5000 });
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  const before = Number(await page.getByTestId('food-stock').innerText());
+  await page.getByTestId('activate-food-aid').click();
+  await expect(page.getByTestId('aid-feedback')).toContainText('Đã xếp lệnh');
+  await page.getByRole('button', { name: 'Tiếp tục' }).click();
+  await expect.poll(async () => {
+    const value = await page.getByTestId('food-aid-transferred').innerText();
+    return Number(value.match(/^(\d+)/)?.[1] ?? 0);
+  }, { timeout: 8000 }).toBeGreaterThan(0);
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  const transferred = Number((await page.getByTestId('food-aid-transferred').innerText()).match(/^(\d+)/)?.[1]);
+  const after = Number(await page.getByTestId('food-stock').innerText());
+  expect(transferred).toBeGreaterThan(0);
+  expect(after).toBeLessThanOrEqual(before - transferred);
+  await expect(page.getByTestId('food-aid-status')).toContainText(/áp dụng|Cooldown/);
+  await page.getByTestId('activate-food-aid').click();
+  await expect(page.getByTestId('aid-feedback')).toContainText(/Đang|cooldown|Đã dùng/i);
+  await page.getByTestId('timeline-filter').selectOption('governance');
+  await expect(page.getByTestId('event-feed')).toContainText('Cứu trợ');
+  await page.screenshot({ path: testInfo.outputPath('phase-05-valid-food-aid-mobile.png'), fullPage: true });
+  expect(failures).toEqual([]);
+});
