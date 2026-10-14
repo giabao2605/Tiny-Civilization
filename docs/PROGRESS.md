@@ -1,7 +1,7 @@
 # Tiny Civilization — Progress / handoff log
 
 **Updated:** 2026-10-14  
-**Current stage:** Phase 00–03 DONE and merged to `main`. Phase 03 [PR #4](https://github.com/giabao2605/Tiny-Civilization/pull/4) merged as commit `83ef46c48068e782b5bdd4a234f67d60d958808c`. Phase 04 on [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5): IMPLEMENTED, full CI passed at [run 38520465893](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38520465893), awaiting PR review; NOT merged to main. No MVP release.
+**Current stage:** Phase 00–04 DONE and merged to `main`. Phase 04 [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5) merged as `1a5933b74b04c32fc371f0fc3163bfed9fd5535b`. Last Phase 04 feature SHA `f8f01ef20dbfc38895c0545374daa927f383358c` passed [CI 38521166064](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38521166064) (all checks and 5 Chromium E2E). Post-merge CI: [run 38525000676](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38525000676) (verify its live conclusion). Phase 05 Governance is next, NOT STARTED. No MVP release.
 **Authoritative roadmap:** [MASTER_PLAN](MASTER_PLAN.md)  
 **Rules/contract:** [SIMULATION_CONTRACT](SIMULATION_CONTRACT.md)
 
@@ -11,7 +11,7 @@
 | 01 Living world | DONE, merged to main (PR #2) | 48×48 map, 20 purposeful agents, inspector, controls; CI PASS |
 | 02 Survival | DONE, merged (PR #3) | Finite food/wood, needs, production, shortage/death and verified 10-seed balance |
 | 03 Economy | DONE, merged to `main` (PR #4) | All 20/50/100 ten-seed 30-day runs and GitHub Actions PASS |
-| 04 Social | IMPLEMENTED, CI PASS (PR #5; not merged) | Directed relationships, causal stories, households/birth/death, 30–180 game-day tests, 5 Chromium E2E; pending review |
+| 04 Social | DONE, merged to `main` (PR #5) | Directed relationships, causal stories, households/birth/death, 30–180 game-day tests, 5 Chromium E2E, last branch CI PASS |
 | 05 Governance | NOT STARTED | Policies/crises with costs and real consequences |
 | 06 Quality | NOT STARTED | Save/load determinism, profiling, UX/balance |
 | 07 MVP release | NOT STARTED | CI green, deployed playable build |
@@ -19,7 +19,7 @@
 
 ## Phase 04 Social implementation (2026-10-14)
 
-**Branch:** `feat/phase-04-social` from main `73ae8f57`; [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5). **Implementation gate: PASSED** in [CI run 38520425782](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38520425782) including typecheck, lint, all Vitest, build and 5 Chromium Playwright cases. Final docs/workflow-only commit is subject to follow-up CI. The PR is not merged into main.
+**Status: DONE, merged to `main` as `1a5933b74b04c32fc371f0fc3163bfed9fd5535b`.** Source branch `feat/phase-04-social` was created from Phase 03 main `73ae8f57`; [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5) is closed/merged. Final feature SHA `f8f01ef` has [CI 38521166064](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38521166064) PASS. Next work belongs on a new Phase 05 branch from the latest `main`.
 
 **Code added on branch:** `world.ts` schema v4 with directed sparse ties, separate home-backed household IDs, monotonic births, bounded memorials; `social.ts` validating same-tile encounter, work cooperation / actual last-unit scarcity, bounded relationship graph/events, deterministic tie and partner selection, dependant food spending, age / birth/death constraints. Integrated into `engine.ts` on the existing hourly clock, with housing assignment in `economy.ts`. React inspector now navigates relationship and household members, shows demographics / memorials and filters Social/Economy/Survival events.
 
