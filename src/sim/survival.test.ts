@@ -26,9 +26,6 @@ function invariants(world: WorldState) {
     if (citizen.activity === 'atWork') expect(citizen.goal).toBe('work');
     if (citizen.activity === 'rest') expect(citizen.goal).toBe('home');
   }
-  expect(world.inventory.food).toBe(BALANCE.initialFood +
-    world.stats.totalFoodProduced - world.stats.totalFoodConsumed);
-  expect(world.inventory.wood).toBe(BALANCE.initialWood + world.stats.totalWoodProduced);
 }
 
 function noSupply() {
@@ -155,6 +152,8 @@ describe('Phase 02 resource accounting and living needs', () => {
       const initial = createWorld(seed);
       const after = advanceTicks(initial, 720);
       invariants(after);
+      expect(after.inventory.food).toBe(BALANCE.initialFood + after.stats.totalFoodProduced - after.stats.totalFoodConsumed);
+      expect(after.inventory.wood).toBe(BALANCE.initialWood + after.stats.totalWoodProduced);
       expect(after.citizens).toHaveLength(20);
       expect(after.stats.totalFoodProduced).toBeGreaterThan(0);
       expect(after.stats.totalFoodConsumed).toBeGreaterThan(0);
