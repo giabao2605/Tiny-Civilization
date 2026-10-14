@@ -191,7 +191,7 @@ export function createWorld(seed = 12345): WorldState {
       day: 1, foodProducedToday: 0, foodConsumedToday: 0,
       foodProducedYesterday: 0, foodConsumedYesterday: 0,
       totalFoodProduced: 0, totalFoodConsumed: 0,
-      woodProducedToday: 0, totalWoodProduced: 0, deaths: 0,
+      woodProducedToday: 0, totalWoodProduced: 0, deaths: 0, failedActions: 0,
     },
     events: [{ id: 1, tick: 0, type: 'founded', citizenId: null, reason: 'Ngôi làng được thành lập với 20 cư dân.' }],
   };
