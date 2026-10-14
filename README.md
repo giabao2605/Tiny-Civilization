@@ -2,7 +2,7 @@
 
 **Tiny Civilization** là game web pixel-art mô phỏng một ngôi làng tự vận hành. Người chơi là người quan sát: dân làng có nghề, nhu cầu, tiền, quan hệ và chịu hậu quả từ quyết định của chính họ. Câu chuyện xuất hiện từ quy luật mô phỏng, không phải các dòng sự kiện bịa sẵn.
 
-**Trạng thái hiện tại: CHỈ MỚI LẬP KẾ HOẠCH, CHƯA CÓ GAME/CODE CHẠY ĐƯỢC.** Đây là repo dự án chính thức, kế hoạch đủ để bắt đầu code từng phần và kiểm thử nghiêm túc.
+**Trạng thái hiện tại: PHASE 00 ĐÃ TRIỂN KHAI VÀ PASS CI TRÊN BRANCH / CHƯA PHẢI GAME HOÀN CHỈNH.** Repository có ứng dụng Foundation và bản đồ Phaser minh họa; chưa có NPC hoặc hệ thống simulation. Xem `docs/PROGRESS.md` để biết tình trạng kiểm thử đã xác minh.
 
 ## Đọc tài liệu theo thứ tự
 
@@ -41,3 +41,37 @@
 Tài liệu chi tiết dùng thuật ngữ tiếng Anh để người viết code/AI agent triển khai chính xác; mỗi phase có tóm tắt tiếng Việt ở đầu. Khi có thay đổi thiết kế lớn, sửa master/contract trước rồi mới sửa code.
 
 [Repository GitHub](https://github.com/giabao2605/Tiny-Civilization)
+
+## Chạy bản Foundation (Phase 00)
+
+Yêu cầu Node.js **22.12+ (major 22)** và npm **10**; dùng phiên bản trong `.nvmrc`. Sau khi checkout branch triển khai và khi đã có `package-lock.json` được commit:
+
+```bash
+npm ci
+npm run dev
+```
+
+Mở URL Vite in ra trong terminal (thường là `http://localhost:5173`). Chọn một ô trên bản đồ để thử inspector; nút **Khởi tạo lại canvas** kiểm tra vòng đời Phaser. Đây chỉ là preview, không phải mô phỏng chạy thật.
+
+### Kiểm tra kỹ thuật
+
+```bash
+npm run typecheck
+npm run lint
+npm run test
+npm run build
+npx playwright install chromium
+npm run test:e2e
+```
+
+Playwright tự khởi động Vite tại port 4173 và kiểm tra Chromium desktop/mobile. Nếu thiếu thư viện hệ điều hành cần thiết cho Chromium, thử `npx playwright install --with-deps chromium` (Linux). Xem kết quả CI và screenshot trong artifact GitHub Actions.
+
+### Cấu trúc tối thiểu
+
+- `src/app`: UI React và coordinator nắm giữ snapshot Foundation, nhận lệnh chọn ô đã được kiểm tra.
+- `src/game`: vòng đời Phaser và scene chỉ hiển thị bản đồ placeholder; không nắm world state.
+- `src/sim`: hàm tọa độ thuần TypeScript, kiểm thử độc lập; **chưa có logic game**.
+- `tests/e2e`: browser smoke của Chromium.
+- `.github/workflows/ci.yml`: xác minh từ checkout sạch.
+
+Cấu hình lúc này không chứa backend, database, đăng nhập, lưu game hoặc AI API. Bản MVP/public release vẫn chưa có.
