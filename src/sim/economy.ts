@@ -8,7 +8,8 @@ function amountIsValid(quantity: number): boolean {
 }
 function atMarket(world: WorldState, citizen: Citizen): boolean {
   const tile = marketTile(world);
-  return citizen.alive && citizen.tile.x === tile.x && citizen.tile.y === tile.y;
+  return citizen.alive && citizen.age >= BALANCE.adultAge &&
+    citizen.tile.x === tile.x && citizen.tile.y === tile.y;
 }
 function price(world: WorldState, good: Good, direction: 'buy' | 'sell'): number {
   return good === 'food' ? (direction === 'buy' ? world.market.prices.foodSell : world.market.prices.foodBuy)
@@ -89,7 +90,7 @@ export function startConstruction(world: WorldState): Construction | null {
 
 /** One stationary hour, paid from existing coins. Never completes for a dead builder. */
 export function buildOneHour(world: WorldState, citizen: Citizen, construction: Construction): boolean {
-  if (!citizen.alive || citizen.job !== 'builder' || construction.status !== 'active' ||
+  if (!citizen.alive || citizen.age < BALANCE.adultAge || citizen.job !== 'builder' || construction.status !== 'active' ||
       construction.builderId !== citizen.id || citizen.tile.x !== construction.tile.x ||
       citizen.tile.y !== construction.tile.y || world.market.cash < BALANCE.builderHourlyPay) return false;
   world.market.cash -= BALANCE.builderHourlyPay;
