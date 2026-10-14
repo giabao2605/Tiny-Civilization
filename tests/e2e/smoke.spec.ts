@@ -192,7 +192,7 @@ test('governance leader, bounded policy rejection, visible crop shock and crisis
   await expect(page.getByTestId('governance-leader').getByRole('button')).toBeVisible();
   const button = page.getByTestId('governance-leader').getByRole('button');
   const label = await button.innerText();
-  const id = label.match(/#(\\d+)/)?.[1];
+  const id = label.match(/#(\d+)/)?.[1];
   expect(id).toBeTruthy();
   await button.click();
   await expect(page.getByTestId('selected-citizen')).toContainText('ID #' + id);
@@ -202,7 +202,7 @@ test('governance leader, bounded policy rejection, visible crop shock and crisis
   await page.getByRole('button', { name: '20×' }).click();
   await expect.poll(async () => {
     const label = await page.getByTestId('world-tick').innerText();
-    return Number(label.match(/Tick (\\d+)/)?.[1] ?? 0);
+    return Number(label.match(/Tick (\d+)/)?.[1] ?? 0);
   }, { timeout: 15000 }).toBeGreaterThanOrEqual(100);
   await page.getByRole('button', { name: 'Tạm dừng' }).click();
   await expect(page.getByTestId('active-shocks')).toContainText('Mất mùa');
