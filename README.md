@@ -2,7 +2,7 @@
 
 **Tiny Civilization** là game web pixel-art mô phỏng một ngôi làng tự vận hành. Người chơi là người quan sát: dân làng có nghề, nhu cầu, tiền, quan hệ và chịu hậu quả từ quyết định của chính họ. Câu chuyện xuất hiện từ quy luật mô phỏng, không phải các dòng sự kiện bịa sẵn.
 
-**Trạng thái: Phase 01 đã merge vào `main` (PR #2). Phase 02 Survival đã được triển khai trên branch `feat/phase-02-survival` ([PR #3](https://github.com/giabao2605/Tiny-Civilization/pull/3)), chưa merge; chưa phải MVP/release.** `main` vẫn là Phase 01 cho đến khi PR #3 được merge. Xem `docs/PROGRESS.md` để biết bằng chứng nghiệm thu.
+**Trạng thái: Phase 00, 01 và 02 đã merge vào `main` (Phase 02 qua PR #3, merge `0c8db616`). Phase 03 đang triển khai tại `feat/phase-03-economy`, [PR #4](https://github.com/giabao2605/Tiny-Civilization/pull/4) (nháp, chưa nghiệm thu).** Xem `docs/PROGRESS.md` để biết bằng chứng thực tế.
 
 ## Đọc tài liệu theo thứ tự
 
@@ -51,7 +51,7 @@ npm ci
 npm run dev
 ```
 
-Mở URL Vite in ra trong terminal (thường là `http://localhost:5173`). Nhấn cư dân trên bản đồ hoặc trong danh sách để mở inspector; **Tạm dừng / Tiếp tục**, **1× / 5× / 20×**, ô **Seed** và **Tạo lại** điều khiển simulation thật. Cuộn chuột để zoom, kéo để pan; nút **Khởi tạo lại canvas** kiểm tra vòng đời Phaser. 20 NPC có lịch sinh hoạt nhưng **chưa sản xuất, ăn uống hoặc trao đổi tiền**.
+Mở URL Vite in ra trong terminal (thường là `http://localhost:5173`). Nhấn cư dân trên bản đồ hoặc trong danh sách để mở inspector; **Tạm dừng / Tiếp tục**, **1× / 5× / 20×**, ô **Seed** và **Tạo lại** điều khiển simulation thật. Cuộn chuột để zoom, kéo để pan; nút **Khởi tạo lại canvas** kiểm tra vòng đời Phaser. Phase 03 có lựa chọn 20/50/100 NPC và các giao dịch food/wood qua một chợ chung. Để xem, chọn dân số rồi nhấn **Tạo lại**.
 
 ### Kiểm tra kỹ thuật
 
@@ -76,8 +76,14 @@ Playwright tự khởi động Vite tại port 4173 và kiểm tra Chromium desk
 
 Cấu hình lúc này không chứa backend, database, đăng nhập, lưu game hoặc AI API. Bản MVP/public release vẫn chưa có.
 
-## Preview Phase 02 Survival (branch `feat/phase-02-survival`)
+## Phase 03 Economy (feature branch, awaiting verification)
 
-Branch Phase 02 có 20 NPC với hunger/energy/health, ưu tiên ăn/ngủ/làm việc, cạn kiệt rừng/ruộng, tài nguyên food/wood hữu hạn, kho chung có capacity, tái sinh theo ngày, sự kiện tử vong và HUD/inspector phản ánh dữ liệu thật. Đây là một vòng lặp sinh tồn, **không** thêm tiền, thị trường hay các hệ thống Phase 03. Trên `main` trước khi merge, giao diện vẫn là Phase 01.
+- Branch: feat/phase-03-economy. PR #4: https://github.com/giabao2605/Tiny-Civilization/pull/4
+- Dân số deterministic: 20, 50 hoặc 100 trên cùng bản đồ 48×48; nhà có capacity 4, người dư ra có trạng thái vô gia cư.
+- NPC sở hữu ví, food/wood trong túi và nghề nghiệp. Một chợ có kho hàng và ngân quỹ hữu hạn. Người sản xuất phải mang hàng đến chợ để bán, nhận tiền thật, và chỉ mua được khi đủ tiền.
+- Thu hoạch tài nguyên hữu hạn; xây nhà tiêu 8 wood một lần ngay lúc khởi công. Thợ xây cần đến nơi, làm đủ 8 giờ và được trả tiền từ quỹ chợ thật.
+- Inspector hiển thị wallet, túi đồ, nhà, nghề, quyết định và giao dịch; dashboard hiển thị dân số, tình trạng nhà, cung-cầu, hàng hóa, tiền và xây dựng.
+- Phase 03 hiện chỉ là feature branch đang kiểm thử; chưa có hệ thống social, save/load hoàn chỉnh, backend hoặc release.
 
-Dùng các lệnh `npm ci`, `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, `npm run test:e2e`. Browser Chromium trên GitHub Actions tự lưu screenshot làm bằng chứng; xem CI trực tiếp trong PR #3. Tham số trong `src/sim/balance.ts`; luật transaction trong `docs/SIMULATION_CONTRACT.md`.
+Để kiểm chứng, dùng npm ci, npm run typecheck, npm run lint, npm run test, npm run build và npm run test:e2e. Kết quả thực tế được ghi trong docs/PROGRESS.md và GitHub Actions của PR #4, không suy luận từ source code.
+
