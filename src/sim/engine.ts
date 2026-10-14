@@ -125,6 +125,10 @@ export function advanceOneTick(previous: WorldState): WorldState {
     citizen.ageHours += 1;
     citizen.age = Math.floor(citizen.ageHours / BALANCE.hoursPerYear);
     if (citizen.age < BALANCE.adultAge) continue; // Dependent child resolver handles real food consumption.
+    if (citizen.ageHours === BALANCE.adultAge * BALANCE.hoursPerYear && citizen.job === 'other') {
+      citizen.job = 'farmer'; citizen.jobChangedTick = tick;
+      announce('work', citizen, citizen.name + ' đã đủ 18 tuổi và có thể làm nông hợp lệ.');
+    }
     if (citizen.age >= BALANCE.retirementAge && citizen.job !== 'other') {
       citizen.job = 'other'; citizen.workNodeId = null; citizen.workHours = 0;
     }
