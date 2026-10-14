@@ -118,6 +118,10 @@ export function advanceOneTick(previous: WorldState): WorldState {
         else {
           desired = 'home';
           target = getSite(previous, citizen.homeId).tile;
+          const unreachable = nodes.some((candidate) => candidate.kind === currentKind && candidate.stock > 0);
+          if (unreachable && (citizen.blockedGoal !== requested || tick >= citizen.retryAfterTick)) {
+            announce('routeBlocked', citizen, citizen.name + ': không có đường tới nguồn ' + currentKind + ' còn trữ lượng.');
+          }
           citizen.blockedGoal = requested;
           citizen.retryAfterTick = tick + BALANCE.retryBlockedAfterHours;
           citizen.workNodeId = null;
