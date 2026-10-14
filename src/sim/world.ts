@@ -20,7 +20,7 @@ export type VillageStats = {
   day: number; foodProducedToday: number; foodConsumedToday: number;
   foodProducedYesterday: number; foodConsumedYesterday: number;
   totalFoodProduced: number; totalFoodConsumed: number;
-  woodProducedToday: number; totalWoodProduced: number; deaths: number;
+  woodProducedToday: number; totalWoodProduced: number; deaths: number; failedActions: number;
 };
 export type Citizen = {
   id: number;
