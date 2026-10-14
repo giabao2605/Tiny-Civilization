@@ -75,6 +75,7 @@ export function App() {
   const snapshot = useSyncExternalStore(coordinator.subscribe, coordinator.getSnapshot);
   const [canvasVersion, setCanvasVersion] = useState(0);
   const [timelineCategory, setTimelineCategory] = useState<TimelineCategory>('all');
+  const [inspectedEventId, setInspectedEventId] = useState<number | null>(null);
   const [seedInput, setSeedInput] = useState('12345');
   const [populationInput, setPopulationInput] = useState<20 | 50 | 100>(20);
   const { world, selectedCitizenId, paused, speed } = snapshot;
@@ -88,6 +89,9 @@ export function App() {
     .map(([id, tie]) => ({ other: world.citizens.find((c) => c.id === Number(id)), tie }))
     .filter((x) => x.other && x.other.alive).sort((a, b) => Math.abs(b.tie.affinity) - Math.abs(a.tie.affinity) ||
       a.other!.id - b.other!.id).slice(0, 8) : [];
+  const inspectedEvent = world.events.find(event => event.id === inspectedEventId);
+  const inspectedNode = inspectedEvent?.nodeId === undefined ? undefined :
+    world.resourceNodes.find(node => node.id === inspectedEvent.nodeId);
   const visibleEvents = world.events.filter((event) => timelineCategory === 'all' ||
     categoryOf(event.type) === timelineCategory).slice(-10).reverse();
   const day = dayOf(world.tick);
@@ -110,7 +114,7 @@ export function App() {
 
   const setSeed = () => {
     const value = Number(seedInput);
-    if (Number.isSafeInteger(value)) coordinator.dispatch({ type: 'reset-seed', seed: value, population: populationInput });
+    if (Number.isSafeInteger(value)) { setInspectedEventId(null); coordinator.dispatch({ type: 'reset-seed', seed: value, population: populationInput }); }
   };
 
   return (
@@ -247,6 +251,7 @@ export function App() {
                 onClick={() => coordinator.dispatch({ type: 'trigger-food-aid' })}>Kích hoạt cứu trợ food</button>
               <p className="dashboard-note" data-testid="aid-feedback">{snapshot.lastPolicyMessage || (aidReason
                 ? 'Điều kiện hiện tại: ' + aidReason : 'Có thể chuyển food từ kho chợ tới cư dân thiếu ăn trong tick tới.')}</p>
+              <p className="dashboard-note" data-testid="aid-eligibility">{aidReason ? 'Chưa thể cứu trợ: ' + aidReason : 'Cứu trợ khả dụng vào tick kế tiếp nếu không có lệnh khác.'}</p>
               <h4>Biến cố đang diễn ra</h4>
               <ul className="recent-list" data-testid="active-shocks">{governance.shocks.length ? governance.shocks.map(shock =>
                 <li key={shock.id}>#{shock.id} · {shock.kind === 'poorHarvest' ? 'Mất mùa' : 'Bệnh cục bộ'} ·
@@ -361,11 +366,24 @@ export function App() {
               <select id="timeline-filter" data-testid="timeline-filter" value={timelineCategory} onChange={(e) => setTimelineCategory(e.target.value as TimelineCategory)}>
                 <option value="all">Tất cả</option><option value="social">Social</option><option value="economy">Economy</option><option value="survival">Survival</option><option value="governance">Governance</option>
               </select>
+              {inspectedEvent && <div className="social-panel" data-testid="crisis-event-details">
+                <p className="recent-title">Hồ sơ sự kiện #{inspectedEvent.id} · Tick {inspectedEvent.tick}</p>
+                <p>{inspectedEvent.reason}</p>
+                <p>Nguyên nhân: {inspectedEvent.cause ?? 'Diễn biến trực tiếp trong mô phỏng.'}
+                  {inspectedEvent.shockId !== undefined && ' · Shock #' + inspectedEvent.shockId}
+                  {inspectedEvent.policyId !== undefined && ' · Policy #' + inspectedEvent.policyId}</p>
+                {inspectedNode && <p>Vị trí ruộng/nguồn #{inspectedNode.id}: ({inspectedNode.tile.x}, {inspectedNode.tile.y})</p>}
+                {inspectedEvent.before !== undefined && inspectedEvent.after !== undefined &&
+                  <p>Trước / sau: {inspectedEvent.before} → {inspectedEvent.after}</p>}
+                {inspectedEvent.citizenId !== null && <button type="button" className="text-button" onClick={() =>
+                  coordinator.dispatch({ type: 'select-citizen', id: inspectedEvent.citizenId })}>Xem NPC #{inspectedEvent.citizenId}</button>}
+              </div>}
               <ol className="event-feed" data-testid="event-feed">
                 {visibleEvents.map((event) => (
                   <li key={event.id} className={'event-' + EVENT_LEVEL[event.type]}>
                     <span>Ngày {dayOf(event.tick)} · {String(hourOf(event.tick)).padStart(2, '0')}:00 · {EVENTS[event.type]}</span>
                     <p>{event.reason}</p>
+                    {GOVERNANCE_TYPES.has(event.type) && <button type="button" className="text-button" onClick={() => setInspectedEventId(event.id)}>Xem nguyên nhân #{event.id}</button>}
                     {event.citizenId !== null && <button type="button" className="text-button" onClick={() => coordinator.dispatch({ type: 'select-citizen', id: event.citizenId })}>NPC #{event.citizenId}</button>}
                     {event.nodeId !== undefined && <span> Ruộng/nguồn #{event.nodeId}</span>}
                     {event.shockId !== undefined && <span> · Shock #{event.shockId}</span>}
