@@ -4,6 +4,8 @@ import { buyFromMarket, sellToMarket, startConstruction, buildOneHour, assignBui
 import { findPath } from './pathfinding';
 import { nextRandom } from './prng';
 import { advanceSocial, cleanupDeath, type ScarcityWitness } from './social';
+import { beginGovernanceTick, advanceGovernanceAfterCitizens, applyFoodAid, applyIllnessHealth,
+  affectedIllness, harvestYield, harvestRegeneration, illnessPausesWork, type GovernanceCommand } from './governance';
 import {
   getSite, housing, marketTile, walkable, type Activity, type Citizen, type EventType, type Goal,
   type Good, type ResourceNode, type WorldEvent, type WorldState,
@@ -60,7 +62,7 @@ function availableNode(world: WorldState, citizen: Citizen, occupancy: Map<numbe
   return null;
 }
 
-export function advanceOneTick(previous: WorldState): WorldState {
+export function advanceOneTick(previous: WorldState, commands: GovernanceCommand[] = []): WorldState {
   const tick = previous.tick + 1;
   const day = dayOf(tick);
   const hour = hourOf(tick);
@@ -81,6 +83,10 @@ export function advanceOneTick(previous: WorldState): WorldState {
     stats: { ...previous.stats }, events: previous.events.slice(),
     households: previous.households.map((h) => ({ ...h, members: h.members.slice() })),
     memorials: previous.memorials.slice(), social: { ...previous.social },
+    governance: { ...previous.governance,
+      history: previous.governance.history.map(h => ({ ...h })),
+      policy: { ...previous.governance.policy, lastRecipients: previous.governance.policy.lastRecipients.slice() },
+      shocks: previous.governance.shocks.map(shock => ({ ...shock, affectedIds: shock.affectedIds.slice() })) },
   };
   const announce = (type: EventType, citizen: Citizen | null, reason: string, extra: Partial<WorldEvent> = {}) => {
     const event: WorldEvent = { ...extra, id: world.nextEventId++, tick, type,
@@ -88,6 +94,7 @@ export function advanceOneTick(previous: WorldState): WorldState {
     world.events.push(event);
     if (world.events.length > BALANCE.maxEvents) world.events.shift();
   };
+  beginGovernanceTick(world, announce);
   if (day !== world.stats.day) {
     world.stats.foodProducedYesterday = world.stats.foodProducedToday;
     world.stats.foodConsumedYesterday = world.stats.foodConsumedToday;
@@ -98,8 +105,13 @@ export function advanceOneTick(previous: WorldState): WorldState {
     world.market.volumeYesterday = world.market.volumeToday;
     world.market.volumeToday = 0;
     for (const node of world.resourceNodes) {
-      node.stock = Math.min(node.capacity, node.stock + node.regenerationPerDay);
+      node.stock = Math.min(node.capacity, node.stock + harvestRegeneration(world, node));
     }
+  }
+  // Player commands resolve once at the new tick boundary, before NPC decisions.
+  // Stable request-ID arbitration means competing claims cannot double-spend the final food.
+  for (const command of commands.slice().sort((a, b) => a.requestId - b.requestId)) {
+    if (command.type === 'emergency-food') applyFoodAid(world, command, announce);
   }
   if (housing(world).homeless > 0 && !world.constructions.some((c) => c.status === 'active')) {
     const started = startConstruction(world);
@@ -342,10 +354,16 @@ export function advanceOneTick(previous: WorldState): WorldState {
       if (workingNode && workingNode.stock > 0 && citizen.inventory[good] < 6 &&
           same(citizen.tile, workingNode.tile)) {
         citizen.actionDuration = hours;
-        citizen.workHours += 1;
-        citizen.energy = clampNeed(citizen.energy - BALANCE.energyWorkPerHour);
-        if (citizen.workHours >= hours) {
-          const gained = Math.min(yieldPerAction, workingNode.stock, 6 - citizen.inventory[good]);
+        if (illnessPausesWork(world, citizen)) {
+          citizen.energy = clampNeed(citizen.energy - BALANCE.energyIdlePerHour);
+          citizen.reason = 'Bị bệnh nên phải ngừng một giờ lao động, chưa tạo sản lượng.';
+        } else {
+          citizen.workHours += 1;
+          citizen.energy = clampNeed(citizen.energy - BALANCE.energyWorkPerHour);
+        }
+        if (citizen.workHours >= hours && !illnessPausesWork(world, citizen)) {
+          const potential = Math.min(yieldPerAction, workingNode.stock, 6 - citizen.inventory[good]);
+          const gained = good === 'food' ? harvestYield(world, workingNode, potential) : potential;
           workingNode.stock -= gained;
           citizen.inventory[good] += gained;
           citizen.workHours = 0;
@@ -379,6 +397,7 @@ export function advanceOneTick(previous: WorldState): WorldState {
     const damaged = citizen.starvationHours > BALANCE.starvationGraceHours &&
       (citizen.starvationHours - BALANCE.starvationGraceHours) % BALANCE.starvationDamageEveryHours === 0;
     const oldHealth = citizen.health;
+    applyIllnessHealth(world, citizen);
     if (damaged) citizen.health = clampNeed(citizen.health - BALANCE.starvationDamage);
     else if (!moved && citizen.goal === 'home' && citizen.hunger >= 65 &&
       tick % BALANCE.healthyRecoveryEveryHours === 0) citizen.health = clampNeed(citizen.health + 1);
@@ -387,16 +406,22 @@ export function advanceOneTick(previous: WorldState): WorldState {
     if (citizen.health <= 0) {
       citizen.alive = false;
       citizen.activity = 'dead';
-      citizen.reason = 'Tử vong sau ' + citizen.starvationHours + ' giờ đói nguy kịch.';
+      citizen.reason = affectedIllness(world, citizen) && citizen.starvationHours <= BALANCE.starvationGraceHours
+        ? 'Tử vong khi bệnh nặng và sức khỏe suy kiệt.'
+        : 'Tử vong sau ' + citizen.starvationHours + ' giờ đói nguy kịch.';
       citizen.route = [];
       citizen.workHours = 0; citizen.workNodeId = null; citizen.needMode = null; citizen.actionDuration = 0;
       world.stats.deaths += 1;
       decision('dead', citizen.reason);
       cleanupDeath(world, citizen);
+      citizen.illnessUntil = 0; citizen.illnessSeverity = 0;
+      for (const shock of world.governance.shocks) if (shock.kind === 'localIllness')
+        shock.affectedIds = shock.affectedIds.filter(id => id !== citizen.id);
       announce('death', citizen, citizen.name + ': ' + citizen.reason);
     }
   }
   advanceSocial(world, announce, scarcityContacts);
+  advanceGovernanceAfterCitizens(world, announce);
   if (world.inventory.food === 0 && world.citizens.some((c) => c.alive && c.hunger <= BALANCE.foodEatThreshold) &&
     (tick === 1 || tick % 24 === 0)) announce('shortage', null, 'Kho chợ hết food, không có nguồn cứu trợ vô hạn.');
   return world;
@@ -412,7 +437,7 @@ export function stateDigest(world: WorldState): string {
   const data = JSON.stringify([world.schemaVersion, world.seed, world.tick, world.rngState,
     world.nextEntityId, world.nextEventId, world.sites, world.citizens,
     world.resourceNodes, world.inventory, world.market, world.constructions, world.stats, world.events,
-    world.households, world.memorials, world.social]);
+    world.households, world.memorials, world.social, world.governance]);
   let hash = 2166136261;
   for (let i = 0; i < data.length; i += 1) hash = Math.imul(hash ^ data.charCodeAt(i), 16777619) >>> 0;
   return hash.toString(16).padStart(8, '0');
