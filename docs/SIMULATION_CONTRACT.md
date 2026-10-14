@@ -179,7 +179,7 @@ Phase 02 direct-to-town harvest and free communal meals documented above are HIS
 
 - WorldState.inventory is the market-owned physical warehouse; it is not copied into WorldState.market. Citizens individually own wallet coins and personal food/wood inventories. Harvested goods first enter producer-owned inventory, not the public warehouse.
 - Each citizen starts with 32 integer coins. The market treasury starts with 90 coins per citizen. Global supply therefore equals population times 122. All wallets, including those of dead citizens, and the market treasury are counted exactly once. There is no other monetary account and no money mint/burn.
-- Fixed integer prices: market buys food 3/sells food 4; buys wood 2/sells wood 3. The spread stays in the finite market treasury. Unpaid work never creates wages. Builder wages are subtracted from the treasury and added to the builder's wallet.
+- Fixed integer prices: market buys and sells food at 3, and buys and sells wood at 2. A zero spread prevents passive coin accumulation while retaining strictly finite funds. Unpaid work never creates wages. Builder wages are subtracted from the treasury and added to the builder's wallet.
 - At all times the sum of the market cash and ALL citizen wallets equals initial supply. A dead person's belongings remain owned but temporarily inaccessible; no confiscation or inheritance is implemented.
 
 ### Hourly ordered effects
