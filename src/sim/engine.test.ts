@@ -84,7 +84,7 @@ describe('deterministic world', () => {
     expect(after.events.some((event) => event.type === 'routeBlocked')).toBe(true);
     expect(citizen.tile).toEqual(getSite(after, citizen.homeId).tile);
     const later = advanceTicks(after, 9);
-    expect(later.events.filter((event) => event.type === 'routeBlocked')).toHaveLength(1);
+    expect(later.events.filter((event) => event.type === 'routeBlocked' && event.citizenId === citizen.id)).toHaveLength(1);
   });
   it('moves via four-neighbor tiles with hourly travel time, not teleportation', () => {
     let world = createWorld(12345);

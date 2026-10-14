@@ -39,9 +39,11 @@ test('20 visible citizens, inspector, play/pause, speed, canvas click and remoun
 
   await canvas.hover();
   await page.mouse.wheel(0, -300);
-  await page.mouse.move(280, 220);
+  const mapBounds = await canvas.boundingBox();
+  expect(mapBounds).not.toBeNull();
+  await page.mouse.move(mapBounds!.x + 260, mapBounds!.y + 250);
   await page.mouse.down();
-  await page.mouse.move(320, 250, { steps: 4 });
+  await page.mouse.move(mapBounds!.x + 300, mapBounds!.y + 280, { steps: 4 });
   await page.mouse.up();
   expect(await page.getByTestId('world-tick').innerText()).toBe(pausedTick);
 
