@@ -69,9 +69,10 @@ function assertHouseholds(world: WorldState) {
 describe('Phase 04 relationships and demographic invariants', () => {
   it('rejects dead/unknown/remote meetings and only accepts a valid local action', () => {
     const f = fixture();
-    f.b.tile.x += 1;
+    const oldTile = f.b.tile;
+    f.b.tile = { ...oldTile, x: oldTile.x + 1 };
     expect(applyInteraction(f.world, f.a.id, f.b.id, 'chat', f.emit)).toBe(false);
-    f.b.tile.x -= 1;
+    f.b.tile = oldTile;
     expect(applyInteraction(f.world, f.a.id, 999999, 'chat', f.emit)).toBe(false);
     expect(applyInteraction(f.world, f.a.id, f.a.id, 'chat', f.emit)).toBe(false);
     expect(applyInteraction(f.world, f.a.id, f.b.id, 'chat', f.emit)).toBe(true);
