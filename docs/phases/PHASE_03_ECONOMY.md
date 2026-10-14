@@ -2,7 +2,7 @@
 
 **Tóm tắt tiếng Việt:** Nâng lên 100 NPC; thêm nhà ở, xây dựng, tiền và giao dịch đơn giản; tuyệt đối không tự nhân đôi tài nguyên/tiền.
 
-**Status:** DONE on verified feature branch, PR #4 ready for human review, NOT MERGED · **Requires:** Phase 02 merged and verified. No auto-merge.
+**Status:** DONE and merged into `main` via [PR #4](https://github.com/giabao2605/Tiny-Civilization/pull/4), merge commit `83ef46c48068e782b5bdd4a234f67d60d958808c` · **Requires:** Phase 02 merged and verified. Phase 04 is the next planned phase.
 **Intent:** Evolve one village toward 100 residents with real but understandable transfers of goods and money. Complex capitalism simulator not required.
 
 ## Observable scenario

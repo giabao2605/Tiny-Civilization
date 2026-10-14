@@ -1,7 +1,7 @@
 # Tiny Civilization — Progress / handoff log
 
 **Updated:** 2026-10-14  
-**Current stage:** Phase 00–02 merged into main (Phase 02 merge `0c8db616`, main CI [38510396152](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38510396152)). **Phase 03 DONE on `feat/phase-03-economy`, [PR #4](https://github.com/giabao2605/Tiny-Civilization/pull/4) ready for human review, unmerged.** Last full implementation/docs CI [38514384101](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38514384101) PASS. No MVP release.
+**Current stage:** Phase 00–03 DONE and merged to `main`. Phase 03 [PR #4](https://github.com/giabao2605/Tiny-Civilization/pull/4) merged as commit `83ef46c48068e782b5bdd4a234f67d60d958808c`; its final source CI [38517369710](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38517369710) PASS. Phase 04 Social is next, NOT STARTED. No MVP release.
 **Authoritative roadmap:** [MASTER_PLAN](MASTER_PLAN.md)  
 **Rules/contract:** [SIMULATION_CONTRACT](SIMULATION_CONTRACT.md)
 
@@ -10,7 +10,7 @@
 | 00 Foundation | DONE, merged to main | npm ci, typecheck, lint, Vitest, build, Playwright Chromium PASS |
 | 01 Living world | DONE, merged to main (PR #2) | 48×48 map, 20 purposeful agents, inspector, controls; CI PASS |
 | 02 Survival | DONE, merged (PR #3) | Finite food/wood, needs, production, shortage/death and verified 10-seed balance |
-| 03 Economy | DONE on feature branch, PR #4 ready for review, NOT MERGED | All 20/50/100 ten-seed 30-day runs and GitHub Actions PASS |
+| 03 Economy | DONE, merged to `main` (PR #4) | All 20/50/100 ten-seed 30-day runs and GitHub Actions PASS |
 | 04 Social | NOT STARTED | Persistent relationships, legible social causes |
 | 05 Governance | NOT STARTED | Policies/crises with costs and real consequences |
 | 06 Quality | NOT STARTED | Save/load determinism, profiling, UX/balance |
@@ -19,7 +19,7 @@
 
 ## Phase 03 Economy, housing and 100 NPCs (2026-10-14)
 
-**Status: DONE on verified feature branch, ready for review and NOT merged.** Development branch created from main merge commit 0c8db616. PR: https://github.com/giabao2605/Tiny-Civilization/pull/4. No auto merge.
+**Status: DONE, merged to `main` as `83ef46c48068e782b5bdd4a234f67d60d958808c`.** Source branch was created from Phase 02 main `0c8db616`; closed merged [PR #4](https://github.com/giabao2605/Tiny-Civilization/pull/4). Phase 04 begins only in a separate task/branch.
 
 **Implemented and CI-verified source:**
 - src/sim/world.ts: 20/50/100 deterministic worlds; unique IDs; bounded site capacities, nullable homelessness, citizens' wallets and owned goods, one market/treasury, construction records, expanded finite field/forest production nodes.
@@ -44,7 +44,7 @@
 
 **Independent review:** Phase 02 resource-contention, depleted forest rerouting, blocked workplace fallback, health rest and critical recovery regressions were restored with Phase 03 ownership semantics; the final source SHA passed 47 Vitest cases. Verified stable ID-order settlement, no magic wages, finite endowments, atomic last-unit trades, personal vs market inventory conservation, one-time material reservation, paid builder work, deceased citizens blocked from trading/building, legal construction tiles, housing capacity, bounded history, single WorldState and no simulated action from React/Phaser. No Phase 04 features added.
 
-**Residual limitations:** Browser passed 20×/inspector E2E but numerical FPS and real-device compatibility were not benchmarked; Chromium screenshots exist in CI artifacts but were not manually visual-certified here. Heap delta is GC-sensitive, not a trustworthy leak proof. Future Phase 06 owns full persistence/save migration. No autonomous demand for purchased wood once housing construction finishes, but atomic wood purchase is supported and unit-tested. Long-term equilibrium beyond the validated 30-day horizon, additional jobs/consumers and housing maintenance are deferred unless new evidence justifies them. No hidden food/money faucets, bank, AI agents, backend, social or 3D. **The PR is ready for review, not merged; Phase 04 has not begun.**
+**Residual limitations:** Browser passed 20×/inspector E2E but numerical FPS and real-device compatibility were not benchmarked; Chromium screenshots exist in CI artifacts but were not manually visual-certified here. Heap delta is GC-sensitive, not a trustworthy leak proof. Future Phase 06 owns full persistence/save migration. No autonomous demand for purchased wood once housing construction finishes, but atomic wood purchase is supported and unit-tested. Long-term equilibrium beyond the validated 30-day horizon, additional jobs/consumers and housing maintenance are deferred unless new evidence justifies them. No hidden food/money faucets, bank, AI agents, backend, social or 3D. **PR #4 is merged; Phase 04 has not begun.**
 
 ---
 
