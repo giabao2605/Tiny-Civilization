@@ -123,8 +123,9 @@ export function advanceOneTick(previous: WorldState): WorldState {
     if (tick - citizen.jobChangedTick >= BALANCE.jobCooldown) {
       const staleWoodJob = citizen.job === 'woodcutter' &&
         world.inventory.wood >= BALANCE.townWoodCapacity - 12;
-      const idleBuilder = citizen.job === 'builder' && housing(world).homeless === 0 &&
-        !world.constructions.some((c) => c.status === 'active');
+      const idleBuilder = citizen.job === 'builder' && (
+        housing(world).homeless === 0 ||
+        (construction?.status === 'active' && construction.builderId !== citizen.id));
       if (staleWoodJob || idleBuilder) {
         citizen.job = 'farmer';
         citizen.jobChangedTick = tick;
@@ -133,14 +134,21 @@ export function advanceOneTick(previous: WorldState): WorldState {
         announce('unemployed', citizen, citizen.name + ': đổi sang nghề trồng trọt vì việc cũ không còn nhu cầu.');
       }
     }
+    const canSell = (good: Good) => citizen.inventory[good] > 0 &&
+      world.market.cash >= (good === 'food' ? world.market.prices.foodBuy : world.market.prices.woodBuy) &&
+      world.inventory[good] < (good === 'food' ? BALANCE.townFoodCapacity : BALANCE.townWoodCapacity);
     let requested: Goal;
     if (citizen.needMode === 'rest' && citizen.health <= BALANCE.criticalHealthThreshold) requested = 'home';
     else if (citizen.needMode === 'food') {
-      const afford = citizen.wallet >= world.market.prices.foodSell;
-      requested = citizen.inventory.food > 0 ? 'food' :
-        !afford && (citizen.inventory.wood > 0 || citizen.inventory.food > 0) ? 'sell' : 'food';
+      if (citizen.inventory.food > 0) requested = 'food';
+      else if (citizen.wallet >= world.market.prices.foodSell && world.inventory.food > 0) requested = 'food';
+      else if (canSell('food') || canSell('wood')) requested = 'sell';
+      else if (construction?.status === 'active' && construction.builderId === citizen.id &&
+        hour >= 6 && hour < 20) requested = 'build';
+      else if (citizen.job === 'farmer' || citizen.job === 'woodcutter') requested = 'work';
+      else requested = 'home';
     } else if (citizen.needMode === 'rest') requested = 'home';
-    else if (citizen.inventory.food + citizen.inventory.wood > 0) requested = 'sell';
+    else if (canSell('food') || canSell('wood')) requested = 'sell';
     else if (construction?.status === 'active' && construction.builderId === citizen.id &&
         hour >= 6 && hour < 20) requested = 'build';
     else requested = citizen.job === 'builder' && scheduledGoal(hour) === 'work' ? 'commons' : scheduledGoal(hour);
@@ -269,7 +277,7 @@ export function advanceOneTick(previous: WorldState): WorldState {
     } else if (arrived && citizen.goal === 'sell') {
       citizen.actionDuration = 1;
       citizen.energy = clampNeed(citizen.energy - BALANCE.energyIdlePerHour);
-      const good: Good = citizen.inventory.food > 0 ? 'food' : 'wood';
+      const good: Good = canSell('food') ? 'food' : 'wood';
       const quantity = Math.min(3, citizen.inventory[good]);
       if (quantity > 0 && sellToMarket(world, citizen, good, quantity)) {
         citizen.activity = 'trading';
