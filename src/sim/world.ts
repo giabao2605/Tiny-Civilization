@@ -76,7 +76,7 @@ const extraForests: TilePosition[] = [
   { x: 10, y: 32 }, { x: 36, y: 17 }, { x: 38, y: 34 },
 ];
 
-export function getSite(world: WorldState, id: number): Site {
+export function getSite(world: WorldState, id: number | null): Site {
   const site = world.sites.find((item) => item.id === id);
   if (!site) throw new Error('Missing site ' + id);
   return site;
