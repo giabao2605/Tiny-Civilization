@@ -78,6 +78,14 @@ export const BALANCE = {
   childFeedThreshold: 55,
   childFoodNutrition: 55,
   maxMemorials: 40,
+  leaderTermHours: 24 * 30,
+  aidMaxRecipients: 6,
+  aidDurationHours: 24,
+  aidCooldownHours: 24 * 3,
+  harvestIntervalHours: 24 * 30,
+  harvestDurationHours: 24 * 6,
+  illnessIntervalHours: 24 * 35,
+  illnessDurationHours: 24 * 4,
 } as const;
 
 export const clampNeed = (value: number): number => Math.max(0, Math.min(100, value));
