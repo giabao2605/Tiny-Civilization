@@ -157,3 +157,11 @@ All reported stocks satisfy conservation: `food = 30 initial + produced - consum
 
 ### Next exact action
 Phase 00 was merged and verified. Next task may implement Phase 01 only after reading the master plan, simulation contract and `docs/phases/PHASE_01_LIVING_WORLD.md`; do not implement Phase 02.
+
+## Phase 05 — Governance, Shocks & Collective Consequences (work in progress, 2026-10-14)
+
+- Base `main` HEAD `b25007a7f19921b9431a98253abdf994eddd0885`; post-Phase04 main Actions run [38525078595](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38525078595) succeeded. Branch `feat/phase-05-governance`; draft [PR #6](https://github.com/giabao2605/Tiny-Civilization/pull/6). **Not merged.**
+- New source: `src/sim/governance.ts` and `src/sim/governance.test.ts`; updated `world.ts`, `balance.ts`, `engine.ts`, `social.ts`, coordinator, UI, E2E and CI evidence artifact name.
+- Mechanics present in source: deterministic term election / empty vacancy / leader replacement, sparse social support, governed finite food-in-kind transfers, crop reduction of real harvest and regeneration, worker illness affecting health and work, bounded event IDs and visible UI. `WorldState` schema v5; market stock and money remain single owners.
+- Initial CI [38527129221](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38527129221) failed **TypeScript**: `Array.findLast` unavailable in the configured target. Resolved by using reverse-copy + find; later CI is required to prove this fix.
+- Regression risks under active review: adversarial competition for final food, sickness recovery while starving, deterministic state digest, leader death across a social household, fixed-seed replay, long-run conservation and real Chromium E2E. Do not mark Phase 05 DONE before the latest green workflow with benchmark output and screenshots.
