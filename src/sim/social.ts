@@ -220,7 +220,8 @@ function births(world: WorldState, emit: Emit) {
     const newborn: Citizen = {
       id, name: 'Bé ' + id, age: 0, ageHours: 0, appearance: appearance.value, alive: true, job: 'other',
       relations: {}, householdId: household.id, partnerId: null, partneredTick: null,
-      hunger: BALANCE.newbornHunger, energy: 85, health: 100, starvationHours: 0, needMode: null,
+      hunger: BALANCE.newbornHunger, energy: 85, health: 100, starvationHours: 0,
+      illnessUntil: 0, illnessSeverity: 0, needMode: null,
       workNodeId: null, workHours: 0, actionDuration: 0, tile: { ...home.tile },
       homeId: home.id, workId: parent.workId, goal: 'home', destination: { ...home.tile },
       reason: 'Trẻ sơ sinh, sống phụ thuộc hộ gia đình.', activity: 'rest',
