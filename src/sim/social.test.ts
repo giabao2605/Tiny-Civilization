@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from './balance';
+import { buyFromMarket, sellToMarket, buildOneHour } from './economy';
 import { advanceOneTick, advanceTicks, stateDigest } from './engine';
 import { applyInteraction, advanceSocial, cleanupDeath, tryFormPartnership } from './social';
-import { createWorld, getSite, housing, totalCurrency, type Citizen, type WorldEvent, type WorldState } from './world';
+import { createWorld, getSite, housing, marketTile, totalCurrency, type Citizen, type WorldEvent, type WorldState, type Construction } from './world';
 
 function fixture(seed = 210) {
   const world = createWorld(seed);
@@ -247,6 +248,25 @@ describe('Phase 04 relationships and demographic invariants', () => {
     expect(f.world.stats.totalFoodConsumed).toBe(consumed + 1);
     expect(child.hunger).toBeGreaterThan(54);
     expect(child.job).toBe('other');
+  });
+
+  it('rejects child-initiated market trades and paid building even with inventory and funds', () => {
+    const world = createWorld(900);
+    const minor = world.citizens[0]!;
+    minor.age = 5; minor.ageHours = 5 * BALANCE.hoursPerYear;
+    minor.tile = { ...marketTile(world) };
+    minor.inventory.wood = 1;
+    const cashBefore = totalCurrency(world);
+    const stockBefore = { ...world.inventory };
+    expect(buyFromMarket(world, minor, 'food')).toBe(false);
+    expect(sellToMarket(world, minor, 'wood')).toBe(false);
+    minor.job = 'builder';
+    const fake: Construction = { id: -1, tile: { ...minor.tile }, status: 'active',
+      builderId: minor.id, woodSpent: 8, hoursRequired: 8, progress: 0 };
+    expect(buildOneHour(world, minor, fake)).toBe(false);
+    expect(totalCurrency(world)).toBe(cashBefore);
+    expect(world.inventory).toEqual(stockBefore);
+    expect(fake.progress).toBe(0);
   });
 
   it('ages by exactly 8760 ticks per year, promotes adults and retires senior workers', () => {
