@@ -19,12 +19,12 @@ export type LivingCommand =
   | { type: 'trigger-food-aid' };
 
 export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 20 | 50 | 100 = 20,
-  fixture?: 'governance-food-shortage') {
+  fixture?: 'governance-food-shortage' | 'governance-empty-reserve') {
   let presetPopulation = initialPopulation;
   // Explicit development/test scenario, not a player command or an engine shortcut.
   const initialWorld = createWorld(initialSeed, initialPopulation);
-  if (fixture === 'governance-food-shortage') {
-    initialWorld.inventory.food = 12;
+  if (fixture === 'governance-food-shortage' || fixture === 'governance-empty-reserve') {
+    initialWorld.inventory.food = fixture === 'governance-empty-reserve' ? 0 : 12;
     for (const c of initialWorld.citizens.slice(0, 6)) {
       c.hunger = 5;
       c.inventory.food = 0;
