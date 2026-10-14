@@ -83,8 +83,8 @@ export function advanceOneTick(previous: WorldState): WorldState {
     memorials: previous.memorials.slice(), social: { ...previous.social },
   };
   const announce = (type: EventType, citizen: Citizen | null, reason: string, extra: Partial<WorldEvent> = {}) => {
-    const event: WorldEvent = { id: world.nextEventId++, tick, type, citizenId: citizen?.id ?? null, reason,
-      ...extra, id: world.nextEventId - 1, tick, citizenId: citizen?.id ?? null };
+    const event: WorldEvent = { ...extra, id: world.nextEventId++, tick, type,
+      citizenId: citizen?.id ?? null, reason };
     world.events.push(event);
     if (world.events.length > BALANCE.maxEvents) world.events.shift();
   };
