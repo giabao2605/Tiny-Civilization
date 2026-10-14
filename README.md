@@ -2,7 +2,7 @@
 
 **Tiny Civilization** là game web pixel-art mô phỏng một ngôi làng tự vận hành. Người chơi là người quan sát: dân làng có nghề, nhu cầu, tiền, quan hệ và chịu hậu quả từ quyết định của chính họ. Câu chuyện xuất hiện từ quy luật mô phỏng, không phải các dòng sự kiện bịa sẵn.
 
-**Trạng thái hiện tại: PHASE 01 LIVING WORLD ĐÃ MERGE VÀO MAIN (PR #2, CI PASS); CHƯA PHẢI MVP/RELEASE.** Có 20 cư dân đi làm, giao lưu và nghỉ theo lịch với simulation deterministic, chưa có kinh tế hoặc nhu cầu sinh tồn. Xem `docs/PROGRESS.md` để biết tình trạng kiểm thử và tiến độ thực tế.
+**Trạng thái: Phase 01 đã merge vào `main` (PR #2). Phase 02 Survival đã được triển khai trên branch `feat/phase-02-survival` ([PR #3](https://github.com/giabao2605/Tiny-Civilization/pull/3)), chưa merge; chưa phải MVP/release.** `main` vẫn là Phase 01 cho đến khi PR #3 được merge. Xem `docs/PROGRESS.md` để biết bằng chứng nghiệm thu.
 
 ## Đọc tài liệu theo thứ tự
 
@@ -75,3 +75,9 @@ Playwright tự khởi động Vite tại port 4173 và kiểm tra Chromium desk
 - `.github/workflows/ci.yml`: xác minh từ checkout sạch và lưu screenshot artifact.
 
 Cấu hình lúc này không chứa backend, database, đăng nhập, lưu game hoặc AI API. Bản MVP/public release vẫn chưa có.
+
+## Preview Phase 02 Survival (branch `feat/phase-02-survival`)
+
+Branch Phase 02 có 20 NPC với hunger/energy/health, ưu tiên ăn/ngủ/làm việc, cạn kiệt rừng/ruộng, tài nguyên food/wood hữu hạn, kho chung có capacity, tái sinh theo ngày, sự kiện tử vong và HUD/inspector phản ánh dữ liệu thật. Đây là một vòng lặp sinh tồn, **không** thêm tiền, thị trường hay các hệ thống Phase 03. Trên `main` trước khi merge, giao diện vẫn là Phase 01.
+
+Dùng các lệnh `npm ci`, `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, `npm run test:e2e`. Browser Chromium trên GitHub Actions tự lưu screenshot làm bằng chứng; xem CI trực tiếp trong PR #3. Tham số trong `src/sim/balance.ts`; luật transaction trong `docs/SIMULATION_CONTRACT.md`.

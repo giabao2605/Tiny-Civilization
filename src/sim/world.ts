@@ -1,19 +1,42 @@
 import { GRID_HEIGHT, GRID_WIDTH, tileIndex, type TilePosition } from './grid';
 import { drawInt, normalizeSeed } from './prng';
+import { BALANCE } from './balance';
 
 export type Terrain = 'grass' | 'forest' | 'water' | 'road';
 export type SiteKind = 'home' | 'work' | 'commons';
-export type Goal = 'home' | 'work' | 'commons';
-export type Activity = 'rest' | 'travelToWork' | 'atWork' | 'travelToCommons' | 'socialIdle' | 'travelHome';
-export type EventType = 'founded' | 'departure' | 'work' | 'gather' | 'home' | 'routeBlocked';
+export type Goal = 'home' | 'work' | 'commons' | 'food';
+export type Activity = 'rest' | 'travelToWork' | 'atWork' | 'travelToCommons' | 'socialIdle' | 'travelHome' | 'travelToFood' | 'eating' | 'waitingForFood' | 'dead';
+export type EventType = 'founded' | 'departure' | 'work' | 'gather' | 'home' | 'routeBlocked'
+  | 'foodProduced' | 'woodProduced' | 'foodEaten' | 'shortage' | 'depleted' | 'recovery' | 'danger' | 'death';
 export type Site = { id: number; name: string; kind: SiteKind; tile: TilePosition };
 export type ActivityEntry = { tick: number; activity: Activity; reason: string };
+export type Job = 'farmer' | 'woodcutter' | 'other';
+export type ResourceNode = {
+  id: number; kind: 'field' | 'forest'; tile: TilePosition;
+  stock: number; capacity: number; regenerationPerDay: number;
+};
+export type VillageStock = { food: number; wood: number };
+export type VillageStats = {
+  day: number; foodProducedToday: number; foodConsumedToday: number;
+  foodProducedYesterday: number; foodConsumedYesterday: number;
+  totalFoodProduced: number; totalFoodConsumed: number;
+  woodProducedToday: number; totalWoodProduced: number; deaths: number; failedActions: number;
+};
 export type Citizen = {
   id: number;
   name: string;
   age: number;
   appearance: number;
-  alive: true;
+  alive: boolean;
+  job: Job;
+  hunger: number;
+  energy: number;
+  health: number;
+  starvationHours: number;
+  needMode: 'food' | 'rest' | null;
+  workNodeId: number | null;
+  workHours: number;
+  actionDuration: number;
   tile: TilePosition;
   homeId: number;
   workId: number;
@@ -29,7 +52,7 @@ export type Citizen = {
 };
 export type WorldEvent = { id: number; tick: number; type: EventType; citizenId: number | null; reason: string };
 export type WorldState = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   seed: number;
   rngState: number;
   tick: number;
@@ -38,6 +61,9 @@ export type WorldState = {
   tiles: Terrain[];
   sites: Site[];
   citizens: Citizen[];
+  resourceNodes: ResourceNode[];
+  inventory: VillageStock;
+  stats: VillageStats;
   events: WorldEvent[];
 };
 
@@ -94,7 +120,7 @@ export function createWorld(seed = 12345): WorldState {
     connect(tile);
     sites.push({ id: nextEntityId++, kind: 'home', name: 'Nhà ' + (i + 1), tile });
   }
-  const jobs = ['Vườn ươm', 'Xưởng gỗ', 'Tiệm thủ công', 'Trạm tuần tra', 'Kho cộng đồng'];
+  const jobs = ['Ruộng phía tây', 'Rừng phía bắc', 'Ruộng phía đông', 'Rừng phía nam', 'Kho cộng đồng'];
   for (let i = 0; i < workPositions.length; i += 1) {
     const tile = workPositions[i]!;
     connect(tile);
@@ -114,6 +140,15 @@ export function createWorld(seed = 12345): WorldState {
       age: 18 + draw(45),
       appearance: draw(8),
       alive: true,
+      job: i % 5 === 0 || i % 5 === 2 ? 'farmer' : i % 5 === 1 || i % 5 === 3 ? 'woodcutter' : 'other',
+      hunger: 73 + draw(18),
+      energy: 68 + draw(20),
+      health: 90 + draw(11),
+      starvationHours: 0,
+      needMode: null,
+      workNodeId: null,
+      workHours: 0,
+      actionDuration: 0,
       tile: { ...home.tile },
       homeId: home.id,
       workId: work.id,
@@ -128,8 +163,20 @@ export function createWorld(seed = 12345): WorldState {
       recent: [{ tick: 0, activity: 'rest', reason: 'Bắt đầu ngày mới tại nhà.' }],
     });
   }
+  // Sites and citizens retain Phase 01 IDs (1..46), so selection remains stable.
+  const resourceNodes: ResourceNode[] = [0, 1, 2, 3].map((workIndex) => {
+    const kind = workIndex % 2 === 0 ? 'field' as const : 'forest' as const;
+    return {
+      id: nextEntityId++,
+      kind,
+      tile: { ...workPositions[workIndex]! },
+      stock: kind === 'field' ? BALANCE.farmInitial : BALANCE.forestInitial,
+      capacity: kind === 'field' ? BALANCE.farmCapacity : BALANCE.forestCapacity,
+      regenerationPerDay: kind === 'field' ? BALANCE.farmRegenPerDay : BALANCE.forestRegenPerDay,
+    };
+  });
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     seed,
     rngState,
     tick: 0,
@@ -138,6 +185,14 @@ export function createWorld(seed = 12345): WorldState {
     tiles,
     sites,
     citizens,
+    resourceNodes,
+    inventory: { food: BALANCE.initialFood, wood: BALANCE.initialWood },
+    stats: {
+      day: 1, foodProducedToday: 0, foodConsumedToday: 0,
+      foodProducedYesterday: 0, foodConsumedYesterday: 0,
+      totalFoodProduced: 0, totalFoodConsumed: 0,
+      woodProducedToday: 0, totalWoodProduced: 0, deaths: 0, failedActions: 0,
+    },
     events: [{ id: 1, tick: 0, type: 'founded', citizenId: null, reason: 'Ngôi làng được thành lập với 20 cư dân.' }],
   };
 }

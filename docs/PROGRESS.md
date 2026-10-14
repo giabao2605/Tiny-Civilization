@@ -1,7 +1,7 @@
 # Tiny Civilization — Progress / handoff log
 
 **Updated:** 2026-10-14  
-**Current stage:** Phase 01 Living World **DONE, merged into main via PR #2 (CI PASS)**. Phase 00 previously merged via PR #1; Phase 02 NOT STARTED; no MVP released.  
+**Current stage:** Phase 02 Survival **DONE on feature branch, PR #3 open and unmerged**; Phase 00/01 merged to main. CI verification is recorded below; no MVP released.  
 **Authoritative roadmap:** [MASTER_PLAN](MASTER_PLAN.md)  
 **Rules/contract:** [SIMULATION_CONTRACT](SIMULATION_CONTRACT.md)
 
@@ -9,13 +9,48 @@
 | --- | --- | --- |
 | 00 Foundation | DONE, merged to main | npm ci, typecheck, lint, Vitest, build, Playwright Chromium PASS |
 | 01 Living world | DONE, merged to main (PR #2) | 48×48 map, 20 purposeful agents, inspector, controls; CI PASS |
-| 02 Survival | NOT STARTED | Finite food/wood and consistent needs/actions |
+| 02 Survival | DONE in PR #3, awaiting merge | Finite food/wood, needs, production, shortage/death and verified 10-seed balance |
 | 03 Economy | NOT STARTED | 100 agents, finite transactions, sustainable seeded runs |
 | 04 Social | NOT STARTED | Persistent relationships, legible social causes |
 | 05 Governance | NOT STARTED | Policies/crises with costs and real consequences |
 | 06 Quality | NOT STARTED | Save/load determinism, profiling, UX/balance |
 | 07 MVP release | NOT STARTED | CI green, deployed playable build |
 | 08 Expansion | DEFERRED | Only after MVP validation and new go/no-go |
+
+## Phase 02 Survival implementation and verification (2026-10-14)
+
+**Branch:** `feat/phase-02-survival` from main `d6420cc07c59d1a4bb70a38fa353e5eec3cafd47`. **PR:** [#3](https://github.com/giabao2605/Tiny-Civilization/pull/3), deliberately not merged. Scope is limited to Phase 02.
+
+**Shipped:** `src/sim/balance.ts` centralizes hourly rates and finite capacities; `world.ts` adds differentiated hunger/energy/health, explicit jobs, finite field/forest nodes, town inventory and cumulative/day statistics; `engine.ts` enforces a stable hourly pipeline with sorted ID-based atomic transfers, food consumption, starvation/health/death, fatigue, cooldown and source selection. Per-hour action exclusivity prevents work while moving or sleeping. Fields/forest regenerate only at day boundaries up to capacity, stock is nonnegative, and dead agents stay inert. There are no wages, money, markets, full persistence or Phase 03 mechanisms.
+
+**UI:** React shows actual food/wood stocks, daily food produced/consumed, runway if previous-day consumption is known, hungry/endangered counts, needs bars, jobs, action durations and recent decisions. Phaser paints production-site stock/depletion markers, hides dead citizens and retains pan/zoom/selection. Events distinguish production, meals, missing food, depletion, recovery, danger and death.
+
+**10-seed × 30-day baseline (720 ticks per seed):**
+
+| Seed | Living | Food | Wood | Food produced | Food consumed | Deaths |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 20 | 130 | 120 | 698 | 598 | 0 |
+| 2 | 20 | 132 | 120 | 698 | 596 | 0 |
+| 3 | 20 | 131 | 120 | 699 | 598 | 0 |
+| 4 | 20 | 131 | 120 | 698 | 597 | 0 |
+| 5 | 20 | 132 | 120 | 699 | 597 | 0 |
+| 6 | 20 | 130 | 120 | 697 | 597 | 0 |
+| 7 | 20 | 132 | 120 | 698 | 596 | 0 |
+| 8 | 20 | 127 | 120 | 693 | 596 | 0 |
+| 9 | 20 | 130 | 120 | 698 | 598 | 0 |
+| 10 | 20 | 131 | 120 | 698 | 597 | 0 |
+
+All reported stocks satisfy conservation: `food = 30 initial + produced - consumed`, `wood = 6 initial + produced`. Both are additionally bounded by warehouse capacity (food 150, wood 120), while source stock is finite and renewed only within node caps. **Wood reaches its storage cap and stays unused until a later phase introduces a legitimate wood sink; this is intentional, not infinite extraction.**
+
+**Verified CI:** [PR check run 38508978334](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38508978334) completed successfully with clean `npm ci`, production audit, `typecheck`, `lint`, 32 Vitest tests, production build and **3 Playwright Chromium tests** (desktop/mobile, pause/20×/selection/survival HUD). [Browser screenshot artifact 11868949006](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38508978334/artifacts/11868949006). Additional adversarial tests after this run cover forest rerouting, health recovery, failed meals and an individual farmer's produce→eat causal chain; check the most recent PR CI before merging.
+
+**Shortage/depletion:** source regeneration disabled + food set to zero leads to denied meals, starvation grace, deterministic health loss and death. Last-unit food/harvest contention is resolved by ascending citizen ID without negative node or town stock. Forest depletion/refill, rerouting, 720-hour replay, 100 seed map connectivity and batch/single stepping are test-covered.
+
+**Independent review/fixes:** initial CI failed on an obsolete test that looked for the commons event only in the final bounded 120-event tail; updated the test to observe events across all 500 ticks without weakening retention policy. Stabilized the waiting-for-food activity when pantry stock is zero, avoiding a false hourly activity flip. Confirmed one canonical `WorldState`, bounded events and per-citizen history, no `Math.random()` in gameplay and no React/Phaser resource writes. Initial food/wood are explicit endowments, not magic replenishment.
+
+**Limits:** The authored code cannot run npm/Chromium locally because the container cannot reach the registry; all PASS claims above are based on real GitHub Actions. Browser screenshots were captured automatically; a human full-device/FPS benchmark has not been performed. There is no wood consumption sink, crop seasons, carriers, NPC personal inventory, wages, backend or save/load, by design.
+
+**Gate:** Implemented and verified, PR #3 remains open/unmerged; Phase 03 must not begin on this branch.
 
 ## Phase 01 Living World implementation and verification (2026-10-14)
 

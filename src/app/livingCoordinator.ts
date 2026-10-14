@@ -53,7 +53,7 @@ export function createLivingCoordinator(initialSeed = 12345) {
     },
     dispatch: (command: LivingCommand): boolean => {
       if (command.type === 'select-citizen') {
-        if (command.id !== null && !snapshot.world.citizens.some((citizen) => citizen.id === command.id && citizen.alive)) return false;
+        if (command.id !== null && !snapshot.world.citizens.some((citizen) => citizen.id === command.id)) return false;
         if (snapshot.selectedCitizenId === command.id) return false;
         snapshot = { ...snapshot, selectedCitizenId: command.id };
       } else if (command.type === 'set-speed') {

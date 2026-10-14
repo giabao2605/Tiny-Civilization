@@ -154,3 +154,18 @@ Events capped (e.g. newest 300) and aggregate yearly/daily metrics summarized ra
 - Phase 04/05 use the same action/effects pipeline, not a second social/government clock.
 - Phase 06 fixes save format, benchmark harness, fuzz/seeds and event inspector.
 - Phase 07 certifies all invariants. Never paper over failing tests by deleting the asserts.
+
+## Phase 02: locked hourly survival resolution (2026-10-14)
+
+Phase 02 makes the suggested pipeline exact for the survival slice without changing the one-hour tick:
+
+1. Increment tick, switch the daily counters and regenerate each finite field/forest **once** at ticks divisible by 24 (up to node capacity).
+2. Visit only living citizens in ascending, stable numeric ID order.
+3. Apply hourly hunger decay exactly once, then apply hysteretic survival goal priority (food if hungry, home if critically fatigued, schedule otherwise).
+4. Choose a reachable node with remaining stock; when none is usable, choose a safe home fallback and retry with a 24-tick cooldown. BFS is deterministic.
+5. Move at most four cardinal tiles. Movement occupies the entire hour and excludes eating, production, sleeping and recovery during that same tick.
+6. If stationary and at a valid destination, apply **one** action. Eating takes one hour and consumes one town food unit. Farming/wood gathering takes three stationary work hours and atomically transfers at most the available node stock and free warehouse capacity to the village (abstract automatic logistics, no invented courier). Home rest is one stationary hour and restores energy. Nonproductive jobs are staff shifts, without invented goods.
+7. After the one action, evaluate continuous severe hunger and its health effects; only valid rested/satiated recovery may heal. A citizen whose health reaches zero becomes dead immediately and no longer performs future actions.
+8. Emit causal, ID-monotonic events from committed effects. Trim events/history to their existing bounds and publish one JSON-serializable snapshot.
+
+Contention for the same final resource unit is resolved in citizen-ID order, never by Phaser frame order. Node stocks and village stocks are integers and clamped by actual available quantity/capacity. The initial 30 food and 6 wood units are an explicit finite settlement endowment, not an ongoing faucet. Resource nodes refill only by stated finite daily regeneration; the village warehouse has hard caps. Food runway must be labelled undefined when there is no completed day's consumption sample. These phase 02 rules are intentionally independent of Phase 03 wallets, prices or trade.
