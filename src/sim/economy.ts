@@ -8,7 +8,8 @@ function amountIsValid(quantity: number): boolean {
 }
 function atMarket(world: WorldState, citizen: Citizen): boolean {
   const tile = marketTile(world);
-  return citizen.alive && citizen.tile.x === tile.x && citizen.tile.y === tile.y;
+  return citizen.alive && citizen.age >= BALANCE.adultAge &&
+    citizen.tile.x === tile.x && citizen.tile.y === tile.y;
 }
 function price(world: WorldState, good: Good, direction: 'buy' | 'sell'): number {
   return good === 'food' ? (direction === 'buy' ? world.market.prices.foodSell : world.market.prices.foodBuy)
@@ -77,7 +78,7 @@ function constructionTile(world: WorldState): TilePosition | null {
 export function startConstruction(world: WorldState): Construction | null {
   if (housing(world).homeless === 0 || world.constructions.some((c) => c.status === 'active') ||
       world.inventory.wood < BALANCE.houseWoodCost) return null;
-  const builder = world.citizens.find((c) => c.alive && c.job === 'builder');
+  const builder = world.citizens.find((c) => c.alive && c.age >= BALANCE.adultAge && c.job === 'builder');
   const tile = constructionTile(world);
   if (!builder || !tile) return null;
   world.inventory.wood -= BALANCE.houseWoodCost;
@@ -89,7 +90,7 @@ export function startConstruction(world: WorldState): Construction | null {
 
 /** One stationary hour, paid from existing coins. Never completes for a dead builder. */
 export function buildOneHour(world: WorldState, citizen: Citizen, construction: Construction): boolean {
-  if (!citizen.alive || citizen.job !== 'builder' || construction.status !== 'active' ||
+  if (!citizen.alive || citizen.age < BALANCE.adultAge || citizen.job !== 'builder' || construction.status !== 'active' ||
       construction.builderId !== citizen.id || citizen.tile.x !== construction.tile.x ||
       citizen.tile.y !== construction.tile.y || world.market.cash < BALANCE.builderHourlyPay) return false;
   world.market.cash -= BALANCE.builderHourlyPay;
@@ -105,6 +106,11 @@ export function buildOneHour(world: WorldState, citizen: Citizen, construction: 
       if (remaining === 0) break;
       if (resident.alive && resident.homeId === null) {
         resident.homeId = house.id;
+        // A newly housed resident starts a valid single-person household.
+        const id = world.nextEntityId++;
+        world.households.push({ id, homeId: house.id, members: [resident.id],
+          formedTick: world.tick, lastBirthTick: -BALANCE.birthCooldownHours });
+        resident.householdId = id;
         remaining -= 1;
       }
     }
@@ -113,9 +119,9 @@ export function buildOneHour(world: WorldState, citizen: Citizen, construction: 
 }
 
 export function assignBuilder(world: WorldState, construction: Construction): Citizen | null {
-  let builder = world.citizens.find((c) => c.id === construction.builderId && c.alive && c.job === 'builder');
+  let builder = world.citizens.find((c) => c.id === construction.builderId && c.alive && c.age >= BALANCE.adultAge && c.job === 'builder');
   if (!builder) {
-    builder = world.citizens.find((c) => c.alive && c.job === 'builder');
+    builder = world.citizens.find((c) => c.alive && c.age >= BALANCE.adultAge && c.job === 'builder');
     construction.builderId = builder?.id ?? null;
   }
   return builder ?? null;

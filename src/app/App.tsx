@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { GameCanvas } from '../game/GameCanvas';
 import { dayOf, hourOf, stateDigest } from '../sim/engine';
 import { GRID_HEIGHT, GRID_WIDTH } from '../sim/grid';
-import { getSite, housing, totalCurrency, type Activity, type WorldEvent } from '../sim/world';
+import { getSite, housing, totalCurrency, type Activity, type WorldEvent, type EventType } from '../sim/world';
 import { createLivingCoordinator } from './livingCoordinator';
 
 const ACTIVITY: Record<Activity, string> = {
@@ -27,6 +27,8 @@ const EVENT_LEVEL: Record<WorldEvent['type'], 'info' | 'warning' | 'critical'> =
   sold: 'info', bought: 'info', bankrupt: 'warning', marketEmpty: 'warning',
   marketInsolvent: 'warning', constructionStarted: 'info', constructionDone: 'info',
   constructionShortage: 'warning', unemployed: 'warning', homeless: 'warning',
+  encounter: 'info', friendship: 'info', dispute: 'warning', rivalry: 'warning',
+  householdFormed: 'info', birth: 'info', socialAvoid: 'info',
 };
 const EVENTS: Record<WorldEvent['type'], string> = {
   founded: 'Thành lập làng',
@@ -47,16 +49,34 @@ const EVENTS: Record<WorldEvent['type'], string> = {
   marketEmpty: 'Chợ hết hàng', marketInsolvent: 'Chợ thiếu quỹ/chỗ',
   constructionStarted: 'Khởi công', constructionDone: 'Hoàn thành nhà',
   constructionShortage: 'Thiếu vật tư', unemployed: 'Đổi việc', homeless: 'Vô gia cư',
+  encounter: 'Gặp gỡ', friendship: 'Tình bạn', dispute: 'Mâu thuẫn',
+  rivalry: 'Đối địch', householdFormed: 'Lập hộ gia đình', birth: 'Em bé chào đời', socialAvoid: 'Tránh mặt',
 };
+
+type TimelineCategory = 'all' | 'social' | 'economy' | 'survival';
+const SOCIAL_TYPES = new Set<EventType>(['encounter', 'friendship', 'dispute', 'rivalry', 'householdFormed', 'birth', 'socialAvoid']);
+const ECONOMY_TYPES = new Set<EventType>(['sold', 'bought', 'bankrupt', 'marketEmpty', 'marketInsolvent',
+  'constructionStarted', 'constructionDone', 'constructionShortage', 'unemployed', 'homeless']);
+function categoryOf(type: EventType): Exclude<TimelineCategory, 'all'> {
+  return SOCIAL_TYPES.has(type) ? 'social' : ECONOMY_TYPES.has(type) ? 'economy' : 'survival';
+}
 
 export function App() {
   const coordinator = useMemo(() => createLivingCoordinator(12345), []);
   const snapshot = useSyncExternalStore(coordinator.subscribe, coordinator.getSnapshot);
   const [canvasVersion, setCanvasVersion] = useState(0);
+  const [timelineCategory, setTimelineCategory] = useState<TimelineCategory>('all');
   const [seedInput, setSeedInput] = useState('12345');
   const [populationInput, setPopulationInput] = useState<20 | 50 | 100>(20);
   const { world, selectedCitizenId, paused, speed } = snapshot;
   const citizen = world.citizens.find((item) => item.id === selectedCitizenId);
+  const selectedHousehold = world.households.find((house) => house.id === citizen?.householdId);
+  const ties = citizen ? Object.entries(citizen.relations)
+    .map(([id, tie]) => ({ other: world.citizens.find((c) => c.id === Number(id)), tie }))
+    .filter((x) => x.other && x.other.alive).sort((a, b) => Math.abs(b.tie.affinity) - Math.abs(a.tie.affinity) ||
+      a.other!.id - b.other!.id).slice(0, 8) : [];
+  const visibleEvents = world.events.filter((event) => timelineCategory === 'all' ||
+    categoryOf(event.type) === timelineCategory).slice(-10).reverse();
   const day = dayOf(world.tick);
   const hour = hourOf(world.tick);
   const living = world.citizens.filter((item) => item.alive);
@@ -90,7 +110,7 @@ export function App() {
             <h1>Tiny Civilization<span className="title-dot">.</span></h1>
           </div>
         </div>
-        <span className="version-tag">PHASE 03 <span aria-hidden="true">●</span> ECONOMY</span>
+        <span className="version-tag">PHASE 04 <span aria-hidden="true">●</span> SOCIAL</span>
       </header>
 
       <main>
@@ -98,7 +118,7 @@ export function App() {
           <div>
             <p className="section-kicker">LIFE BEGINS IN THE VALLEY</p>
             <h2>Một ngôi làng nhỏ.<br /><em>{world.citizens.length} cuộc đời.</em></h2>
-            <p className="intro-copy">Cư dân tự trồng trọt, khai thác, bán hàng, mua thức ăn và xây nhà bằng nguồn lực hữu hạn. Tiền và tài nguyên không tự sinh ra từ giao dịch.</p>
+            <p className="intro-copy">Cư dân tự kiếm sống, xây nhà, hình thành tình bạn hoặc mâu thuẫn từ những cuộc gặp thật. Gia đình và trẻ em cũng phụ thuộc vào thức ăn hữu hạn.</p>
           </div>
           <div className="phase-note">
             <span className="note-pulse" aria-hidden="true" />
@@ -161,6 +181,9 @@ export function App() {
                 <div className="resource-value"><span>Chợ bán cho dân</span><strong data-testid="market-sold-units">{market.soldToCitizens} đơn vị</strong></div>
                 <div className="resource-value"><span>Khối lượng giao dịch hôm nay</span><strong data-testid="trade-volume">{market.volumeToday}</strong></div>
                 <div className="resource-value"><span>Công trình đang xây</span><strong data-testid="construction-count">{activeSites.length}</strong></div>
+                <div className="resource-value"><span>Hộ gia đình</span><strong data-testid="household-count">{world.households.length}</strong></div>
+                <div className="resource-value"><span>Lượt giao lưu</span><strong data-testid="social-encounters">{world.social.encounters}</strong></div>
+                <div className="resource-value"><span>Trẻ em</span><strong data-testid="child-count">{living.filter((c) => c.age < 18).length}</strong></div>
                 <div className="resource-value"><span>Sức khỏe bình quân</span><strong data-testid="average-health">{averageHealth}/100</strong></div>
                 <div className="resource-value"><span>Food sản xuất / ngày</span><strong data-testid="food-produced">{world.stats.foodProducedToday}</strong></div>
                 <div className="resource-value"><span>Food tiêu thụ / ngày</span><strong data-testid="food-consumed">{world.stats.foodConsumedToday}</strong></div>
@@ -201,10 +224,13 @@ export function App() {
                     </div>
                     <dl className="info-list">
                       <dt>Trạng thái</dt><dd data-testid="citizen-life">{citizen.alive ? 'Còn sống' : 'Đã chết'}</dd>
+                      <dt>Nhân khẩu</dt><dd>{citizen.age < 18 ? 'Trẻ phụ thuộc' : citizen.age >= 68 ? 'Nghỉ lao động' : 'Trưởng thành'}</dd>
                       <dt>Nghề</dt><dd data-testid="citizen-job">{jobNames[citizen.job]}</dd>
                       <dt>Đang làm</dt><dd>{ACTIVITY[citizen.activity]}</dd>
                       <dt>Vị trí</dt><dd>({citizen.tile.x}, {citizen.tile.y})</dd>
                       <dt>Nhà</dt><dd>{citizen.homeId === null ? 'Chưa có nhà' : getSite(world, citizen.homeId).name}</dd>
+                      <dt>Hộ gia đình</dt><dd data-testid="citizen-household">{selectedHousehold ? '#' + selectedHousehold.id + ' · ' + selectedHousehold.members.length + ' người' : 'Chưa có hộ'}</dd>
+                      <dt>Partner</dt><dd>{citizen.partnerId === null ? 'Chưa có' : <button className="text-button" type="button" onClick={() => coordinator.dispatch({ type: 'select-citizen', id: citizen.partnerId })}>{world.citizens.find((c) => c.id === citizen.partnerId)?.name}</button>}</dd>
                       <dt>Ví tiền</dt><dd data-testid="citizen-wallet">{citizen.wallet}</dd>
                       <dt>Túi đồ</dt><dd data-testid="citizen-inventory">Food {citizen.inventory.food} · Wood {citizen.inventory.wood}</dd>
                       <dt>Giao dịch gần đây</dt><dd>{market.trades.filter((trade) => trade.citizenId === citizen.id).slice(-1).map((t) => t.direction === 'buy' ? 'Mua ' + t.quantity + ' ' + t.good : 'Bán ' + t.quantity + ' ' + t.good).join('') || 'Chưa có'}</dd>
@@ -213,6 +239,19 @@ export function App() {
                       <dt>Thời gian hành động</dt><dd>{citizen.actionDuration ? citizen.actionDuration + ' giờ; tiến độ ' + citizen.workHours + ' giờ' : 'Không có'}</dd>
                       <dt>Điểm đến</dt><dd>({citizen.destination.x}, {citizen.destination.y})</dd>
                     </dl>
+                    <div className="social-panel" data-testid="social-inspector">
+                      <p className="recent-title">Quan hệ nổi bật</p>
+                      {ties.length ? <ul className="relationship-list">{ties.map(({ other, tie }) => <li key={other!.id}>
+                        <button type="button" data-testid={'relation-' + other!.id} className="text-button" onClick={() => coordinator.dispatch({ type: 'select-citizen', id: other!.id })}>{other!.name}</button>
+                        <span>{tie.affinity >= 0 ? '+' : ''}{tie.affinity} thiện cảm · {tie.trust} tin tưởng</span>
+                        <small>{tie.reason} (tick {tie.lastTick})</small>
+                      </li>)}</ul> : <p>Chưa có tương tác trực tiếp.</p>}
+                      {selectedHousehold && <><p className="recent-title">Thành viên hộ</p><div className="household-members">{selectedHousehold.members.filter((id) => id !== citizen.id).map((id) => <button type="button" className="text-button" key={id} onClick={() => coordinator.dispatch({ type: 'select-citizen', id })}>{world.citizens.find((c) => c.id === id)?.name}</button>)}</div></>}
+                      <p className="recent-title">Diễn biến xã hội gần đây</p>
+                      <ul className="recent-list">{world.events.filter((e) => SOCIAL_TYPES.has(e.type) &&
+                        (e.citizenId === citizen.id || e.targetCitizenId === citizen.id)).slice(-3).reverse().map((e) => <li key={e.id}>Tick {e.tick} · {e.reason}</li>)}</ul>
+                      {!citizen.alive && <p data-testid="citizen-memorial">Tưởng niệm: {world.memorials.find((m) => m.citizenId === citizen.id)?.cause ?? citizen.reason}</p>}
+                    </div>
                     <div className="needs-panel" data-testid="citizen-needs">
                       {([
                         ['Mức no', citizen.hunger, 'hunger'],
@@ -271,9 +310,18 @@ export function App() {
             <section className="side-card event-card">
               <p className="section-kicker">LIVING HISTORY</p>
               <h3>10 sự kiện gần nhất</h3>
+              <label htmlFor="timeline-filter">Lọc dòng sự kiện</label>
+              <select id="timeline-filter" data-testid="timeline-filter" value={timelineCategory} onChange={(e) => setTimelineCategory(e.target.value as TimelineCategory)}>
+                <option value="all">Tất cả</option><option value="social">Social</option><option value="economy">Economy</option><option value="survival">Survival</option>
+              </select>
               <ol className="event-feed" data-testid="event-feed">
-                {world.events.slice(-10).reverse().map((event) => (
-                  <li key={event.id} className={'event-' + EVENT_LEVEL[event.type]}><span>Ngày {dayOf(event.tick)} · {String(hourOf(event.tick)).padStart(2, '0')}:00 · {EVENTS[event.type]}</span><p>{event.reason}</p></li>
+                {visibleEvents.map((event) => (
+                  <li key={event.id} className={'event-' + EVENT_LEVEL[event.type]}>
+                    <span>Ngày {dayOf(event.tick)} · {String(hourOf(event.tick)).padStart(2, '0')}:00 · {EVENTS[event.type]}</span>
+                    <p>{event.reason}</p>
+                    {event.citizenId !== null && <button type="button" className="text-button" onClick={() => coordinator.dispatch({ type: 'select-citizen', id: event.citizenId })}>NPC #{event.citizenId}</button>}
+                    {event.targetCitizenId !== undefined && <button type="button" className="text-button" onClick={() => coordinator.dispatch({ type: 'select-citizen', id: event.targetCitizenId! })}>NPC #{event.targetCitizenId}</button>}
+                  </li>
                 ))}
               </ol>
             </section>
@@ -281,7 +329,7 @@ export function App() {
         </div>
       </main>
 
-      <footer className="site-footer"><span>TINY CIVILIZATION / PHASE 03</span><span>20/50/100 NPC · Tiền thật · Chợ · Xây nhà</span></footer>
+      <footer className="site-footer"><span>TINY CIVILIZATION / PHASE 04</span><span>20/50/100 NPC · Quan hệ · Hộ gia đình · Kinh tế thật</span></footer>
     </div>
   );
 }

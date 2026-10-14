@@ -12,7 +12,8 @@ export type EventType = 'founded' | 'departure' | 'work' | 'gather' | 'home' | '
   | 'foodProduced' | 'woodProduced' | 'foodEaten' | 'shortage' | 'depleted' | 'recovery'
   | 'danger' | 'death' | 'sold' | 'bought' | 'bankrupt' | 'marketEmpty'
   | 'marketInsolvent' | 'constructionStarted' | 'constructionDone' | 'constructionShortage'
-  | 'unemployed' | 'homeless';
+  | 'unemployed' | 'homeless' | 'encounter' | 'friendship' | 'dispute' | 'rivalry'
+  | 'householdFormed' | 'birth' | 'socialAvoid';
 export type Site = { id: number; name: string; kind: SiteKind; tile: TilePosition; capacity?: number };
 export type ActivityEntry = { tick: number; activity: Activity; reason: string };
 export type Job = 'farmer' | 'woodcutter' | 'builder' | 'other';
@@ -40,8 +41,15 @@ export type VillageStats = {
   totalFoodProduced: number; totalFoodConsumed: number;
   woodProducedToday: number; totalWoodProduced: number; deaths: number; failedActions: number;
 };
-export type Citizen = {
-  id: number; name: string; age: number; appearance: number; alive: boolean; job: Job;
+export type Relationship = { affinity: number; trust: number; interactions: number; positive: number;
+  negative: number; firstTick: number; lastTick: number; reason: string };
+export type Household = { id: number; homeId: number; members: number[]; formedTick: number; lastBirthTick: number };
+export type Memorial = { citizenId: number; name: string; tick: number; cause: string };
+export type SocialStats = { encounters: number; disputes: number; partnerships: number; births: number };
+export type Citizen = {  
+  id: number; name: string; age: number; ageHours: number; appearance: number; alive: boolean; job: Job;
+  relations: Record<number, Relationship>; householdId: number | null; partnerId: number | null;
+  partneredTick: number | null;
   hunger: number; energy: number; health: number; starvationHours: number;
   needMode: 'food' | 'rest' | null; workNodeId: number | null; workHours: number; actionDuration: number;
   tile: TilePosition; homeId: number | null; workId: number;
@@ -50,14 +58,16 @@ export type Citizen = {
   retryAfterTick: number; recent: ActivityEntry[];
   wallet: number; inventory: Goods; lastTradeTick: number; jobChangedTick: number;
 };
-export type WorldEvent = { id: number; tick: number; type: EventType; citizenId: number | null; reason: string };
+export type WorldEvent = { id: number; tick: number; type: EventType; citizenId: number | null; reason: string;
+  targetCitizenId?: number; cause?: string; relationBefore?: number; relationAfter?: number };
 export type WorldState = {
-  schemaVersion: 3; seed: number; rngState: number; tick: number;
+  schemaVersion: 4; seed: number; rngState: number; tick: number;
   nextEntityId: number; nextEventId: number; tiles: Terrain[]; sites: Site[];
   citizens: Citizen[]; resourceNodes: ResourceNode[];
   /** Market-owned physical stock, NOT an additional town copy. */
   inventory: VillageStock; market: Market; constructions: Construction[];
   stats: VillageStats; events: WorldEvent[];
+  households: Household[]; memorials: Memorial[]; social: SocialStats;
 };
 
 const FORENAMES = ['An', 'Bình', 'Chi', 'Dũng', 'Giang', 'Hà', 'Hải', 'Hương', 'Khánh', 'Lan', 'Linh', 'Mai', 'Minh', 'Nam', 'Ngọc', 'Phúc', 'Quân', 'Thảo', 'Trang', 'Vân'];
@@ -141,7 +151,8 @@ export function createWorld(seed = 12345, population: 20 | 50 | 100 = 20): World
     const job: Job = i % 25 === 24 ? 'builder' :
       i % 5 === 1 || i % 5 === 3 ? 'woodcutter' : 'farmer';
     citizens.push({
-      id: nextEntityId++, name, age: 18 + draw(45), appearance: draw(8), alive: true, job,
+      id: nextEntityId++, name, age: 18 + draw(45), ageHours: 0, appearance: draw(8), alive: true, job,
+      relations: {}, householdId: null, partnerId: null, partneredTick: null,
       hunger: 73 + draw(18), energy: 68 + draw(20), health: 90 + draw(11),
       starvationHours: 0, needMode: null, workNodeId: null, workHours: 0, actionDuration: 0,
       tile: { ...spawn }, homeId: home?.id ?? null, workId: work.id,
@@ -152,6 +163,7 @@ export function createWorld(seed = 12345, population: 20 | 50 | 100 = 20): World
       lastTradeTick: -BALANCE.tradeCooldown, jobChangedTick: -BALANCE.jobCooldown,
     });
   }
+  for (const citizen of citizens) citizen.ageHours = citizen.age * BALANCE.hoursPerYear;
   // Append production sites and the market AFTER citizens, preserving Phase 01 IDs for the default 20.
   const fields = [workPositions[0]!, workPositions[2]!, ...extraFields].slice(0, Math.max(2, Math.ceil(population / 12)));
   const forests = [workPositions[1]!, workPositions[3]!, ...extraForests].slice(0, Math.max(2, Math.ceil(population / 28)));
@@ -172,15 +184,24 @@ export function createWorld(seed = 12345, population: 20 | 50 | 100 = 20): World
   const food = population === 20 ? BALANCE.initialFood : Math.round(population * 1.5);
   const wood = population === 20 ? BALANCE.initialWood : BALANCE.initialWood + Math.round(population / 10);
   const cash = population * BALANCE.initialMarketCashPerCitizen;
+  // Initial residents own separate single-person households. Co-residents share a house, not a family.
+  const households: Household[] = [];
+  for (const citizen of citizens) if (citizen.homeId !== null) {
+    const household: Household = { id: nextEntityId++, homeId: citizen.homeId,
+      members: [citizen.id], formedTick: 0, lastBirthTick: -BALANCE.birthCooldownHours };
+    citizen.householdId = household.id;
+    households.push(household);
+  }
   return {
-    schemaVersion: 3, seed, rngState, tick: 0, nextEntityId, nextEventId: 2, tiles, sites,
+    schemaVersion: 4, seed, rngState, tick: 0, nextEntityId, nextEventId: 2, tiles, sites,
     citizens, resourceNodes, inventory: { food, wood },
     market: { siteId: marketId, cash, initialSupply: cash + population * BALANCE.initialWallet,
       prices: { foodBuy: BALANCE.foodBuyPrice, foodSell: BALANCE.foodSellPrice,
         woodBuy: BALANCE.woodBuyPrice, woodSell: BALANCE.woodSellPrice },
       trades: [], completedTrades: 0, volumeToday: 0, volumeYesterday: 0,
       boughtFromCitizens: 0, soldToCitizens: 0 },
-    constructions: [],
+    constructions: [], households, memorials: [],
+    social: { encounters: 0, disputes: 0, partnerships: 0, births: 0 },
     stats: { day: 1, foodProducedToday: 0, foodConsumedToday: 0,
       foodProducedYesterday: 0, foodConsumedYesterday: 0, totalFoodProduced: 0, totalFoodConsumed: 0,
       woodProducedToday: 0, totalWoodProduced: 0, deaths: 0, failedActions: 0 },

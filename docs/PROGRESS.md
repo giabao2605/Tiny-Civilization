@@ -1,7 +1,7 @@
 # Tiny Civilization — Progress / handoff log
 
 **Updated:** 2026-10-14  
-**Current stage:** Phase 00–03 DONE and merged to `main`. Phase 03 [PR #4](https://github.com/giabao2605/Tiny-Civilization/pull/4) merged as commit `83ef46c48068e782b5bdd4a234f67d60d958808c`; its final source CI [38517369710](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38517369710) PASS. Phase 04 Social is next, NOT STARTED. No MVP release.
+**Current stage:** Phase 00–03 DONE and merged to `main`. Phase 03 [PR #4](https://github.com/giabao2605/Tiny-Civilization/pull/4) merged as commit `83ef46c48068e782b5bdd4a234f67d60d958808c`. Phase 04 on [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5): IMPLEMENTED, full CI passed at [run 38520465893](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38520465893), awaiting PR review; NOT merged to main. No MVP release.
 **Authoritative roadmap:** [MASTER_PLAN](MASTER_PLAN.md)  
 **Rules/contract:** [SIMULATION_CONTRACT](SIMULATION_CONTRACT.md)
 
@@ -11,11 +11,32 @@
 | 01 Living world | DONE, merged to main (PR #2) | 48×48 map, 20 purposeful agents, inspector, controls; CI PASS |
 | 02 Survival | DONE, merged (PR #3) | Finite food/wood, needs, production, shortage/death and verified 10-seed balance |
 | 03 Economy | DONE, merged to `main` (PR #4) | All 20/50/100 ten-seed 30-day runs and GitHub Actions PASS |
-| 04 Social | NOT STARTED | Persistent relationships, legible social causes |
+| 04 Social | IMPLEMENTED, CI PASS (PR #5; not merged) | Directed relationships, causal stories, households/birth/death, 30–180 game-day tests, 5 Chromium E2E; pending review |
 | 05 Governance | NOT STARTED | Policies/crises with costs and real consequences |
 | 06 Quality | NOT STARTED | Save/load determinism, profiling, UX/balance |
 | 07 MVP release | NOT STARTED | CI green, deployed playable build |
 | 08 Expansion | DEFERRED | Only after MVP validation and new go/no-go |
+
+## Phase 04 Social implementation (2026-10-14)
+
+**Branch:** `feat/phase-04-social` from main `73ae8f57`; [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5). **Implementation gate: PASSED** in [CI run 38520425782](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38520425782) including typecheck, lint, all Vitest, build and 5 Chromium Playwright cases. Final docs/workflow-only commit is subject to follow-up CI. The PR is not merged into main.
+
+**Code added on branch:** `world.ts` schema v4 with directed sparse ties, separate home-backed household IDs, monotonic births, bounded memorials; `social.ts` validating same-tile encounter, work cooperation / actual last-unit scarcity, bounded relationship graph/events, deterministic tie and partner selection, dependant food spending, age / birth/death constraints. Integrated into `engine.ts` on the existing hourly clock, with housing assignment in `economy.ts`. React inspector now navigates relationship and household members, shows demographics / memorials and filters Social/Economy/Survival events.
+
+**Causal fixtures/tests:** `social.test.ts` documents seeded friendship (210), exhausted-field rivalry (211), valid pairing (210), age-dependent food consumption and death cleanup; `social.benchmark.test.ts` measures 20 NPC × 180 days (seed 543), 100 NPC × 30 days (seed 613), and a 119-resident stress fixture. Additional 20/50/100 × two seeds × 30-day deterministic checks. Chromium social inspector, timeline, 20× and mobile screenshots are automated in `tests/e2e/smoke.spec.ts`. Results are pending, not assumed.
+
+**Verified quality gate (GitHub Actions):** [run 38520425782](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38520425782) PASS clean `npm ci`, production `npm audit --omit=dev --audit-level=high`, `npm run typecheck`, `npm run lint`, full Vitest including all Phase 00–03 regressions, `npm run build`, Chromium installation and **5/5 Playwright E2E** desktop/mobile. Includes the social event actor link, relation link, timeline filters, pause/20×, repeated canvas mount and no console/asset errors. Initial [run 38519190518](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38519190518) failed new test readonly tile.x; [run 38519443307](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38519443307) failed two birth tests because a fixture advanced less than 30 days since partnership, fixed. No old tests were deleted to silence failure.
+
+**Measured headless sessions (CI run 38520425782, Node 22 / Ubuntu, CPU runner-dependent):**
+- Seed **543**, **20 NPC × 4,320 ticks / 180 days**: 27 alive, 0 dead, **11 households**, 7 dependent children, 9 partnerships, 7 births, **4,646** encounters, 272 directed edges, money **2,440** invariant, mean **0.366 ms/tick**, p95 **1.180 ms/tick**. Event graph demonstrated natural friendships and pairing while initial housing had spare capacity.
+- Seed **613**, **100 NPC × 720 ticks / 30 days**: 100 alive, 0 dead, **83 households**, 17 partnerships, **1,731** encounters, **67** housing scarcity disputes, 1,335 directed edges, 0 births due to soft cap, money **12,200** invariant, mean **1.264 ms/tick**, p95 **4.562 ms/tick**. Housing expands to 100 places through wood-backed construction. Results are not browser FPS measurements.
+- Seeded replay **20/50/100 × 2 seeds × 720 ticks**, 119-person hard-cap stress, social limit and food/wood/cash conservation all PASS. Existing Phase 03 ten-seed 720-tick scenarios for 20/50/100 continue PASS and money/trade/housing retain their measured invariants.
+- Three explicit causal stories: seed 210 work-site repeated encounters → friendship; seed 211 actual depleted field → dispute/rivalry; seed 210 repeated positive contact over 72 hours → legal partnership/household. Further seeded case 306 verifies two homeless NPCs dispute a real housing shortage; seed 309 verifies last housing slot contention resolves deterministically by actor order.
+- Screenshots saved by Playwright into GitHub Actions `test-results/` artifacts; screenshots are browser evidence, not validation on the user's physical phone. No claim of an empirical 60 FPS guarantee.
+
+**CI debugging evidence:** The initial readonly fixture and too-short birth timeline errors were fixed and subsequent full regression + browser runs PASS. Production-only audit PASS; full dev dependency advisory status and manual mobile/FPS remain release concerns. Local authoring host cannot access npm/GitHub by DNS; execution evidence comes from GitHub Actions, not imaginary local runs.
+
+**Limits:** Births remain deliberately capped and do not guarantee healthy childhood during food shortages. No detailed lineage, inheritance, AI conversation, government, save/load or release. Relationship history is sparse, events are capped; dead people's goods remain held to preserve accounting. Phaser remains a read-only renderer.
 
 ## Phase 03 Economy, housing and 100 NPCs (2026-10-14)
 

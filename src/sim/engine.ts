@@ -3,6 +3,7 @@ import { BALANCE, clampNeed } from './balance';
 import { buyFromMarket, sellToMarket, startConstruction, buildOneHour, assignBuilder } from './economy';
 import { findPath } from './pathfinding';
 import { nextRandom } from './prng';
+import { advanceSocial, cleanupDeath, type ScarcityWitness } from './social';
 import {
   getSite, housing, marketTile, walkable, type Activity, type Citizen, type EventType, type Goal,
   type Good, type ResourceNode, type WorldEvent, type WorldState,
@@ -71,15 +72,19 @@ export function advanceOneTick(previous: WorldState): WorldState {
     citizens: [...previous.citizens].sort((a, b) => a.id - b.id).map((c) => ({
       ...c, tile: { ...c.tile }, destination: { ...c.destination }, inventory: { ...c.inventory },
       route: c.route.map((p) => ({ ...p })), lastMove: [{ ...c.tile }], recent: c.recent.slice(),
+      relations: Object.fromEntries(Object.entries(c.relations).map(([id, tie]) => [id, { ...tie }])), 
     })),
     inventory: { ...previous.inventory },
     market: { ...previous.market, prices: { ...previous.market.prices },
       trades: previous.market.trades.slice() },
     constructions: previous.constructions.map((c) => ({ ...c, tile: { ...c.tile } })),
     stats: { ...previous.stats }, events: previous.events.slice(),
+    households: previous.households.map((h) => ({ ...h, members: h.members.slice() })),
+    memorials: previous.memorials.slice(), social: { ...previous.social },
   };
-  const announce = (type: EventType, citizen: Citizen | null, reason: string) => {
-    const event: WorldEvent = { id: world.nextEventId++, tick, type, citizenId: citizen?.id ?? null, reason };
+  const announce = (type: EventType, citizen: Citizen | null, reason: string, extra: Partial<WorldEvent> = {}) => {
+    const event: WorldEvent = { ...extra, id: world.nextEventId++, tick, type,
+      citizenId: citizen?.id ?? null, reason };
     world.events.push(event);
     if (world.events.length > BALANCE.maxEvents) world.events.shift();
   };
@@ -114,8 +119,19 @@ export function advanceOneTick(previous: WorldState): WorldState {
     }
   }
 
+  const scarcityContacts: ScarcityWitness[] = [];
   for (const citizen of world.citizens) {
     if (!citizen.alive) continue;
+    citizen.ageHours += 1;
+    citizen.age = Math.floor(citizen.ageHours / BALANCE.hoursPerYear);
+    if (citizen.age < BALANCE.adultAge) continue; // Dependent child resolver handles real food consumption.
+    if (citizen.ageHours === BALANCE.adultAge * BALANCE.hoursPerYear && citizen.job === 'other') {
+      citizen.job = 'farmer'; citizen.jobChangedTick = tick;
+      announce('work', citizen, citizen.name + ' đã đủ 18 tuổi và có thể làm nông hợp lệ.');
+    }
+    if (citizen.age >= BALANCE.retirementAge && citizen.job !== 'other') {
+      citizen.job = 'other'; citizen.workNodeId = null; citizen.workHours = 0;
+    }
     const decision = (activity: Activity, reason: string) => {
       citizen.recent = [...citizen.recent, { tick, activity, reason }].slice(-BALANCE.maxRecent);
     };
@@ -342,7 +358,10 @@ export function advanceOneTick(previous: WorldState): WorldState {
           }
           announce(good === 'food' ? 'foodProduced' : 'woodProduced', citizen,
             citizen.name + ' sở hữu +' + gained + ' ' + good + ' từ nguồn #' + workingNode.id + '.');
-          if (workingNode.stock === 0) announce('depleted', citizen, 'Nguồn #' + workingNode.id + ' cạn, đợi tái sinh.');
+          if (workingNode.stock === 0) {
+            scarcityContacts.push({ collectorId: citizen.id, nodeId: workingNode.id });
+            announce('depleted', citizen, 'Nguồn #' + workingNode.id + ' cạn, đợi tái sinh.');
+          }
         }
       } else {
         citizen.workHours = 0;
@@ -373,9 +392,11 @@ export function advanceOneTick(previous: WorldState): WorldState {
       citizen.workHours = 0; citizen.workNodeId = null; citizen.needMode = null; citizen.actionDuration = 0;
       world.stats.deaths += 1;
       decision('dead', citizen.reason);
+      cleanupDeath(world, citizen);
       announce('death', citizen, citizen.name + ': ' + citizen.reason);
     }
   }
+  advanceSocial(world, announce, scarcityContacts);
   if (world.inventory.food === 0 && world.citizens.some((c) => c.alive && c.hunger <= BALANCE.foodEatThreshold) &&
     (tick === 1 || tick % 24 === 0)) announce('shortage', null, 'Kho chợ hết food, không có nguồn cứu trợ vô hạn.');
   return world;
@@ -388,8 +409,10 @@ export function advanceTicks(world: WorldState, count: number): WorldState {
   return state;
 }
 export function stateDigest(world: WorldState): string {
-  const data = JSON.stringify([world.seed, world.tick, world.rngState, world.sites, world.citizens,
-    world.resourceNodes, world.inventory, world.market, world.constructions, world.stats, world.events]);
+  const data = JSON.stringify([world.schemaVersion, world.seed, world.tick, world.rngState,
+    world.nextEntityId, world.nextEventId, world.sites, world.citizens,
+    world.resourceNodes, world.inventory, world.market, world.constructions, world.stats, world.events,
+    world.households, world.memorials, world.social]);
   let hash = 2166136261;
   for (let i = 0; i < data.length; i += 1) hash = Math.imul(hash ^ data.charCodeAt(i), 16777619) >>> 0;
   return hash.toString(16).padStart(8, '0');

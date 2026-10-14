@@ -133,3 +133,51 @@ test('Phase 03: 100 NPCs, real wallets, market and construction stay observable'
   await page.screenshot({ path: testInfo.outputPath('phase-03-economy-100.png'), fullPage: true });
   expect(failures).toEqual([]);
 });
+
+
+test('Phase 04: social relationships, household navigation and timeline filters work in Chromium', async ({ page }, testInfo) => {
+  const failures = collectErrors(page);
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto('/');
+  await expect(page.getByTestId('household-count')).toHaveText('20');
+  await page.getByRole('button', { name: '20×' }).click();
+  await expect.poll(async () => Number(await page.getByTestId('social-encounters').innerText()),
+    { timeout: 15000 }).toBeGreaterThan(0);
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  const tick = await page.getByTestId('world-tick').innerText();
+  const citizens = page.locator('button[data-testid^="citizen-"]');
+  let found = false;
+  for (let i = 0; i < await citizens.count(); i += 1) {
+    await citizens.nth(i).click();
+    if (await page.getByTestId('social-inspector').locator('button[data-testid^="relation-"]').count() > 0) {
+      const other = page.getByTestId('social-inspector').locator('button[data-testid^="relation-"]').first();
+      const otherId = (await other.getAttribute('data-testid'))!.replace('relation-', '');
+      await other.click();
+      await expect(page.getByTestId('selected-citizen')).toContainText('ID #' + otherId);
+      found = true;
+      break;
+    }
+  }
+  expect(found).toBe(true);
+  await expect(page.getByTestId('citizen-household')).toContainText('#');
+  await page.getByTestId('timeline-filter').selectOption('social');
+  await expect(page.getByTestId('timeline-filter')).toHaveValue('social');
+  const eventActor = page.getByTestId('event-feed').getByRole('button', { name: /NPC #/ }).first();
+  await expect(eventActor).toBeVisible();
+  const eventActorId = (await eventActor.innerText()).match(/NPC #([0-9]+)/)?.[1];
+  expect(eventActorId).toBeTruthy();
+  await eventActor.click();
+  await expect(page.getByTestId('selected-citizen')).toContainText('ID #' + eventActorId);
+  await page.getByTestId('timeline-filter').selectOption('economy');
+  await page.getByTestId('timeline-filter').selectOption('survival');
+  await page.getByTestId('timeline-filter').selectOption('all');
+  expect(await page.getByTestId('world-tick').innerText()).toBe(tick);
+  await page.screenshot({ path: testInfo.outputPath('phase-04-social-desktop.png'), fullPage: true });
+  await page.getByRole('button', { name: 'Khởi tạo lại canvas' }).click();
+  await expect(page.getByTestId('game-container').locator('canvas')).toHaveCount(1);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: testInfo.outputPath('phase-04-social-mobile.png'), fullPage: true });
+  const widths = await page.evaluate(() => ({ page: document.documentElement.scrollWidth, viewport: window.innerWidth }));
+  expect(widths.page).toBeLessThanOrEqual(widths.viewport + 1);
+  expect(failures).toEqual([]);
+});
