@@ -2,7 +2,7 @@
 
 **Tóm tắt tiếng Việt:** NPC ghi nhớ quan hệ, kết bạn/mâu thuẫn, lập hộ gia đình, sinh/lão/tử theo luật hợp lý; tránh drama ngẫu nhiên vô căn cứ.
 
-**Status:** IMPLEMENTED, exit gate verified by [GitHub Actions CI 38520465893](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38520465893); [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5) awaiting independent review, **not merged** · **Requires:** merged Phase 03 economy.
+**Status:** DONE and merged to `main` through [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5), merge commit `1a5933b7`. Final feature CI [38521166064](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38521166064) PASS, including 5 Chromium E2E. · **Requires:** merged Phase 03 economy.
 **Intent:** Citizens remember encounters, form social ties and produce meaningful conflicts. Emergence matters more than chatty fake dialogue.
 
 ## Player story
