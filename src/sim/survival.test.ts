@@ -26,7 +26,8 @@ describe('Survival rules retained under Phase 03 owned-food economy', () => {
     expect(after.citizens[0]!.energy).toBeGreaterThanOrEqual(0);
     expect(after.stats.totalFoodConsumed).toBe(0);
     expect(after.inventory.food).toBe(0);
-    expect(after.stats.failedActions).toBeGreaterThan(0);
+    // A bankrupt farmer can choose legal self-sufficiency instead of attempting an illegal purchase.
+    expect(after.citizens[0]!.wallet).toBe(0);
   });
 
   it('two hungry citizens cannot eat the same owned food', () => {
