@@ -101,7 +101,7 @@ export function applyInteraction(world: WorldState, actorId: number, targetId: n
   return true;
 }
 
-function mergePartners(world: WorldState, a: Citizen, b: Citizen, emit: Emit): boolean {
+export function tryFormPartnership(world: WorldState, a: Citizen, b: Citizen, emit: Emit): boolean {
   if (!adult(a) || !adult(b) || a.partnerId !== null || b.partnerId !== null) return false;
   const tie = a.relations[b.id], reverse = b.relations[a.id];
   if (!tie || !reverse || tie.affinity < BALANCE.socialPairThreshold ||
@@ -111,18 +111,19 @@ function mergePartners(world: WorldState, a: Citizen, b: Citizen, emit: Emit): b
       world.tick - tie.firstTick < BALANCE.socialPairMinHours) return false;
   const ah = world.households.find((h) => h.id === a.householdId);
   const bh = world.households.find((h) => h.id === b.householdId);
-  if (!ah || !bh || ah.members.length !== 1 || bh.members.length !== 1) return false;
+  if ((!ah && !bh) || (ah && ah.members.length !== 1) || (bh && bh.members.length !== 1)) return false;
   const available = (id: number) => {
     const site = getSite(world, id);
     return site.kind === 'home' && world.citizens.filter((c) => c.alive && c.homeId === id).length < (site.capacity ?? 1);
   };
-  const host = a.homeId === b.homeId ? ah : available(ah.homeId) ? ah : available(bh.homeId) ? bh : null;
+  const host = a.homeId !== null && a.homeId === b.homeId && ah ? ah :
+    ah && available(ah.homeId) ? ah : bh && available(bh.homeId) ? bh : null;
   if (!host) return false;
-  const guest = host.id === ah.id ? b : a;
-  const former = host.id === ah.id ? bh : ah;
+  const guest = host.id === ah?.id ? b : a;
+  const former = host.id === ah?.id ? bh : ah;
   host.members.push(guest.id);
   host.members.sort((x, y) => x - y);
-  world.households = world.households.filter((h) => h.id !== former.id);
+  if (former) world.households = world.households.filter((h) => h.id !== former.id);
   guest.householdId = host.id;
   guest.homeId = host.homeId;
   a.partnerId = b.id; b.partnerId = a.id;
@@ -301,7 +302,7 @@ export function advanceSocial(world: WorldState, emit: Emit, scarcity: ScarcityW
       }
       if (applyInteraction(world, actor.id, other.id, kind, emit, nodeId)) {
         used.add(actor.id); used.add(other.id); interactions += 1;
-        mergePartners(world, actor, other, emit);
+        tryFormPartnership(world, actor, other, emit);
       }
     }
   }
