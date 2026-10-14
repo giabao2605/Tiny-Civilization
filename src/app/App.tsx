@@ -71,9 +71,11 @@ function categoryOf(type: EventType): Exclude<TimelineCategory, 'all'> {
 }
 
 export function App() {
-  const coordinator = useMemo(() => createLivingCoordinator(12345, 20,
-    import.meta.env.DEV && new URLSearchParams(window.location.search).get('fixture') === 'governance-food-shortage'
-      ? 'governance-food-shortage' : undefined), []);
+  const coordinator = useMemo(() => {
+    const fixture = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('fixture') : null;
+    return createLivingCoordinator(12345, 20, fixture === 'governance-food-shortage' ||
+      fixture === 'governance-empty-reserve' ? fixture : undefined);
+  }, []);
   const snapshot = useSyncExternalStore(coordinator.subscribe, coordinator.getSnapshot);
   const [canvasVersion, setCanvasVersion] = useState(0);
   const [timelineCategory, setTimelineCategory] = useState<TimelineCategory>('all');
