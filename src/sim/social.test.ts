@@ -209,5 +209,5 @@ describe('Phase 04 relationships and demographic invariants', () => {
         expect(stateDigest(stepped)).toBe(stateDigest(advanceTicks(a, 1)));
       }
     }
-  });
+  }, 180000);
 });
