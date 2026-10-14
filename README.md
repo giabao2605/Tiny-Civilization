@@ -2,7 +2,7 @@
 
 **Tiny Civilization** là game web pixel-art mô phỏng một ngôi làng tự vận hành. Người chơi là người quan sát: dân làng có nghề, nhu cầu, tiền, quan hệ và chịu hậu quả từ quyết định của chính họ. Câu chuyện xuất hiện từ quy luật mô phỏng, không phải các dòng sự kiện bịa sẵn.
 
-**Trạng thái hiện tại: PHASE 00 ĐÃ MERGE VÀO MAIN, CI PASS / CHƯA PHẢI GAME HOÀN CHỈNH.** Repository có ứng dụng Foundation và bản đồ Phaser minh họa; chưa có NPC hoặc hệ thống simulation. Xem `docs/PROGRESS.md` để biết tình trạng kiểm thử đã xác minh.
+**Trạng thái hiện tại: PHASE 01 LIVING WORLD ĐÃ TRIỂN KHAI VÀ KIỂM THỬ TRÊN FEATURE BRANCH; CHƯA PHẢI MVP/RELEASE.** Có 20 cư dân đi làm, giao lưu và nghỉ theo lịch với simulation deterministic, chưa có kinh tế hoặc nhu cầu sinh tồn. Xem `docs/PROGRESS.md` để biết tình trạng xác minh và PR.
 
 ## Đọc tài liệu theo thứ tự
 
@@ -42,7 +42,7 @@ Tài liệu chi tiết dùng thuật ngữ tiếng Anh để người viết cod
 
 [Repository GitHub](https://github.com/giabao2605/Tiny-Civilization)
 
-## Chạy bản Foundation (Phase 00)
+## Chạy bản Living World (Phase 01)
 
 Yêu cầu Node.js **22.12+ (major 22)** và npm **10**; dùng phiên bản trong `.nvmrc`. Sau khi checkout branch triển khai và khi đã có `package-lock.json` được commit:
 
@@ -51,7 +51,7 @@ npm ci
 npm run dev
 ```
 
-Mở URL Vite in ra trong terminal (thường là `http://localhost:5173`). Chọn một ô trên bản đồ để thử inspector; nút **Khởi tạo lại canvas** kiểm tra vòng đời Phaser. Đây chỉ là preview, không phải mô phỏng chạy thật.
+Mở URL Vite in ra trong terminal (thường là `http://localhost:5173`). Nhấn cư dân trên bản đồ hoặc trong danh sách để mở inspector; **Tạm dừng / Tiếp tục**, **1× / 5× / 20×**, ô **Seed** và **Tạo lại** điều khiển simulation thật. Cuộn chuột để zoom, kéo để pan; nút **Khởi tạo lại canvas** kiểm tra vòng đời Phaser. 20 NPC có lịch sinh hoạt nhưng **chưa sản xuất, ăn uống hoặc trao đổi tiền**.
 
 ### Kiểm tra kỹ thuật
 
@@ -66,12 +66,12 @@ npm run test:e2e
 
 Playwright tự khởi động Vite tại port 4173 và kiểm tra Chromium desktop/mobile. Nếu thiếu thư viện hệ điều hành cần thiết cho Chromium, thử `npx playwright install --with-deps chromium` (Linux). Xem kết quả CI và screenshot trong artifact GitHub Actions.
 
-### Cấu trúc tối thiểu
+### Cấu trúc chính
 
-- `src/app`: UI React và coordinator nắm giữ snapshot Foundation, nhận lệnh chọn ô đã được kiểm tra.
-- `src/game`: vòng đời Phaser và scene chỉ hiển thị bản đồ placeholder; không nắm world state.
-- `src/sim`: hàm tọa độ thuần TypeScript, kiểm thử độc lập; **chưa có logic game**.
-- `tests/e2e`: browser smoke của Chromium.
-- `.github/workflows/ci.yml`: xác minh từ checkout sạch.
+- `src/app`: React HUD/inspector và `livingCoordinator.ts`, đầu mối duy nhất giữ `WorldState` và quản lý timer.
+- `src/game`: Phaser đọc snapshot, vẽ tile/nhà/NPC, nội suy và xử lý click/pan/zoom; không quyết định luật game.
+- `src/sim`: PRNG xorshift32, `createWorld(seed)`, BFS, `advanceOneTick` và runtime accumulator clock độc lập React/Phaser.
+- `tests/e2e`: Chromium desktop/mobile, sự kiện, chọn NPC, tốc độ, pause và lifecycle.
+- `.github/workflows/ci.yml`: xác minh từ checkout sạch và lưu screenshot artifact.
 
 Cấu hình lúc này không chứa backend, database, đăng nhập, lưu game hoặc AI API. Bản MVP/public release vẫn chưa có.
