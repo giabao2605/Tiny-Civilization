@@ -162,6 +162,12 @@ test('Phase 04: social relationships, household navigation and timeline filters 
   await expect(page.getByTestId('citizen-household')).toContainText('#');
   await page.getByTestId('timeline-filter').selectOption('social');
   await expect(page.getByTestId('timeline-filter')).toHaveValue('social');
+  const eventActor = page.getByTestId('event-feed').getByRole('button', { name: /NPC #/ }).first();
+  await expect(eventActor).toBeVisible();
+  const eventActorId = (await eventActor.innerText()).match(/NPC #(\\d+)/)?.[1];
+  expect(eventActorId).toBeTruthy();
+  await eventActor.click();
+  await expect(page.getByTestId('selected-citizen')).toContainText('ID #' + eventActorId);
   await page.getByTestId('timeline-filter').selectOption('economy');
   await page.getByTestId('timeline-filter').selectOption('survival');
   await page.getByTestId('timeline-filter').selectOption('all');
