@@ -2,7 +2,7 @@
 
 **Tiny Civilization** là game web pixel-art mô phỏng một ngôi làng tự vận hành. Người chơi là người quan sát: dân làng có nghề, nhu cầu, tiền, quan hệ và chịu hậu quả từ quyết định của chính họ. Câu chuyện xuất hiện từ quy luật mô phỏng, không phải các dòng sự kiện bịa sẵn.
 
-**Trạng thái hiện tại: PHASE 01 LIVING WORLD ĐÃ TRIỂN KHAI VÀ KIỂM THỬ TRÊN FEATURE BRANCH; CHƯA PHẢI MVP/RELEASE.** Có 20 cư dân đi làm, giao lưu và nghỉ theo lịch với simulation deterministic, chưa có kinh tế hoặc nhu cầu sinh tồn. Xem `docs/PROGRESS.md` để biết tình trạng xác minh và PR.
+**Trạng thái hiện tại: PHASE 01 LIVING WORLD ĐÃ MERGE VÀO MAIN (PR #2, CI PASS); CHƯA PHẢI MVP/RELEASE.** Có 20 cư dân đi làm, giao lưu và nghỉ theo lịch với simulation deterministic, chưa có kinh tế hoặc nhu cầu sinh tồn. Xem `docs/PROGRESS.md` để biết tình trạng kiểm thử và tiến độ thực tế.
 
 ## Đọc tài liệu theo thứ tự
 

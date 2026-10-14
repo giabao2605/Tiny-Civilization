@@ -2,7 +2,7 @@
 
 **Tóm tắt tiếng Việt:** Có bản đồ 48×48 và 20 NPC có lịch sinh hoạt, biết đi tới mục tiêu; xem được lý do hành động, pause và đổi tốc độ.
 
-**Status:** DONE on feature branch (CI PASS, browser evidence captured; PR awaiting merge) · **Requires:** phase 00 gate passed.
+**Status:** DONE (merged to main via PR #2; PR CI PASS) · **Requires:** phase 00 gate passed.
 **Intent:** Make the first actual playable view. Twenty citizens follow understandable spatial/routine goals on a 48×48 seeded map. No survival economy yet.
 
 ## Player story / visual acceptance
@@ -79,4 +79,5 @@ Can the engine run 500 ticks without browser or Phaser? Is the "same seed, same 
 - TypeScript xorshift32 fixed sample and replay through 240 ticks; 100 seed connectivity/sample validation; 500 Node-only ticks and batch equality; unreachable and newly blocked paths; 1×/5×/20× and lost-focus accumulator; React/Phaser browser tests.
 - Self-review fixes: strict-TS inference/import errors; limit impossible-route retries to 24 ticks; check cached future waypoints; stop obsolete sprite tweens; properly scope shared-site test expectations. No external asset pack or Phase 02 mechanics added.
 - Known limits: 20 NPCs share 5 workplaces, work/social are schedule states (no resources produced); no 3D, housing interior, collision arbitration, save/load, day/night tint or physical-device benchmark. Camera and snapshots remain separate; no backend.
-- Authoring container cannot resolve GitHub/npm; local `npm ci` / Chromium not claimed. Full tests ran on GitHub-hosted Ubuntu using checked-in lockfile. Revalidate after merging.
+- Merged via [PR #2](https://github.com/giabao2605/Tiny-Civilization/pull/2), merge commit `88398324e1e55a2ede49b093ed85f1615055c6bf`, after successful feature/PR CI [38506725599](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38506725599). Main merge CI [38507589768](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38507589768) records post-merge verification.
+- Authoring container cannot resolve GitHub/npm; local `npm ci` / Chromium not claimed. Full tests ran on GitHub-hosted Ubuntu using checked-in lockfile.

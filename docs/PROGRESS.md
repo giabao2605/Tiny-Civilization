@@ -1,14 +1,14 @@
 # Tiny Civilization — Progress / handoff log
 
 **Updated:** 2026-10-14  
-**Current stage:** Phase 01 Living World **DONE on feature branch, CI PASS; awaiting PR merge**. Phase 00 was merged into main via PR #1; no MVP released.  
+**Current stage:** Phase 01 Living World **DONE, merged into main via PR #2 (CI PASS)**. Phase 00 previously merged via PR #1; Phase 02 NOT STARTED; no MVP released.  
 **Authoritative roadmap:** [MASTER_PLAN](MASTER_PLAN.md)  
 **Rules/contract:** [SIMULATION_CONTRACT](SIMULATION_CONTRACT.md)
 
 | Phase | Status | Gate |
 | --- | --- | --- |
 | 00 Foundation | DONE, merged to main | npm ci, typecheck, lint, Vitest, build, Playwright Chromium PASS |
-| 01 Living world | DONE on feature branch, PR merge pending | 48×48 map, 20 purposeful agents, inspector, controls; CI PASS |
+| 01 Living world | DONE, merged to main (PR #2) | 48×48 map, 20 purposeful agents, inspector, controls; CI PASS |
 | 02 Survival | NOT STARTED | Finite food/wood and consistent needs/actions |
 | 03 Economy | NOT STARTED | 100 agents, finite transactions, sustainable seeded runs |
 | 04 Social | NOT STARTED | Persistent relationships, legible social causes |
@@ -33,7 +33,7 @@
 
 **Limits:** No day/night tint, true wages/production, NPC collision resolution, save/load, long-term social needs, physical-phone performance evidence. 20× tested for browser responsiveness in smoke tests, not a long-running FPS benchmark. Local authoring container cannot resolve github.com/npm, so local install/build/Chromium remains **BLOCKED**; clean GitHub Actions execution above is the actual validation source. Full development dependency advisory count from Phase 00 remains a tracked pre-release concern; production audit high-level PASS.
 
-**Gate:** Phase 01 code/testing complete; merge of review PR to `main` pending. Do not start Phase 02 until PR is reviewed/merged and its CI remains green.
+**Gate:** Phase 01 merged to `main` through [PR #2](https://github.com/giabao2605/Tiny-Civilization/pull/2), merge commit `88398324e1e55a2ede49b093ed85f1615055c6bf`; PR CI [38506725599](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38506725599) PASS. Post-merge CI: [38507589768](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38507589768) (see linked run status). Phase 02 is the next planned phase but remains NOT STARTED.
 
 ## Phase 00 implementation handoff (2026-10-14)
 
