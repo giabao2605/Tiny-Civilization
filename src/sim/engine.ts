@@ -98,6 +98,8 @@ export function advanceOneTick(previous: WorldState): WorldState {
     else if (tick === 1 || tick % 24 === 0) announce('constructionShortage', null,
       'Có người vô gia cư nhưng thiếu gỗ, vị trí hoặc thợ xây để khởi công.');
   }
+  if (tick === 1 && housing(world).homeless > 0) announce('homeless', null,
+    housing(world).homeless + ' cư dân chưa được phân nhà, phải nghỉ tại quảng trường.');
   const construction = world.constructions.find((c) => c.status === 'active');
   if (construction) assignBuilder(world, construction);
   const occupancy = new Map<number, number>();
