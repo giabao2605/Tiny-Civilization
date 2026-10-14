@@ -14,6 +14,7 @@ export class WorldScene extends Phaser.Scene {
   private speed = 1;
   private sprites = new Map<number, Phaser.GameObjects.Container>();
   private movementTweens = new Map<number, Phaser.Tweens.Tween>();
+  private resourceMarkers = new Map<number, Phaser.GameObjects.Graphics>();
   private highlighter?: Phaser.GameObjects.Graphics;
   private dragStart?: { x: number; y: number };
   private lastDrag?: { x: number; y: number };
@@ -29,6 +30,11 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.centerOn(xPixel(24), yPixel(24));
     this.paintTerrain();
     for (const site of this.world.sites) this.paintSite(site);
+    for (const node of this.world.resourceNodes) {
+      const marker = this.add.graphics().setDepth(6);
+      this.resourceMarkers.set(node.id, marker);
+      this.paintResource(marker, node.kind, node.tile.x, node.tile.y, node.stock, node.capacity);
+    }
     for (const citizen of this.world.citizens) this.sprites.set(citizen.id, this.paintCitizen(citizen));
     this.highlighter = this.add.graphics().setDepth(30);
     this.input.on(Phaser.Input.Events.POINTER_DOWN, this.onDown);
@@ -40,6 +46,7 @@ export class WorldScene extends Phaser.Scene {
       this.input.off(Phaser.Input.Events.POINTER_MOVE, this.onMove);
       this.input.off(Phaser.Input.Events.POINTER_UP, this.onUp);
       this.input.off(Phaser.Input.Events.POINTER_WHEEL, this.onWheel);
+      this.resourceMarkers.clear();
       this.sprites.clear();
       this.movementTweens.clear();
       this.highlighter = undefined;
@@ -61,9 +68,20 @@ export class WorldScene extends Phaser.Scene {
       return;
     }
     if (before.tick !== snapshot.world.tick) {
+      for (const node of snapshot.world.resourceNodes) {
+        const marker = this.resourceMarkers.get(node.id);
+        if (marker) this.paintResource(marker, node.kind, node.tile.x, node.tile.y, node.stock, node.capacity);
+      }
       for (const citizen of snapshot.world.citizens) {
         const sprite = this.sprites.get(citizen.id);
-        if (!sprite || citizen.lastMove.length < 2) continue;
+        if (!sprite) continue;
+        if (!citizen.alive) {
+          this.movementTweens.get(citizen.id)?.stop();
+          this.movementTweens.delete(citizen.id);
+          sprite.setVisible(false);
+          continue;
+        }
+        if (citizen.lastMove.length < 2) continue;
         this.movementTweens.get(citizen.id)?.stop();
         const path = citizen.lastMove;
         const steps = path.length - 1;
@@ -112,6 +130,22 @@ export class WorldScene extends Phaser.Scene {
     g.lineStyle(1, 0x0d3021, 0.08);
     for (let i = 0; i <= GRID_WIDTH; i += 1) g.lineBetween(i * TILE_PIXELS, 0, i * TILE_PIXELS, GRID_HEIGHT * TILE_PIXELS);
     for (let i = 0; i <= GRID_HEIGHT; i += 1) g.lineBetween(0, i * TILE_PIXELS, GRID_WIDTH * TILE_PIXELS, i * TILE_PIXELS);
+  }
+
+  private paintResource(
+    marker: Phaser.GameObjects.Graphics, kind: 'field' | 'forest',
+    x: number, y: number, stock: number, capacity: number,
+  ): void {
+    marker.clear();
+    const px = x * TILE_PIXELS;
+    const py = y * TILE_PIXELS;
+    const exhausted = stock === 0;
+    marker.fillStyle(exhausted ? 0x9b4d4d : kind === 'field' ? 0xdac478 : 0x72b48e, 0.98);
+    marker.fillRoundedRect(px + 1, py + 1, 10, 4, 1);
+    marker.fillStyle(exhausted ? 0x462d2d : 0x243c28, 1);
+    marker.fillRect(px + 2, py + 2, Math.round(8 * (1 - stock / capacity)), 2);
+    marker.lineStyle(1, exhausted ? 0xf6a5a5 : 0x24412c, 0.9);
+    marker.strokeRect(px + 1, py + 1, 10, 4);
   }
 
   private paintSite(site: Site): void {
