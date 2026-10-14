@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { GameCanvas } from '../game/GameCanvas';
 import { dayOf, hourOf, stateDigest } from '../sim/engine';
 import { GRID_HEIGHT, GRID_WIDTH } from '../sim/grid';
-import { getSite, type Activity, type WorldEvent } from '../sim/world';
+import { getSite, housing, totalCurrency, type Activity, type WorldEvent } from '../sim/world';
 import { createLivingCoordinator } from './livingCoordinator';
 
 const ACTIVITY: Record<Activity, string> = {
@@ -16,12 +16,17 @@ const ACTIVITY: Record<Activity, string> = {
   eating: 'Đang ăn',
   waitingForFood: 'Đợi thức ăn',
   dead: 'Đã chết',
+  travelToMarket: 'Đang đến chợ', trading: 'Đang giao dịch',
+  travelToBuild: 'Đến công trình', building: 'Đang xây dựng',
 };
 const EVENT_LEVEL: Record<WorldEvent['type'], 'info' | 'warning' | 'critical'> = {
   founded: 'info', departure: 'info', work: 'info', gather: 'info',
   home: 'info', routeBlocked: 'warning', foodProduced: 'info',
   woodProduced: 'info', foodEaten: 'info', shortage: 'warning',
   depleted: 'warning', recovery: 'info', danger: 'critical', death: 'critical',
+  sold: 'info', bought: 'info', bankrupt: 'warning', marketEmpty: 'warning',
+  marketInsolvent: 'warning', constructionStarted: 'info', constructionDone: 'info',
+  constructionShortage: 'warning', unemployed: 'warning', homeless: 'warning',
 };
 const EVENTS: Record<WorldEvent['type'], string> = {
   founded: 'Thành lập làng',
@@ -38,6 +43,10 @@ const EVENTS: Record<WorldEvent['type'], string> = {
   recovery: 'Hồi phục',
   danger: 'Sức khỏe nguy hiểm',
   death: 'Tử vong',
+  sold: 'Bán hàng', bought: 'Mua hàng', bankrupt: 'Không đủ tiền',
+  marketEmpty: 'Chợ hết hàng', marketInsolvent: 'Chợ thiếu quỹ/chỗ',
+  constructionStarted: 'Khởi công', constructionDone: 'Hoàn thành nhà',
+  constructionShortage: 'Thiếu vật tư', unemployed: 'Đổi việc', homeless: 'Vô gia cư',
 };
 
 export function App() {
@@ -45,6 +54,7 @@ export function App() {
   const snapshot = useSyncExternalStore(coordinator.subscribe, coordinator.getSnapshot);
   const [canvasVersion, setCanvasVersion] = useState(0);
   const [seedInput, setSeedInput] = useState('12345');
+  const [populationInput, setPopulationInput] = useState<20 | 50 | 100>(20);
   const { world, selectedCitizenId, paused, speed } = snapshot;
   const citizen = world.citizens.find((item) => item.id === selectedCitizenId);
   const day = dayOf(world.tick);
@@ -55,13 +65,19 @@ export function App() {
   const runway = world.stats.foodConsumedYesterday > 0
     ? (world.inventory.food / world.stats.foodConsumedYesterday).toFixed(1) + ' ngày'
     : 'Chưa đủ dữ liệu';
-  const jobNames = { farmer: 'Nông dân', woodcutter: 'Tiều phu', other: 'Nhân viên kho' } as const;
+  const jobNames = { farmer: 'Nông dân', woodcutter: 'Tiều phu', builder: 'Thợ xây', other: 'Chưa có việc' } as const;
+  const homes = housing(world);
+  const employed = living.filter((item) => item.job !== 'other').length;
+  const market = world.market;
+  const totalMoney = totalCurrency(world);
+  const activeSites = world.constructions.filter((site) => site.status === 'active');
+  const averageHealth = living.length ? Math.round(living.reduce((sum, c) => sum + c.health, 0) / living.length) : 0;
 
   useEffect(() => coordinator.start(), [coordinator]);
 
   const setSeed = () => {
     const value = Number(seedInput);
-    if (Number.isSafeInteger(value)) coordinator.dispatch({ type: 'reset-seed', seed: value });
+    if (Number.isSafeInteger(value)) coordinator.dispatch({ type: 'reset-seed', seed: value, population: populationInput });
   };
 
   return (
@@ -74,15 +90,15 @@ export function App() {
             <h1>Tiny Civilization<span className="title-dot">.</span></h1>
           </div>
         </div>
-        <span className="version-tag">PHASE 02 <span aria-hidden="true">●</span> SURVIVAL</span>
+        <span className="version-tag">PHASE 03 <span aria-hidden="true">●</span> ECONOMY</span>
       </header>
 
       <main>
         <section className="introduction">
           <div>
             <p className="section-kicker">LIFE BEGINS IN THE VALLEY</p>
-            <h2>Một ngôi làng nhỏ.<br /><em>Hai mươi cuộc đời.</em></h2>
-            <p className="intro-copy">Hai mươi con người phải sản xuất thức ăn, khai thác gỗ, ăn và ngủ. Khi nguồn cung thiếu hụt, sức khỏe và những quyết định của họ thật sự thay đổi.</p>
+            <h2>Một ngôi làng nhỏ.<br /><em>{world.citizens.length} cuộc đời.</em></h2>
+            <p className="intro-copy">Cư dân tự trồng trọt, khai thác, bán hàng, mua thức ăn và xây nhà bằng nguồn lực hữu hạn. Tiền và tài nguyên không tự sinh ra từ giao dịch.</p>
           </div>
           <div className="phase-note">
             <span className="note-pulse" aria-hidden="true" />
@@ -118,6 +134,7 @@ export function App() {
               <span><i className="legend-tile residents" />Cư dân</span>
               <span><i className="legend-tile field" />Ruộng sản xuất</span>
               <span><i className="legend-tile depleted" />Nguồn cạn</span>
+              <span>🏪 Chợ trung tâm · 🏠 Nhà · 🛠 Công trình</span>
             </div>
           </section>
 
@@ -133,14 +150,25 @@ export function App() {
               </div>
               <div className="resource-dashboard" aria-label="Kho tài nguyên và nhu cầu">
                 <div className="resource-value"><span>Food trong kho</span><strong data-testid="food-stock">{world.inventory.food}</strong></div>
-                <div className="resource-value"><span>Wood trong kho</span><strong data-testid="wood-stock">{world.inventory.wood}</strong></div>
+                <div className="resource-value"><span>Wood trong kho chợ</span><strong data-testid="wood-stock">{world.inventory.wood}</strong></div>
+                <div className="resource-value"><span>Tiền tại chợ</span><strong data-testid="market-cash">{market.cash}</strong></div>
+                <div className="resource-value"><span>Tổng tiền bảo toàn</span><strong data-testid="total-currency">{totalMoney}</strong></div>
+                <div className="resource-value"><span>Nhà ở</span><strong data-testid="housing-capacity">{homes.occupied}/{homes.capacity}</strong></div>
+                <div className="resource-value"><span>Vô gia cư</span><strong data-testid="homeless-count">{homes.homeless}</strong></div>
+                <div className="resource-value"><span>Có việc / chưa có việc</span><strong data-testid="employed-count">{employed}/{living.length - employed}</strong></div>
+                <div className="resource-value"><span>Giao dịch hoàn tất</span><strong data-testid="trade-count">{market.completedTrades}</strong></div>
+                <div className="resource-value"><span>Chợ mua từ dân</span><strong data-testid="market-bought-units">{market.boughtFromCitizens} đơn vị</strong></div>
+                <div className="resource-value"><span>Chợ bán cho dân</span><strong data-testid="market-sold-units">{market.soldToCitizens} đơn vị</strong></div>
+                <div className="resource-value"><span>Khối lượng giao dịch hôm nay</span><strong data-testid="trade-volume">{market.volumeToday}</strong></div>
+                <div className="resource-value"><span>Công trình đang xây</span><strong data-testid="construction-count">{activeSites.length}</strong></div>
+                <div className="resource-value"><span>Sức khỏe bình quân</span><strong data-testid="average-health">{averageHealth}/100</strong></div>
                 <div className="resource-value"><span>Food sản xuất / ngày</span><strong data-testid="food-produced">{world.stats.foodProducedToday}</strong></div>
                 <div className="resource-value"><span>Food tiêu thụ / ngày</span><strong data-testid="food-consumed">{world.stats.foodConsumedToday}</strong></div>
                 <div className="resource-value"><span>Số ngày dự trữ ước tính</span><strong data-testid="food-runway">{runway}</strong></div>
                 <div className="resource-value"><span>NPC đang đói</span><strong data-testid="hungry-count">{hungry}</strong></div>
                 <div className="resource-value"><span>NPC sức khỏe nguy hiểm</span><strong data-testid="danger-count">{endangered}</strong></div>
               </div>
-              <p className="dashboard-note">Sản xuất và tiêu thụ tính từ đầu ngày trong game. Dự trữ ước tính dựa trên tiêu thụ của ngày hoàn chỉnh gần nhất.</p>
+              <p className="dashboard-note">Kho hiển thị thuộc sở hữu chợ; hàng NPC giữ trong túi không bị tính trùng. Mỗi giao dịch chuyển cả hàng và tiền.</p>
               <div className="time-controls" aria-label="Điều khiển thời gian">
                 <button type="button" className={paused ? 'control active' : 'control'} onClick={() => coordinator.dispatch({ type: 'set-paused', paused: !paused })} aria-label={paused ? 'Tiếp tục' : 'Tạm dừng'}>{paused ? '▶ Tiếp tục' : 'Ⅱ Tạm dừng'}</button>
                 {([1, 5, 20] as const).map((value) => (
@@ -154,6 +182,10 @@ export function App() {
                   <button type="button" className="ghost-button" onClick={setSeed}>Tạo lại</button>
                 </div>
               </div>
+              <label htmlFor="population-input">Dân số khi tạo thế giới</label>
+              <select id="population-input" data-testid="population-input" value={populationInput} onChange={(event) => setPopulationInput(Number(event.target.value) as 20 | 50 | 100)}>
+                <option value={20}>20 NPC</option><option value={50}>50 NPC</option><option value={100}>100 NPC</option>
+              </select>
               <p className="debug-line" data-testid="world-tick">Tick {world.tick} · Seed {world.seed}{import.meta.env.DEV ? ' · #' + stateDigest(world) : ''}</p>
             </section>
 
@@ -172,9 +204,12 @@ export function App() {
                       <dt>Nghề</dt><dd data-testid="citizen-job">{jobNames[citizen.job]}</dd>
                       <dt>Đang làm</dt><dd>{ACTIVITY[citizen.activity]}</dd>
                       <dt>Vị trí</dt><dd>({citizen.tile.x}, {citizen.tile.y})</dd>
-                      <dt>Nhà</dt><dd>{getSite(world, citizen.homeId).name}</dd>
-                      <dt>Nơi làm việc</dt><dd>{getSite(world, citizen.workId).name}</dd>
-                      <dt>Mục tiêu</dt><dd>{citizen.goal === 'food' ? 'Nhận thức ăn' : citizen.goal === 'home' ? 'Trở về nhà' : citizen.goal === 'work' ? 'Đi làm' : 'Gặp gỡ cộng đồng'}</dd>
+                      <dt>Nhà</dt><dd>{citizen.homeId === null ? 'Chưa có nhà' : getSite(world, citizen.homeId).name}</dd>
+                      <dt>Ví tiền</dt><dd data-testid="citizen-wallet">{citizen.wallet}</dd>
+                      <dt>Túi đồ</dt><dd data-testid="citizen-inventory">Food {citizen.inventory.food} · Wood {citizen.inventory.wood}</dd>
+                      <dt>Giao dịch gần đây</dt><dd>{market.trades.filter((trade) => trade.citizenId === citizen.id).slice(-1).map((t) => t.direction === 'buy' ? 'Mua ' + t.quantity + ' ' + t.good : 'Bán ' + t.quantity + ' ' + t.good).join('') || 'Chưa có'}</dd>
+                      <dt>Nơi làm việc</dt><dd>{citizen.workNodeId !== null ? (() => { const node = world.resourceNodes.find((item) => item.id === citizen.workNodeId); return node ? (node.kind === 'field' ? 'Ruộng' : 'Rừng') + ' #' + node.id + ' (' + node.tile.x + ', ' + node.tile.y + ')' : 'Không có'; })() : getSite(world, citizen.workId).name}</dd>
+                      <dt>Mục tiêu</dt><dd>{citizen.goal === 'food' ? 'Mua / ăn food' : citizen.goal === 'sell' ? 'Bán sản phẩm' : citizen.goal === 'build' ? 'Xây dựng' : citizen.goal === 'home' ? 'Trở về nhà' : citizen.goal === 'work' ? 'Đi làm' : 'Gặp gỡ cộng đồng'}</dd>
                       <dt>Thời gian hành động</dt><dd>{citizen.actionDuration ? citizen.actionDuration + ' giờ; tiến độ ' + citizen.workHours + ' giờ' : 'Không có'}</dd>
                       <dt>Điểm đến</dt><dd>({citizen.destination.x}, {citizen.destination.y})</dd>
                     </dl>
@@ -207,7 +242,7 @@ export function App() {
 
             <section className="side-card" aria-label="Danh sách cư dân">
               <p className="section-kicker">PEOPLE OF THE VALLEY</p>
-              <h3>{living.length}/20 cư dân còn sống</h3>
+              <h3>{living.length}/{world.citizens.length} cư dân còn sống</h3>
               <div className="citizen-list">
                 {world.citizens.map((item) => (
                   <button key={item.id} type="button" data-testid={'citizen-' + item.id} className={(item.id === selectedCitizenId ? 'citizen-row chosen' : 'citizen-row') + (!item.alive ? ' citizen-dead' : '')} onClick={() => coordinator.dispatch({ type: 'select-citizen', id: item.id })}>
@@ -217,6 +252,20 @@ export function App() {
                   </button>
                 ))}
               </div>
+            </section>
+
+            <section className="side-card" aria-label="Chợ và công trình">
+              <p className="section-kicker">MARKET & CONSTRUCTION</p>
+              <h3>Chợ trung tâm và nhà ở</h3>
+              <div className="resource-dashboard" data-testid="market-inspector">
+                <div className="resource-value"><span>Giá food (chợ mua / bán)</span><strong>{market.prices.foodBuy} / {market.prices.foodSell}</strong></div>
+                <div className="resource-value"><span>Giá wood (chợ mua / bán)</span><strong>{market.prices.woodBuy} / {market.prices.woodSell}</strong></div>
+                <div className="resource-value"><span>Food / Wood thuộc chợ</span><strong>{world.inventory.food} / {world.inventory.wood}</strong></div>
+              </div>
+              <h4>Công trình</h4>
+              <ul className="recent-list" data-testid="construction-list">{activeSites.length ? activeSites.map((site) => <li key={site.id}>Nhà #{site.id} tại ({site.tile.x}, {site.tile.y}) · {site.progress}/{site.hoursRequired} giờ · Đã dùng {site.woodSpent} wood</li>) : <li>Chưa có công trình đang xây</li>}</ul>
+              <h4>Giao dịch gần đây</h4>
+              <ul className="recent-list" data-testid="trade-history">{market.trades.slice(-5).reverse().map((trade, index) => <li key={trade.tick + ':' + trade.citizenId + ':' + index}>Tick {trade.tick} · NPC #{trade.citizenId} {trade.direction === 'buy' ? 'mua' : 'bán'} {trade.quantity} {trade.good} · {trade.amount} tiền</li>)}</ul>
             </section>
 
             <section className="side-card event-card">
@@ -232,7 +281,7 @@ export function App() {
         </div>
       </main>
 
-      <footer className="site-footer"><span>TINY CIVILIZATION / PHASE 02</span><span>20 NPC · Nhu cầu thật · Tài nguyên hữu hạn · Chưa có kinh tế</span></footer>
+      <footer className="site-footer"><span>TINY CIVILIZATION / PHASE 03</span><span>20/50/100 NPC · Tiền thật · Chợ · Xây nhà</span></footer>
     </div>
   );
 }

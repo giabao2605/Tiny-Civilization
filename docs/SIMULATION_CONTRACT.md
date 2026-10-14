@@ -169,3 +169,46 @@ Phase 02 makes the suggested pipeline exact for the survival slice without chang
 8. Emit causal, ID-monotonic events from committed effects. Trim events/history to their existing bounds and publish one JSON-serializable snapshot.
 
 Contention for the same final resource unit is resolved in citizen-ID order, never by Phaser frame order. Node stocks and village stocks are integers and clamped by actual available quantity/capacity. The initial 30 food and 6 wood units are an explicit finite settlement endowment, not an ongoing faucet. Resource nodes refill only by stated finite daily regeneration; the village warehouse has hard caps. Food runway must be labelled undefined when there is no completed day's consumption sample. These phase 02 rules are intentionally independent of Phase 03 wallets, prices or trade.
+
+
+## Phase 03: schema v3 economy ownership and hourly resolution (2026-10-14)
+
+Phase 02 direct-to-town harvest and free communal meals documented above are HISTORICAL. The following Phase 03 rules supersede them. There is no migrated save format yet.
+
+### Canonical ownership, prices and money supply
+
+- WorldState.inventory is the market-owned physical warehouse; it is not copied into WorldState.market. Citizens individually own wallet coins and personal food/wood inventories. Harvested goods first enter producer-owned inventory, not the public warehouse.
+- Each citizen starts with 32 integer coins. The market treasury starts with 90 coins per citizen. Global supply therefore equals population times 122. All wallets, including those of dead citizens, and the market treasury are counted exactly once. There is no other monetary account and no money mint/burn.
+- Fixed integer prices: market buys food at 2 and sells food at 3; buys wood at 1 and sells wood at 2. The spread stays in the market treasury (not a money sink), helping retain enough finite liquidity while food producers and consumers trade. Unpaid work never creates wages. Builder wages are subtracted from the treasury and added to the builder's wallet.
+- At all times the sum of the market cash and ALL citizen wallets equals initial supply. A dead person's belongings remain owned but temporarily inaccessible; no confiscation or inheritance is implemented.
+
+### Hourly ordered effects
+
+1. Advance the simulation clock; on a day change, reset daily counters and regenerate node stock within capacity.
+2. If housing is needed and wood, a builder and a legal plot exist, create at most one active building project and remove 8 wood from market inventory exactly once.
+3. Resolve living NPCs by ascending ID. Hunger decays once; urgent survival/rest preempts work. Re-evaluate only explicit goals and limited job-change cooldowns.
+4. Route by four-neighbor BFS; walking up to 4 tiles takes the hour and precludes all stationary effects.
+5. Harvest takes 3 stationary work hours and removes up to 3 food or 2 wood from a finite node into the producer's bag (maximum 6 units per good).
+6. Selling requires the live producer at the market tile, personal units, market treasury and free warehouse space. One stationary hour atomically removes up to 3 owned units, adds them to market stock and transfers integer coins to the producer.
+7. Buying requires a live buyer at the market tile, wallet funds and available stock. One stationary hour atomically transfers coins to market cash and food/wood into the buyer's bag. Acquired food cannot be eaten in the same hour; an already-owned food unit may be eaten during a stationary hour, anywhere.
+8. Insufficient funds/stock/capacity causes a clean failed action, capped reason/event and retry cooldown. No free-food fallback. Evaluate prolonged hunger, recovery and death after the action.
+9. Publish bounded events and one immutable-by-convention JSON-compatible canonical snapshot. React/Phaser never mutate balances.
+
+Last-unit contention is resolved by sequential ID order and post-guard transactions, never animation/frame order.
+
+### Housing and construction
+
+- 20 initial homes have a fixed capacity of 4 residents each. The 20/50/100 population presets deterministically assign occupants; excess NPCs explicitly have a null homeId and can rest at the commons. Houses are not added when citizens spawn.
+- Only free, walkable, connected, non-overlapping plots may be selected. One active construction project at a time. Starting it removes 8 physical market wood units; it cannot be started twice with the same stock.
+- A living builder reaches the plot and works in stationary 1-hour units. Each hour advances only if 4 existing market coins are paid to the builder. An interrupted project retains sunk wood and accumulated progress; a dead builder can be replaced by the next eligible living builder.
+- At 8 funded build hours, the project completes, one capacity-4 home is created and at most four homeless living residents receive a real houseId. Demolition/births/deep ownership are deferred.
+
+### Invariant equations and diagnostics
+
+- Market food + sum of citizen-owned food = initial market food + cumulative harvest − cumulative food eaten.
+- Market wood + sum of citizen-owned wood + sum of construction woodSpent = initial market wood + cumulative wood harvest.
+- Market cash + sum of citizen wallets = initial money supply.
+- All balances are nonnegative integers; occupied per house never exceeds capacity. IDs are unique and monotonically allocated across all entities.
+- No DOM, game-engine clock or performance counter affects these results. Optional pathfinding diagnostics are observational only. State digests cover market, construction and housing alongside existing citizen/resource state.
+
+**Circulation review:** A farmer with a full three-unit harvest may sell it first when safely nourished, then purchase a meal using the obtained coins. An already-purchased one-unit meal is eaten rather than re-sold, and critical hunger always permits immediate consumption of owned food. The warehouse may become full and forbid further purchases from producers; producers then lawfully consume privately owned harvest without conjuring free market food. Two monotonic counters (market.boughtFromCitizens and market.soldToCitizens) measure actual commodity units in both directions, making zero-consumer-trade deadlocks observable.

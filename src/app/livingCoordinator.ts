@@ -13,10 +13,10 @@ export type LivingCommand =
   | { type: 'select-citizen'; id: number | null }
   | { type: 'set-speed'; speed: Speed }
   | { type: 'set-paused'; paused: boolean }
-  | { type: 'reset-seed'; seed: number };
+  | { type: 'reset-seed'; seed: number; population?: 20 | 50 | 100 };
 
-export function createLivingCoordinator(initialSeed = 12345) {
-  let snapshot: LivingSnapshot = { world: createWorld(initialSeed), selectedCitizenId: null, speed: 1, paused: false };
+export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 20 | 50 | 100 = 20) {
+  let snapshot: LivingSnapshot = { world: createWorld(initialSeed, initialPopulation), selectedCitizenId: null, speed: 1, paused: false };
   const listeners = new Set<() => void>();
   let timer: ReturnType<typeof setInterval> | null = null;
   let lastMs = 0;
@@ -65,8 +65,8 @@ export function createLivingCoordinator(initialSeed = 12345) {
         clock.setPaused(command.paused);
         snapshot = { ...snapshot, paused: command.paused };
       } else {
-        if (!Number.isSafeInteger(command.seed)) return false;
-        snapshot = { ...snapshot, world: createWorld(command.seed), selectedCitizenId: null };
+        if (!Number.isSafeInteger(command.seed) || (command.population !== undefined && ![20, 50, 100].includes(command.population))) return false;
+        snapshot = { ...snapshot, world: createWorld(command.seed, command.population ?? snapshot.world.citizens.length as 20 | 50 | 100), selectedCitizenId: null };
         clock.reset();
       }
       notify();

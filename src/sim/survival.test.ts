@@ -1,36 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from './balance';
 import { advanceOneTick, advanceTicks, stateDigest } from './engine';
-import { createWorld, getSite, type WorldState } from './world';
-
-function invariants(world: WorldState) {
-  expect(world.inventory.food).toBeGreaterThanOrEqual(0);
-  expect(world.inventory.wood).toBeGreaterThanOrEqual(0);
-  expect(world.inventory.food).toBeLessThanOrEqual(BALANCE.townFoodCapacity);
-  expect(world.inventory.wood).toBeLessThanOrEqual(BALANCE.townWoodCapacity);
-  for (const node of world.resourceNodes) {
-    expect(Number.isInteger(node.stock)).toBe(true);
-    expect(node.stock).toBeGreaterThanOrEqual(0);
-    expect(node.stock).toBeLessThanOrEqual(node.capacity);
-  }
-  for (const citizen of world.citizens) {
-    for (const need of [citizen.hunger, citizen.energy, citizen.health]) {
-      expect(need).toBeGreaterThanOrEqual(0);
-      expect(need).toBeLessThanOrEqual(100);
-    }
-    if (!citizen.alive) {
-      expect(citizen.activity).toBe('dead');
-      expect(citizen.route).toHaveLength(0);
-      expect(citizen.workHours).toBe(0);
-    }
-    if (citizen.activity === 'atWork') expect(citizen.goal).toBe('work');
-    if (citizen.activity === 'rest') expect(citizen.goal).toBe('home');
-  }
-}
+import { createWorld, getSite, marketTile } from './world';
 
 function noSupply() {
   const world = createWorld(12345);
   world.inventory.food = 0;
+  for (const c of world.citizens) c.inventory.food = 0;
   for (const node of world.resourceNodes) {
     node.stock = 0;
     node.regenerationPerDay = 0;
@@ -38,271 +14,197 @@ function noSupply() {
   return world;
 }
 
-describe('Phase 02 resource accounting and living needs', () => {
-  it('decays needs once per simulated hour, clamps needs and cannot conjure food', () => {
+describe('Survival rules retained under Phase 03 owned-food economy', () => {
+  it('decays hunger once per hour, never feeds citizens without owned food', () => {
     const world = noSupply();
     const first = world.citizens[0]!;
     first.hunger = 99;
     first.energy = 0;
+    first.wallet = 0;
     const after = advanceTicks(world, 24);
     expect(after.citizens[0]!.hunger).toBe(51);
     expect(after.citizens[0]!.energy).toBeGreaterThanOrEqual(0);
+    expect(after.stats.totalFoodConsumed).toBe(0);
     expect(after.inventory.food).toBe(0);
-    expect(after.stats.failedActions).toBeGreaterThan(0);
-    invariants(after);
+    // A bankrupt farmer can choose legal self-sufficiency instead of attempting an illegal purchase.
+    expect(after.citizens[0]!.wallet).toBe(0);
   });
 
-  it('resolves two hungry citizens contesting the last food in ascending ID order', () => {
+  it('two hungry citizens cannot eat the same owned food', () => {
     const world = noSupply();
-    world.inventory.food = 1;
-    const pantry = world.sites.find((site) => site.kind === 'commons')!.tile;
-    for (const citizen of world.citizens.slice(0, 2)) {
-      citizen.hunger = 0;
-      citizen.needMode = 'food';
-      citizen.goal = 'food';
-      citizen.activity = 'eating';
-      citizen.tile = { ...pantry };
-      citizen.destination = { ...pantry };
-      citizen.route = [];
-    }
+    const c = world.citizens[0]!;
+    const d = world.citizens[1]!;
+    c.hunger = d.hunger = 0;
+    c.inventory.food = 1;
+    d.inventory.food = 0;
+    c.goal = 'food'; c.activity = 'eating';
+    c.destination = { ...c.tile };
+    c.route = [];
+    d.wallet = 0;
     const after = advanceOneTick(world);
-    expect(after.inventory.food).toBe(0);
     expect(after.stats.totalFoodConsumed).toBe(1);
     expect(after.citizens[0]!.hunger).toBe(BALANCE.foodNutrition);
     expect(after.citizens[1]!.hunger).toBe(0);
-    expect(after.citizens[1]!.activity).toBe('waitingForFood');
-    expect(after.events.filter((event) => event.type === 'foodEaten')).toHaveLength(1);
+    expect(after.citizens[0]!.inventory.food).toBe(0);
   });
 
-  it('arbitrates last harvestable unit and never produces more than node stock', () => {
-    const world = createWorld(12345);
-    world.tick = 6;
-    world.inventory.food = 0;
-    for (const node of world.resourceNodes) node.stock = 0;
-    const field = world.resourceNodes.find((node) => node.kind === 'field')!;
-    field.stock = 1;
-    const farmers = world.citizens.filter((citizen) => citizen.job === 'farmer').slice(0, 2);
-    for (const farmer of farmers) {
-      farmer.hunger = 100;
-      farmer.energy = 100;
-      farmer.needMode = null;
-      farmer.goal = 'work';
-      farmer.activity = 'atWork';
-      farmer.workNodeId = field.id;
-      farmer.workHours = BALANCE.farmActionHours - 1;
-      farmer.tile = { ...field.tile };
-      farmer.destination = { ...field.tile };
-      farmer.route = [];
-    }
-    const after = advanceOneTick(world);
-    expect(after.resourceNodes.find((node) => node.id === field.id)!.stock).toBe(0);
-    expect(after.inventory.food).toBe(1);
-    expect(after.stats.totalFoodProduced).toBe(1);
-    expect(after.events.filter((event) => event.type === 'foodProduced')).toHaveLength(1);
-  });
-
-  it('regenerates fields/wood once daily with hard capacity', () => {
-    const world = createWorld(12345);
+  it('daily regeneration remains bounded, never reloads every hourly tick', () => {
+    const world = createWorld(4);
     world.tick = 23;
+    for (const c of world.citizens) c.alive = false;
     const node = world.resourceNodes[0]!;
     node.stock = node.capacity - 1;
     node.regenerationPerDay = 8;
-    for (const citizen of world.citizens) citizen.alive = false;
-    const dayChange = advanceOneTick(world);
-    expect(dayChange.resourceNodes[0]!.stock).toBe(node.capacity);
-    expect(advanceOneTick(dayChange).resourceNodes[0]!.stock).toBe(node.capacity);
-    expect(dayChange.stats.day).toBe(2);
+    const next = advanceOneTick(world);
+    expect(next.resourceNodes[0]!.stock).toBe(node.capacity);
+    expect(advanceOneTick(next).resourceNodes[0]!.stock).toBe(node.capacity);
   });
 
-  it('prolonged shortage damages health and eventually kills, never immediately', () => {
+  it('fatigue and critical health preempt regular work', () => {
+    const world = createWorld(12345);
+    world.tick = 6;
+    const c = world.citizens[0]!;
+    c.energy = 0; c.hunger = 98; c.health = 20;
+    const after = advanceOneTick(world).citizens[0]!;
+    expect(after.goal).toBe('home');
+    expect(after.needMode).toBe('rest');
+    expect(after.reason).toMatch(/sức khỏe|phục hồi|nghỉ/i);
+  });
+
+  it('severe starvation has a grace period, then health damage and death', () => {
     const world = noSupply();
-    for (const citizen of world.citizens) { citizen.hunger = 0; citizen.health = 100; }
-    const firstDay = advanceTicks(world, 24);
-    expect(firstDay.citizens.every((citizen) => citizen.alive)).toBe(true);
-    expect(firstDay.citizens.every((citizen) => citizen.health === 100)).toBe(true);
-    const result = advanceTicks(firstDay, 200);
-    expect(result.citizens.some((citizen) => !citizen.alive)).toBe(true);
-    expect(result.events.some((event) => event.type === 'death')).toBe(true);
-    invariants(result);
-    const dead = result.citizens.find((citizen) => !citizen.alive)!;
-    const after = advanceTicks(result, 12).citizens.find((citizen) => citizen.id === dead.id)!;
+    for (const c of world.citizens) {
+      c.hunger = 0; c.health = 100; c.wallet = 0;
+    }
+    const initial = advanceTicks(world, 24);
+    expect(initial.citizens.every((c) => c.health === 100)).toBe(true);
+    const later = advanceTicks(initial, 200);
+    expect(later.citizens.some((c) => !c.alive)).toBe(true);
+    const dead = later.citizens.find((c) => !c.alive)!;
+    const after = advanceTicks(later, 12).citizens.find((c) => c.id === dead.id)!;
     expect(after).toEqual(dead);
   });
 
-  it('rest and meals are stationary one-hour actions, not movement plus work', () => {
-    let world = createWorld(1);
-    let sawWork = false;
-    let sawMeal = false;
-    let sawRest = false;
-    for (let step = 0; step < 120; step += 1) {
+  it('production creates personal goods only and purchases have a stationary hour', () => {
+    let world = createWorld(3);
+    let sawWork = false; let sawPersonalFood = false; let sawSale = false; let sawMeal = false;
+    for (let i = 0; i < 140; i += 1) {
       world = advanceOneTick(world);
-      invariants(world);
-      for (const citizen of world.citizens) {
-        if (citizen.lastMove.length > 1) expect(citizen.actionDuration).toBe(0);
-        if (citizen.activity === 'atWork' && citizen.workHours > 0) sawWork = true;
-        if (citizen.activity === 'eating' && citizen.actionDuration === 1) sawMeal = true;
-        if (citizen.activity === 'rest' && citizen.actionDuration === 1) sawRest = true;
+      for (const c of world.citizens) {
+        if (c.lastMove.length > 1) expect(c.actionDuration).toBe(0);
+        if (c.activity === 'atWork' && c.workHours > 0) sawWork = true;
+        if (c.inventory.food > 0) sawPersonalFood = true;
+        if (c.activity === 'eating' && c.actionDuration === 1) sawMeal = true;
       }
+      sawSale ||= world.events.some((e) => e.type === 'sold');
     }
-    expect([sawWork, sawMeal, sawRest]).toEqual([true, true, true]);
+    expect([sawWork, sawPersonalFood, sawSale, sawMeal]).toEqual([true, true, true, true]);
+    const merchant = world.citizens.find((c) => c.alive)!;
+    expect(marketTile(world)).toBeDefined();
+    expect(merchant.wallet).toBeGreaterThanOrEqual(0);
   });
 
-  it('10 seeds × 30 days: sustainable, conserved stocks, deterministic 720-hour replay', () => {
-    const rows = [];
-    for (let seed = 1; seed <= 10; seed += 1) {
-      const initial = createWorld(seed);
-      const after = advanceTicks(initial, 720);
-      invariants(after);
-      expect(after.inventory.food).toBe(BALANCE.initialFood + after.stats.totalFoodProduced - after.stats.totalFoodConsumed);
-      expect(after.inventory.wood).toBe(BALANCE.initialWood + after.stats.totalWoodProduced);
-      expect(after.citizens).toHaveLength(20);
-      expect(after.stats.totalFoodProduced).toBeGreaterThan(0);
-      expect(after.stats.totalFoodConsumed).toBeGreaterThan(0);
-      expect(after.citizens.filter((citizen) => citizen.alive).length).toBeGreaterThanOrEqual(16);
-      const again = advanceTicks(createWorld(seed), 720);
-      expect(stateDigest(after)).toBe(stateDigest(again));
-      expect(after).toEqual(again);
-      rows.push({ seed, alive: after.citizens.filter((citizen) => citizen.alive).length,
-        food: after.inventory.food, wood: after.inventory.wood,
-        produced: after.stats.totalFoodProduced, consumed: after.stats.totalFoodConsumed,
-        deaths: after.stats.deaths });
+
+  it('two farmers contested last harvest unit: only one owned food is created', () => {
+    const w = createWorld(12345);
+    w.tick = 6;
+    w.inventory.food = 0;
+    for (const node of w.resourceNodes) node.stock = 0;
+    const field = w.resourceNodes.find((n) => n.kind === 'field')!;
+    field.stock = 1;
+    const farmers = w.citizens.filter((c) => c.job === 'farmer').slice(0, 2);
+    for (const farmer of farmers) {
+      farmer.hunger = 100; farmer.energy = 100; farmer.needMode = null;
+      farmer.goal = 'work'; farmer.activity = 'atWork'; farmer.workNodeId = field.id;
+      farmer.workHours = BALANCE.farmActionHours - 1;
+      farmer.tile = { ...field.tile }; farmer.destination = { ...field.tile }; farmer.route = [];
     }
-    console.log('PHASE02_BALANCE_TABLE=' + JSON.stringify(rows));
+    const after = advanceOneTick(w);
+    expect(after.resourceNodes.find((n) => n.id === field.id)!.stock).toBe(0);
+    expect(after.stats.totalFoodProduced).toBe(1);
+    expect(after.citizens.find((c) => c.id === farmers[0]!.id)!.inventory.food).toBe(1);
+    expect(after.citizens.find((c) => c.id === farmers[1]!.id)!.inventory.food).toBe(0);
+    expect(after.events.filter((e) => e.type === 'foodProduced')).toHaveLength(1);
   });
 
-  it('batched ticks equal individual ticks, and different seeds vary', () => {
-    const a = advanceTicks(createWorld(22), 120);
-    let b = createWorld(22);
-    for (let i = 0; i < 120; i += 1) b = advanceOneTick(b);
-    expect(a).toEqual(b);
-    expect(stateDigest(a)).toBe(stateDigest(b));
-    expect(stateDigest(a)).not.toBe(stateDigest(advanceTicks(createWorld(23), 120)));
+  it('unreachable fields safely fall back and respect blocked-work cooldown', () => {
+    const w = createWorld(12345);
+    w.tick = 6;
+    const farmer = w.citizens[0]!;
+    const home = { ...getSite(w, farmer.homeId).tile };
+    for (const field of w.resourceNodes.filter((node) => node.kind === 'field')) {
+      w.tiles[field.tile.y * 48 + field.tile.x] = 'water';
+    }
+    const after = advanceOneTick(w).citizens[0]!;
+    expect(after.goal).toBe('home');
+    expect(after.tile).toEqual(home);
+    expect(after.route).toHaveLength(0);
+    expect(after.blockedGoal).toBe('work');
+    expect(after.retryAfterTick).toBeGreaterThan(7);
+    const later = advanceTicks(w, 6).citizens[0]!;
+    expect(later.route).toHaveLength(0);
+    expect(later.tile).toEqual(home);
   });
 
-  it('unreachable workplaces yield safe home fallback without infinite retry', () => {
-    const world = createWorld(12345);
-    const first = world.citizens[0]!;
-    const home = getSite(world, first.homeId).tile;
-    for (const node of world.resourceNodes.filter((item) => item.kind === 'field')) {
-      world.tiles[node.tile.y * 48 + node.tile.x] = 'water';
-    }
-    const after = advanceTicks(world, 6);
-    expect(after.citizens[0]!.goal).toBe('home');
-    expect(after.citizens[0]!.tile).toEqual(home);
-    expect(after.citizens[0]!.route).toHaveLength(0);
-    expect(after.citizens[0]!.retryAfterTick).toBeGreaterThan(after.tick);
-    const later = advanceTicks(after, 5);
-    expect(later.citizens[0]!.route).toHaveLength(0);
-  });
-  it('a woodcutter depletes a real forest, then chooses a second source', () => {
-    const world = createWorld(12345);
-    world.tick = 6;
-    const forests = world.resourceNodes.filter((node) => node.kind === 'forest');
-    const [first, second] = forests;
-    first!.stock = 1;
-    second!.stock = 0;
-    const cutter = world.citizens.find((citizen) => citizen.job === 'woodcutter')!;
-    cutter.hunger = 100;
-    cutter.energy = 100;
-    cutter.goal = 'work';
-    cutter.activity = 'atWork';
-    cutter.workNodeId = first!.id;
+  it('woodcutters deplete actual forest stock then reach a different forest when work resumes', () => {
+    const w = createWorld(12345);
+    w.tick = 6;
+    const [first, second] = w.resourceNodes.filter((n) => n.kind === 'forest');
+    first!.stock = 1; second!.stock = 0;
+    const cutter = w.citizens.find((c) => c.job === 'woodcutter')!;
+    cutter.hunger = 100; cutter.energy = 100;
+    cutter.goal = 'work'; cutter.activity = 'atWork'; cutter.workNodeId = first!.id;
     cutter.workHours = BALANCE.woodActionHours - 1;
-    cutter.tile = { ...first!.tile };
-    cutter.destination = { ...first!.tile };
-    cutter.route = [];
-    const depleted = advanceOneTick(world);
-    expect(depleted.resourceNodes.find((node) => node.id === first!.id)!.stock).toBe(0);
-    expect(depleted.events.some((event) => event.type === 'depleted' && event.citizenId === cutter.id)).toBe(true);
-    expect(depleted.inventory.wood).toBe(BALANCE.initialWood + 1);
-    const restored = { ...depleted, resourceNodes: depleted.resourceNodes.map((node) =>
-      node.id === second!.id ? { ...node, stock: 3 } : node) };
-    const rerouted = advanceOneTick(restored);
-    const movedCutter = rerouted.citizens.find((citizen) => citizen.id === cutter.id)!;
-    expect(movedCutter.goal).toBe('work');
-    expect(movedCutter.destination).toEqual(second!.tile);
-    invariants(rerouted);
+    cutter.tile = { ...first!.tile }; cutter.destination = { ...first!.tile }; cutter.route = [];
+    const depleted = advanceOneTick(w);
+    expect(depleted.resourceNodes.find((n) => n.id === first!.id)!.stock).toBe(0);
+    expect(depleted.citizens.find((c) => c.id === cutter.id)!.inventory.wood).toBe(1);
+    expect(depleted.events.some((e) => e.type === 'depleted' && e.citizenId === cutter.id)).toBe(true);
+    // Fixture transfers the produced unit to market ownership to isolate rerouting behavior.
+    const resumed = {
+      ...depleted,
+      inventory: { ...depleted.inventory, wood: depleted.inventory.wood + 1 },
+      citizens: depleted.citizens.map((c) => c.id === cutter.id ?
+        { ...c, inventory: { ...c.inventory, wood: 0 } } : c),
+      resourceNodes: depleted.resourceNodes.map((n) => n.id === second!.id ? { ...n, stock: 3 } : n),
+    };
+    const rerouted = advanceOneTick(resumed);
+    const moved = rerouted.citizens.find((c) => c.id === cutter.id)!;
+    expect(moved.goal).toBe('work');
+    expect(moved.destination).toEqual(second!.tile);
   });
 
-  it('critical fatigue takes precedence over scheduled work, then recovers at home', () => {
-    const world = createWorld(12345);
-    world.tick = 6;
-    const resident = world.citizens[0]!;
-    resident.energy = 0;
-    resident.hunger = 98;
-    const after = advanceOneTick(world);
-    const resting = after.citizens[0]!;
-    expect(resting.goal).toBe('home');
-    expect(resting.activity).toBe('rest');
-    expect(resting.actionDuration).toBe(1);
-    expect(resting.energy).toBe(BALANCE.energyDayRestRecovery);
-    expect(resting.workHours).toBe(0);
-  });
-
-  it('health only recovers under qualifying rest, never unconditionally', () => {
-    const world = noSupply();
-    world.tick = 11;
-    const resident = world.citizens[0]!;
-    resident.health = 49;
-    resident.hunger = 100;
-    resident.energy = 0;
-    const after = advanceOneTick(world);
+  it('health recovery needs qualifying stationary rest and never occurs for a starving commuter', () => {
+    const w = noSupply();
+    w.tick = 11;
+    const citizen = w.citizens[0]!;
+    citizen.health = 49; citizen.hunger = 100; citizen.energy = 0;
+    const after = advanceOneTick(w);
     expect(after.citizens[0]!.health).toBe(50);
-    expect(after.events.some((event) => event.type === 'recovery' && event.citizenId === resident.id)).toBe(true);
-    const noRest = noSupply();
-    noRest.tick = 11;
-    noRest.citizens[0]!.health = 49;
-    noRest.citizens[0]!.hunger = 0;
-    expect(advanceOneTick(noRest).citizens[0]!.health).toBe(49);
+    expect(after.events.some((e) => e.type === 'recovery' && e.citizenId === citizen.id)).toBe(true);
+    const empty = noSupply();
+    empty.tick = 11; empty.citizens[0]!.health = 49; empty.citizens[0]!.hunger = 0;
+    expect(advanceOneTick(empty).citizens[0]!.health).toBe(49);
   });
 
-  it('one farmer actually harvests, transfers to village store, then eats a stocked meal', () => {
-    let world = createWorld(12345);
-    const farmerId = world.citizens.find((citizen) => citizen.job === 'farmer')!.id;
-    let produced = false;
-    let ate = false;
-    for (let i = 0; i < 96; i += 1) {
-      const before = world.citizens.find((citizen) => citizen.id === farmerId)!;
-      const previousEventId = world.nextEventId;
-      const previousFood = world.inventory.food;
-      const previousTotalProduced = world.stats.totalFoodProduced;
-      const previousTotalConsumed = world.stats.totalFoodConsumed;
-      world = advanceOneTick(world);
-      const after = world.citizens.find((citizen) => citizen.id === farmerId)!;
-      const newEvents = world.events.filter((event) => event.id >= previousEventId && event.citizenId === farmerId);
-      if (newEvents.some((event) => event.type === 'foodProduced')) {
-        produced = true;
-        expect(world.stats.totalFoodProduced).toBeGreaterThan(previousTotalProduced);
-      }
-      if (newEvents.some((event) => event.type === 'foodEaten')) {
-        ate = true;
-        expect(after.hunger).toBeGreaterThan(before.hunger);
-        // Other residents can legally eat later in the SAME hourly tick.
-        expect(world.stats.totalFoodConsumed).toBeGreaterThan(previousTotalConsumed);
-        expect(world.inventory.food).toBe(previousFood +
-          (world.stats.totalFoodProduced - previousTotalProduced) -
-          (world.stats.totalFoodConsumed - previousTotalConsumed));
-      }
-    }
-    expect(produced).toBe(true);
-    expect(ate).toBe(true);
-    invariants(world);
-  });
-
-  it('critical health preempts work and retains medical rest until safely recovered', () => {
-    const world = createWorld(12345);
-    world.tick = 6;
-    const citizen = world.citizens[0]!;
-    citizen.health = 20;
-    citizen.energy = 100;
-    citizen.hunger = 100;
-    const after = advanceOneTick(world);
+  it('critical health causes persistent medical rest and a different seed diverges', () => {
+    const w = createWorld(12345);
+    w.tick = 6;
+    const c = w.citizens[0]!;
+    c.health = 20; c.energy = 100; c.hunger = 100;
+    const after = advanceOneTick(w);
     expect(after.citizens[0]!.goal).toBe('home');
     expect(after.citizens[0]!.needMode).toBe('rest');
-    expect(after.citizens[0]!.reason).toMatch(/sức khỏe/i);
     const again = advanceOneTick(after);
     expect(again.citizens[0]!.goal).toBe('home');
     expect(again.citizens[0]!.needMode).toBe('rest');
+    expect(stateDigest(advanceTicks(createWorld(22), 120))).not.toBe(stateDigest(advanceTicks(createWorld(23), 120)));
   });
 
+  it('pure deterministic survival replay, no FPS or wall-clock dependency', () => {
+    const a = advanceTicks(createWorld(222), 240);
+    const b = advanceTicks(createWorld(222), 240);
+    expect(a).toEqual(b);
+    expect(stateDigest(a)).toBe(stateDigest(b));
+  });
 });

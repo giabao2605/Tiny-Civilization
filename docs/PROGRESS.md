@@ -1,7 +1,7 @@
 # Tiny Civilization — Progress / handoff log
 
 **Updated:** 2026-10-14  
-**Current stage:** Phase 02 Survival **DONE on feature branch, PR #3 open and unmerged**; Phase 00/01 merged to main. CI verification is recorded below; no MVP released.  
+**Current stage:** Phase 00–02 merged into main (Phase 02 merge `0c8db616`, main CI [38510396152](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38510396152)). **Phase 03 DONE on `feat/phase-03-economy`, [PR #4](https://github.com/giabao2605/Tiny-Civilization/pull/4) ready for human review, unmerged.** Last full implementation/docs CI [38514384101](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38514384101) PASS. No MVP release.
 **Authoritative roadmap:** [MASTER_PLAN](MASTER_PLAN.md)  
 **Rules/contract:** [SIMULATION_CONTRACT](SIMULATION_CONTRACT.md)
 
@@ -9,17 +9,48 @@
 | --- | --- | --- |
 | 00 Foundation | DONE, merged to main | npm ci, typecheck, lint, Vitest, build, Playwright Chromium PASS |
 | 01 Living world | DONE, merged to main (PR #2) | 48×48 map, 20 purposeful agents, inspector, controls; CI PASS |
-| 02 Survival | DONE in PR #3, awaiting merge | Finite food/wood, needs, production, shortage/death and verified 10-seed balance |
-| 03 Economy | NOT STARTED | 100 agents, finite transactions, sustainable seeded runs |
+| 02 Survival | DONE, merged (PR #3) | Finite food/wood, needs, production, shortage/death and verified 10-seed balance |
+| 03 Economy | DONE on feature branch, PR #4 ready for review, NOT MERGED | All 20/50/100 ten-seed 30-day runs and GitHub Actions PASS |
 | 04 Social | NOT STARTED | Persistent relationships, legible social causes |
 | 05 Governance | NOT STARTED | Policies/crises with costs and real consequences |
 | 06 Quality | NOT STARTED | Save/load determinism, profiling, UX/balance |
 | 07 MVP release | NOT STARTED | CI green, deployed playable build |
 | 08 Expansion | DEFERRED | Only after MVP validation and new go/no-go |
 
+## Phase 03 Economy, housing and 100 NPCs (2026-10-14)
+
+**Status: DONE on verified feature branch, ready for review and NOT merged.** Development branch created from main merge commit 0c8db616. PR: https://github.com/giabao2605/Tiny-Civilization/pull/4. No auto merge.
+
+**Implemented and CI-verified source:**
+- src/sim/world.ts: 20/50/100 deterministic worlds; unique IDs; bounded site capacities, nullable homelessness, citizens' wallets and owned goods, one market/treasury, construction records, expanded finite field/forest production nodes.
+- src/sim/economy.ts: atomic buy/sell with enough funds, owned stock, location, storage capacity and live citizen checks; wood reservation at construction start, paid hourly builders and house completion.
+- src/sim/engine.ts: stable ascending NPC effects; physical harvested goods enter NPC bags, travel and one-hour market trades, paid meal purchases, self-owned meals, finite builders and survival priority; events read from committed simulation.
+- src/sim/balance.ts: integer prices, fixed initial cash, population-scaled map resources, node slot caps, house costs/durations and cooldowns.
+- src/app/App.tsx, livingCoordinator.ts and WorldScene.ts: population choice, responsive inspectors/dashboard, wallets, trade history, builder progress, market marker and dynamically completed houses; no React/Phaser economy mutations.
+- economy.test.ts, benchmark.test.ts, updated survival and browser smoke suites: conservation and failed trade tests, parallel buyers/builders, no free-food escape, 720-tick 100-NPC scenarios and Chromium 100-NPC coverage.
+
+**Ownership:** WorldState.inventory is the sole market warehouse, distinct from each NPC's owned bag. Initial finite money supply is 122 coins per NPC: 32 wallet plus 90 market coins per resident (20/50/100 supply 2,440/6,100/12,200). Current integer prices: market buys food 2, sells 3; buys wood 1, sells 2. A spread remains in the finite market treasury and no wage/harvest mints coins. Construction consumes 8 market wood on start; builder must complete 8 funded hours paid 4 treasury coins/hour. New homes give 4 real beds.
+
+**Verification history:** Early failures were identified and fixed (TypeScript nulls/narrowing, one ambiguous E2E selector, warehouse-last-slot deadlock). Post-circulation implementation CI [38513743348](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38513743348) and latest source-plus-regression CI [38514384101](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38514384101) both PASS: clean npm ci, production dependency audit, typecheck, lint, 47 Vitest cases, production build, and 4 Playwright Chromium E2E tests. E2E stores [phase-03 browser screenshots](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38514384101/artifacts/11871206561). GH-hosted Ubuntu Actions was the execution environment; local authoring container cannot reach npm registry.
+
+**Final 30-day baseline:** 10 seeds for EACH population (20, 50, 100), 720 ticks/seed: all 20/20, 50/50 and 100/100 alive with no invalid actions at the end of the sampled runs. Exact money conservation: 2,440 / 6,100 / 12,200. Market cash at tick 720: 20 NPC 1,096–1,120; 50 NPC 3,861–3,888; 100 NPC 8,295–8,311, all strictly finite and positive. Both market purchases and sales were nonzero in every seed: 100 NPC seeds market bought 913–929 food/wood units from citizens and sold 359–375 back to citizens; this shows a real circular trading path rather than fake HUD balances. At 100 NPC, five wood-backed houses expanded capacity from 80 to 100 and all residents had housing. Source: [CI run 38513743348](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38513743348). Measured Node-only benchmark (GitHub Ubuntu Node v22.23.3): 100 NPC, 720 ticks, average 1.880 ms/tick, p95 8.691 ms/tick, 36,297 BFS calls (50.41 per tick), GC-sensitive heap delta 3,636,288 bytes. Heap sampling is not proof of a browser memory leak or of a leak-free app.
+
+**Bugs exposed and fixed:**
+1. Strict TS nullability and narrowed-literal errors from schema v3, fixed before CI.
+2. Playwright ambiguous “Tạo lại” selector, fixed with exact match.
+3. 50 NPC formerly died with market wood storage at 179/180: seller attempted to deposit 2 units in the last 1-unit slot, was rejected repeatedly, blocked farming and exhausted wallet. Engine now chooses a legal quantity based on free space and finite cash; a permanent regression test guards this case.
+4. Worker frequently changed work nodes and lost progress; stable node preference avoids oscillation while keeping capacity limits.
+5. Long-run monetary audit found little consumer purchasing because farmers ate owned harvest. Adjusted to allow safe sale of a full harvest then purchase of a meal, preserving the emergency ability to eat personally owned food. Lower wholesale prices food 2/retail 3 and wood 1/retail 2 retain market liquidity; the spread is retained in the finite market treasury. New directional cumulative commodity counters make genuine market circulation auditable. This adjustment passed the final 10-seed/population and E2E suites in CI 38513743348 and 38514384101.
+
+**Independent review:** Phase 02 resource-contention, depleted forest rerouting, blocked workplace fallback, health rest and critical recovery regressions were restored with Phase 03 ownership semantics; the final source SHA passed 47 Vitest cases. Verified stable ID-order settlement, no magic wages, finite endowments, atomic last-unit trades, personal vs market inventory conservation, one-time material reservation, paid builder work, deceased citizens blocked from trading/building, legal construction tiles, housing capacity, bounded history, single WorldState and no simulated action from React/Phaser. No Phase 04 features added.
+
+**Residual limitations:** Browser passed 20×/inspector E2E but numerical FPS and real-device compatibility were not benchmarked; Chromium screenshots exist in CI artifacts but were not manually visual-certified here. Heap delta is GC-sensitive, not a trustworthy leak proof. Future Phase 06 owns full persistence/save migration. No autonomous demand for purchased wood once housing construction finishes, but atomic wood purchase is supported and unit-tested. Long-term equilibrium beyond the validated 30-day horizon, additional jobs/consumers and housing maintenance are deferred unless new evidence justifies them. No hidden food/money faucets, bank, AI agents, backend, social or 3D. **The PR is ready for review, not merged; Phase 04 has not begun.**
+
+---
+
 ## Phase 02 Survival implementation and verification (2026-10-14)
 
-**Branch:** `feat/phase-02-survival` from main `d6420cc07c59d1a4bb70a38fa353e5eec3cafd47`. **PR:** [#3](https://github.com/giabao2605/Tiny-Civilization/pull/3), deliberately not merged. Scope is limited to Phase 02.
+**Branch:** `feat/phase-02-survival` from main `d6420cc07c59d1a4bb70a38fa353e5eec3cafd47`. **PR:** [#3](https://github.com/giabao2605/Tiny-Civilization/pull/3), historically left open during Phase 02 work, since merged into main at `0c8db616`. Scope was limited to Phase 02.
 
 **Shipped:** `src/sim/balance.ts` centralizes hourly rates and finite capacities; `world.ts` adds differentiated hunger/energy/health, explicit jobs, finite field/forest nodes, town inventory and cumulative/day statistics; `engine.ts` enforces a stable hourly pipeline with sorted ID-based atomic transfers, food consumption, starvation/health/death, fatigue, cooldown and source selection. Per-hour action exclusivity prevents work while moving or sleeping. Fields/forest regenerate only at day boundaries up to capacity, stock is nonnegative, and dead agents stay inert. There are no wages, money, markets, full persistence or Phase 03 mechanisms.
 

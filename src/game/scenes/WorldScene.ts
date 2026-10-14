@@ -15,6 +15,8 @@ export class WorldScene extends Phaser.Scene {
   private sprites = new Map<number, Phaser.GameObjects.Container>();
   private movementTweens = new Map<number, Phaser.Tweens.Tween>();
   private resourceMarkers = new Map<number, Phaser.GameObjects.Graphics>();
+  private constructionMarkers = new Map<number, Phaser.GameObjects.Graphics>();
+  private paintedSites = new Set<number>();
   private highlighter?: Phaser.GameObjects.Graphics;
   private dragStart?: { x: number; y: number };
   private lastDrag?: { x: number; y: number };
@@ -29,7 +31,8 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, GRID_WIDTH * TILE_PIXELS, GRID_HEIGHT * TILE_PIXELS);
     this.cameras.main.centerOn(xPixel(24), yPixel(24));
     this.paintTerrain();
-    for (const site of this.world.sites) this.paintSite(site);
+    for (const site of this.world.sites) { this.paintSite(site); this.paintedSites.add(site.id); }
+    this.paintConstructions();
     for (const node of this.world.resourceNodes) {
       const marker = this.add.graphics().setDepth(6);
       this.resourceMarkers.set(node.id, marker);
@@ -47,6 +50,8 @@ export class WorldScene extends Phaser.Scene {
       this.input.off(Phaser.Input.Events.POINTER_UP, this.onUp);
       this.input.off(Phaser.Input.Events.POINTER_WHEEL, this.onWheel);
       this.resourceMarkers.clear();
+      this.constructionMarkers.clear();
+      this.paintedSites.clear();
       this.sprites.clear();
       this.movementTweens.clear();
       this.highlighter = undefined;
@@ -63,11 +68,15 @@ export class WorldScene extends Phaser.Scene {
     const before = this.world;
     this.world = snapshot.world;
     if (!this.sys.isActive() || !this.sprites.size) return;
-    if (before.seed !== snapshot.world.seed || before.tick > snapshot.world.tick) {
+    if (before.seed !== snapshot.world.seed || before.citizens.length !== snapshot.world.citizens.length || before.tick > snapshot.world.tick) {
       this.scene.restart();
       return;
     }
     if (before.tick !== snapshot.world.tick) {
+      for (const site of snapshot.world.sites) {
+        if (!this.paintedSites.has(site.id)) { this.paintSite(site); this.paintedSites.add(site.id); }
+      }
+      this.paintConstructions();
       for (const node of snapshot.world.resourceNodes) {
         const marker = this.resourceMarkers.get(node.id);
         if (marker) this.paintResource(marker, node.kind, node.tile.x, node.tile.y, node.stock, node.capacity);
@@ -148,6 +157,24 @@ export class WorldScene extends Phaser.Scene {
     marker.strokeRect(px + 1, py + 1, 10, 4);
   }
 
+  private paintConstructions(): void {
+    const active = new Set(this.world.constructions.filter((c) => c.status === 'active').map((c) => c.id));
+    for (const [id, marker] of this.constructionMarkers) {
+      if (!active.has(id)) { marker.destroy(); this.constructionMarkers.delete(id); }
+    }
+    for (const construction of this.world.constructions) {
+      if (construction.status !== 'active') continue;
+      let marker = this.constructionMarkers.get(construction.id);
+      if (!marker) { marker = this.add.graphics().setDepth(8); this.constructionMarkers.set(construction.id, marker); }
+      marker.clear();
+      const x = construction.tile.x * TILE_PIXELS;
+      const y = construction.tile.y * TILE_PIXELS;
+      marker.fillStyle(0x8b6943).fillRect(x + 1, y + 3, 10, 8);
+      marker.lineStyle(2, 0xf5c56c).strokeRect(x + 1, y + 2, 10, 9);
+      marker.fillStyle(0xf6e4a9).fillRect(x + 2, y + 1, Math.round(8 * construction.progress / construction.hoursRequired), 2);
+    }
+  }
+
   private paintSite(site: Site): void {
     const x = site.tile.x * TILE_PIXELS;
     const y = site.tile.y * TILE_PIXELS;
@@ -160,6 +187,10 @@ export class WorldScene extends Phaser.Scene {
       g.fillStyle(0x554c37).fillRect(x + 1, y + 4, 10, 7);
       g.fillStyle(0xd5ba78).fillRect(x + 1, y + 2, 10, 3);
       g.fillStyle(0x94bed0).fillRect(x + 4, y + 6, 4, 3);
+    } else if (site.kind === 'market') {
+      g.fillStyle(0x473d5e).fillRect(x + 1, y + 4, 10, 7);
+      g.fillStyle(0xf0b76d).fillTriangle(x, y + 4, x + 6, y, x + 12, y + 4);
+      g.fillStyle(0x9cdbc0).fillRect(x + 4, y + 7, 4, 3);
     } else {
       g.fillStyle(0xdfc89a).fillCircle(x + 6, y + 6, 5);
       g.fillStyle(0xa56d4e).fillCircle(x + 6, y + 6, 2);
@@ -214,7 +245,7 @@ export class WorldScene extends Phaser.Scene {
     let best: { id: number; distance: number } | null = null;
     for (const [id, sprite] of this.sprites) {
       const distance = Math.hypot(sprite.x - position.x, sprite.y - position.y);
-      if (distance <= 9 && (!best || distance < best.distance)) best = { id, distance };
+      if (sprite.visible && distance <= 9 && (!best || distance < best.distance)) best = { id, distance };
     }
     if (best) this.onCitizenSelected(best.id);
   };

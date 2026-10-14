@@ -106,3 +106,30 @@ test('survival stocks, hunger/health inspector and deterministic playback are ob
   await page.screenshot({ path: testInfo.outputPath('phase-02-survival.png'), fullPage: true });
   expect(failures).toEqual([]);
 });
+
+
+test('Phase 03: 100 NPCs, real wallets, market and construction stay observable', async ({ page }, testInfo) => {
+  const failures = collectErrors(page);
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto('/');
+  await page.getByTestId('population-input').selectOption('100');
+  await page.getByRole('button', { name: 'Tạo lại', exact: true }).click();
+  await expect(page.getByTestId('game-container')).toHaveAttribute('data-npc-count', '100');
+  await expect(page.getByTestId('population-value')).toHaveText('100');
+  await expect(page.getByTestId('homeless-count')).toHaveText('20');
+  await expect(page.getByTestId('housing-capacity')).toHaveText('80/80');
+  await expect(page.getByTestId('market-inspector')).toContainText('Food / Wood');
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  await page.getByTestId('citizen-27').click();
+  await expect(page.getByTestId('citizen-wallet')).not.toBeEmpty();
+  await expect(page.getByTestId('citizen-inventory')).toContainText('Food');
+  const money = await page.getByTestId('total-currency').innerText();
+  await page.getByRole('button', { name: '20×' }).click();
+  await page.getByRole('button', { name: 'Tiếp tục' }).click();
+  await expect.poll(async () => Number(await page.getByTestId('trade-count').innerText()), { timeout: 15000 }).toBeGreaterThan(0);
+  await expect(page.getByTestId('total-currency')).toHaveText(money);
+  await expect(page.getByTestId('trade-history').locator('li').first()).toBeVisible();
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  await page.screenshot({ path: testInfo.outputPath('phase-03-economy-100.png'), fullPage: true });
+  expect(failures).toEqual([]);
+});
