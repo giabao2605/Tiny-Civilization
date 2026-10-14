@@ -96,8 +96,9 @@ export function advanceOneTick(previous: WorldState): WorldState {
     if (citizen.hunger <= BALANCE.foodEatThreshold) citizen.needMode = 'food';
     else if (citizen.needMode === 'food' && citizen.hunger >= BALANCE.foodSatisfiedThreshold) citizen.needMode = null;
     if (citizen.needMode !== 'food') {
-      if (citizen.energy <= BALANCE.lowEnergyThreshold) citizen.needMode = 'rest';
-      else if (citizen.needMode === 'rest' && citizen.energy >= BALANCE.restedEnergyThreshold) citizen.needMode = null;
+      if (citizen.energy <= BALANCE.lowEnergyThreshold || citizen.health <= BALANCE.criticalHealthThreshold) citizen.needMode = 'rest';
+      else if (citizen.needMode === 'rest' && citizen.energy >= BALANCE.restedEnergyThreshold &&
+        citizen.health >= BALANCE.recoveredHealthThreshold) citizen.needMode = null;
     }
 
     const requested: Goal = citizen.needMode === 'food' ? 'food' :
