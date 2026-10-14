@@ -1,7 +1,7 @@
 # Tiny Civilization — Progress / handoff log
 
 **Updated:** 2026-10-14  
-**Current stage:** Phase 00–03 DONE and merged to `main`. Phase 03 [PR #4](https://github.com/giabao2605/Tiny-Civilization/pull/4) merged as commit `83ef46c48068e782b5bdd4a234f67d60d958808c`; its final source CI [38517369710](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38517369710) PASS. Phase 04 Social is next, NOT STARTED. No MVP release.
+**Current stage:** Phase 00–03 DONE and merged to `main`. Phase 03 [PR #4](https://github.com/giabao2605/Tiny-Civilization/pull/4) merged as commit `83ef46c48068e782b5bdd4a234f67d60d958808c`. Phase 04 on [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5): IN PROGRESS, draft pending full CI validation. No MVP release.
 **Authoritative roadmap:** [MASTER_PLAN](MASTER_PLAN.md)  
 **Rules/contract:** [SIMULATION_CONTRACT](SIMULATION_CONTRACT.md)
 
@@ -11,11 +11,23 @@
 | 01 Living world | DONE, merged to main (PR #2) | 48×48 map, 20 purposeful agents, inspector, controls; CI PASS |
 | 02 Survival | DONE, merged (PR #3) | Finite food/wood, needs, production, shortage/death and verified 10-seed balance |
 | 03 Economy | DONE, merged to `main` (PR #4) | All 20/50/100 ten-seed 30-day runs and GitHub Actions PASS |
-| 04 Social | NOT STARTED | Persistent relationships, legible social causes |
+| 04 Social | IN PROGRESS (PR #5 draft) | Persistent relationships, causal stories, household/demography, full CI not yet green |
 | 05 Governance | NOT STARTED | Policies/crises with costs and real consequences |
 | 06 Quality | NOT STARTED | Save/load determinism, profiling, UX/balance |
 | 07 MVP release | NOT STARTED | CI green, deployed playable build |
 | 08 Expansion | DEFERRED | Only after MVP validation and new go/no-go |
+
+## Phase 04 Social implementation (2026-10-14)
+
+**Branch:** `feat/phase-04-social` from main `73ae8f57`; [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5) draft. **Gate: PENDING CI and review, NOT DONE.** Main remains unchanged.
+
+**Code added on branch:** `world.ts` schema v4 with directed sparse ties, separate home-backed household IDs, monotonic births, bounded memorials; `social.ts` validating same-tile encounter, work cooperation / actual last-unit scarcity, bounded relationship graph/events, deterministic tie and partner selection, dependant food spending, age / birth/death constraints. Integrated into `engine.ts` on the existing hourly clock, with housing assignment in `economy.ts`. React inspector now navigates relationship and household members, shows demographics / memorials and filters Social/Economy/Survival events.
+
+**Causal fixtures/tests:** `social.test.ts` documents seeded friendship (210), exhausted-field rivalry (211), valid pairing (210), age-dependent food consumption and death cleanup; `social.benchmark.test.ts` measures 20 NPC × 180 days (seed 543), 100 NPC × 30 days (seed 613), and a 119-resident stress fixture. Additional 20/50/100 × two seeds × 30-day deterministic checks. Chromium social inspector, timeline, 20× and mobile screenshots are automated in `tests/e2e/smoke.spec.ts`. Results are pending, not assumed.
+
+**CI debugging evidence:** initial [PR run 38519190518](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38519190518) failed typecheck because one new test tried mutating readonly tile.x; the test fixture was corrected in commit `6f822b7`. Later tests/benchmark/browser have NOT yet been confirmed green. No claims of measured p95/FPS until the job logs are reviewed. Local authoring host cannot resolve GitHub/npm; GitHub Actions is the verification environment.
+
+**Limits:** Births remain deliberately capped and do not guarantee healthy childhood during food shortages. No detailed lineage, inheritance, AI conversation, government, save/load or release. Relationship history is sparse, events are capped; dead people's goods remain held to preserve accounting. Phaser remains a read-only renderer.
 
 ## Phase 03 Economy, housing and 100 NPCs (2026-10-14)
 
