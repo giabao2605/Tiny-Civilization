@@ -205,6 +205,49 @@ describe('Phase 05 leadership, bounded policy and causal shocks', () => {
     verify(sick); verify(healthy);
   });
 
+  it('routes aid for a hungry dependent through the real guardian food bag and child meal', () => {
+    const world = advanceTicks(createWorld(493), 96);
+    for (const c of world.citizens) c.hunger = 100;
+    const parent = world.citizens[0]!;
+    const home = world.sites.find(s => s.id === parent.homeId)!;
+    Object.assign(parent, { tile: { ...home.tile }, destination: { ...home.tile },
+      goal: 'home', activity: 'rest', route: [], hunger: 100, needMode: null,
+      inventory: { food: 0, wood: parent.inventory.wood } });
+    const child = { ...parent, id: world.nextEntityId++, name: 'Con phụ thuộc',
+      age: 1, ageHours: BALANCE.hoursPerYear, alive: true, job: 'other' as const,
+      hunger: 20, health: 100, starvationHours: 0, wallet: 0,
+      illnessUntil: 0, illnessSeverity: 0, relations: {}, partnerId: null, partneredTick: null,
+      needMode: 'food' as const, workHours: 0, workNodeId: null,
+      inventory: { food: 0, wood: 0 }, recent: [], lastMove: [{ ...home.tile }] };
+    world.citizens.push(child);
+    world.households.find(h => h.id === parent.householdId)!.members.push(child.id);
+    const previousConsumed = world.stats.totalFoodConsumed;
+    const previousOwned = ownFood(world);
+    const beforeProduced = world.stats.totalFoodProduced;
+    const after = advanceOneTick(world, [aid(world, 12)]);
+    const recipient = after.citizens.find(c => c.id === parent.id)!;
+    const dependent = after.citizens.find(c => c.id === child.id)!;
+    expect(after.governance.policy.lastRecipients).toContain(parent.id);
+    expect(after.governance.policy.lastRecipients).not.toContain(child.id);
+    expect(after.governance.policy.transferred).toBeGreaterThanOrEqual(1);
+    expect(dependent.hunger).toBeGreaterThan(child.hunger);
+    expect(dependent.inventory.food).toBe(0);
+    expect(recipient.inventory.food).toBe(0); // caregiver fed the child with that physical unit
+    expect(after.stats.totalFoodConsumed).toBeGreaterThan(previousConsumed);
+    expect(ownFood(after)).toBe(previousOwned + after.stats.totalFoodProduced - beforeProduced -
+      (after.stats.totalFoodConsumed - previousConsumed));
+    verify(after);
+  });
+
+  it('enforces bounded repeated harvest and illness cooldowns over 75 game days', () => {
+    const world = advanceTicks(createWorld(719), 24 * 75);
+    expect(world.governance.harvestCount).toBeGreaterThanOrEqual(3);
+    expect(world.governance.illnessCount).toBeGreaterThanOrEqual(2);
+    expect(world.governance.shocks.length).toBeLessThanOrEqual(2);
+    expect(world.governance.illnessRecovered).toBeGreaterThan(0);
+    verify(world);
+  }, 120000);
+
   it('multi-seed long-run deterministic replay conserves food, wood, money and household limits', () => {
     for (const population of [20, 50, 100] as const) for (const seed of [543, 613]) {
       const initial = createWorld(seed, population);
