@@ -290,7 +290,7 @@ export function advanceOneTick(previous: WorldState): WorldState {
         citizen.activity = 'building';
         citizen.reason = 'Xây nhà: ' + construction.progress + '/' + construction.hoursRequired +
           ' giờ, đã nhận ' + BALANCE.builderHourlyPay + ' tiền từ quỹ.';
-        if (construction.status === 'complete') announce('constructionDone', citizen,
+        if (world.constructions.find((site) => site.id === construction.id)?.status === 'complete') announce('constructionDone', citizen,
           citizen.name + ' đã hoàn thành nhà #' + construction.id + ', tăng ' + BALANCE.houseCapacity + ' chỗ ở.');
       } else {
         world.stats.failedActions += 1;
