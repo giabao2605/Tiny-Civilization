@@ -98,7 +98,7 @@ export function buildOneHour(world: WorldState, citizen: Citizen, construction: 
     const house = { id: world.nextEntityId++, kind: 'home' as const,
       name: 'Nhà mới ' + construction.id, tile: { ...construction.tile }, capacity: BALANCE.houseCapacity };
     world.sites.push(house);
-    let remaining = house.capacity;
+    let remaining: number = house.capacity;
     for (const resident of world.citizens) {
       if (remaining === 0) break;
       if (resident.alive && resident.homeId === null) {
