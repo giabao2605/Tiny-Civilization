@@ -1,7 +1,7 @@
 # Tiny Civilization — Progress / handoff log
 
 **Updated:** 2026-10-14  
-**Current stage:** Phase 00–03 DONE and merged to `main`. Phase 03 [PR #4](https://github.com/giabao2605/Tiny-Civilization/pull/4) merged as commit `83ef46c48068e782b5bdd4a234f67d60d958808c`. Phase 04 on [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5): IN PROGRESS, draft pending full CI validation. No MVP release.
+**Current stage:** Phase 00–03 DONE and merged to `main`. Phase 03 [PR #4](https://github.com/giabao2605/Tiny-Civilization/pull/4) merged as commit `83ef46c48068e782b5bdd4a234f67d60d958808c`. Phase 04 on [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5): IMPLEMENTED, full CI passed at [run 38520465893](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38520465893), awaiting PR review; NOT merged to main. No MVP release.
 **Authoritative roadmap:** [MASTER_PLAN](MASTER_PLAN.md)  
 **Rules/contract:** [SIMULATION_CONTRACT](SIMULATION_CONTRACT.md)
 
