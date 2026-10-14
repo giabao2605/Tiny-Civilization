@@ -86,14 +86,19 @@ describe('Phase 04 relationships and demographic invariants', () => {
 
   it('work friends have real repeated contacts, bounded scores, and reasoned milestones (story #1)', () => {
     const f = fixture();
+    const field = f.world.resourceNodes.find((n) => n.kind === 'field')!;
+    for (const c of [f.a, f.b]) {
+      c.tile = { ...field.tile }; c.lastMove = [{ ...field.tile }];
+      c.goal = 'work'; c.job = 'farmer'; c.workNodeId = field.id;
+    }
     for (let tick = 0; tick < 220; tick += BALANCE.socialCooldown) {
       f.world.tick = tick;
-      expect(applyInteraction(f.world, f.a.id, f.b.id, 'chat', f.emit)).toBe(true);
+      expect(applyInteraction(f.world, f.a.id, f.b.id, 'work', f.emit, field.id)).toBe(true);
     }
     const tie = f.a.relations[f.b.id]!;
     expect(tie.affinity).toBe(100);
     expect(tie.trust).toBeGreaterThan(0);
-    expect(f.emitted.some((e) => e.type === 'friendship' && e.cause?.includes('quảng trường'))).toBe(true);
+    expect(f.emitted.some((e) => e.type === 'friendship' && e.cause?.includes('Cùng làm việc'))).toBe(true);
     expect(Object.keys(f.a.relations).length).toBeLessThanOrEqual(BALANCE.socialEdgeLimit);
   });
 
