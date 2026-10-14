@@ -1,7 +1,7 @@
 name: Tiny Civilization CI
 on:
   push:
-    branches: [main, feat/phase-00-foundation, feat/phase-01-living-world, feat/phase-02-survival, feat/phase-04-social, feat/phase-05-governance]
+    branches: [main, feat/phase-00-foundation, feat/phase-01-living-world, feat/phase-02-survival, feat/phase-04-social]
   pull_request:
     branches: [main]
 permissions:
