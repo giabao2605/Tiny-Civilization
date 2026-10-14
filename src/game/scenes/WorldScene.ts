@@ -13,6 +13,7 @@ export class WorldScene extends Phaser.Scene {
   private selectedId: number | null = null;
   private speed = 1;
   private sprites = new Map<number, Phaser.GameObjects.Container>();
+  private movementTweens = new Map<number, Phaser.Tweens.Tween>();
   private highlighter?: Phaser.GameObjects.Graphics;
   private dragStart?: { x: number; y: number };
   private lastDrag?: { x: number; y: number };
@@ -40,6 +41,7 @@ export class WorldScene extends Phaser.Scene {
       this.input.off(Phaser.Input.Events.POINTER_UP, this.onUp);
       this.input.off(Phaser.Input.Events.POINTER_WHEEL, this.onWheel);
       this.sprites.clear();
+      this.movementTweens.clear();
       this.highlighter = undefined;
     });
   }
@@ -47,6 +49,10 @@ export class WorldScene extends Phaser.Scene {
   setSnapshot(snapshot: LivingSnapshot): void {
     this.selectedId = snapshot.selectedCitizenId;
     this.speed = snapshot.speed;
+    for (const tween of this.movementTweens.values()) {
+      if (snapshot.paused) tween.pause();
+      else tween.resume();
+    }
     const before = this.world;
     this.world = snapshot.world;
     if (!this.sys.isActive() || !this.sprites.size) return;
@@ -58,10 +64,10 @@ export class WorldScene extends Phaser.Scene {
       for (const citizen of snapshot.world.citizens) {
         const sprite = this.sprites.get(citizen.id);
         if (!sprite || citizen.lastMove.length < 2) continue;
-        this.tweens.killTweensOf(sprite);
+        this.movementTweens.get(citizen.id)?.stop();
         const path = citizen.lastMove;
         const steps = path.length - 1;
-        this.tweens.addCounter({
+        const tween = this.tweens.addCounter({
           from: 0, to: steps,
           duration: Math.max(18, 420 / this.speed),
           onUpdate: (tween) => {
@@ -72,8 +78,13 @@ export class WorldScene extends Phaser.Scene {
             const b = path[start + 1]!;
             sprite.setPosition(xPixel(a.x + (b.x - a.x) * fraction), yPixel(a.y + (b.y - a.y) * fraction));
           },
-          onComplete: () => sprite.setPosition(xPixel(citizen.tile.x), yPixel(citizen.tile.y)),
+          onComplete: () => {
+            sprite.setPosition(xPixel(citizen.tile.x), yPixel(citizen.tile.y));
+            this.movementTweens.delete(citizen.id);
+          },
         });
+        if (snapshot.paused) tween.pause();
+        this.movementTweens.set(citizen.id, tween);
       }
     }
     this.redrawHighlight();
