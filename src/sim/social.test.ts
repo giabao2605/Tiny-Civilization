@@ -211,6 +211,19 @@ describe('Phase 04 relationships and demographic invariants', () => {
     expect(child.job).toBe('other');
   });
 
+  it('ages by exactly 8760 ticks per year, promotes adults and retires senior workers', () => {
+    const world = createWorld(910);
+    const young = world.citizens[0]!, senior = world.citizens[1]!;
+    young.age = 17; young.ageHours = BALANCE.adultAge * BALANCE.hoursPerYear - 1; young.job = 'other';
+    senior.age = 67; senior.ageHours = BALANCE.retirementAge * BALANCE.hoursPerYear - 1; senior.job = 'farmer';
+    const next = advanceOneTick(world);
+    expect(next.citizens[0]!.age).toBe(18);
+    expect(next.citizens[0]!.job).toBe('farmer');
+    expect(next.citizens[1]!.age).toBe(68);
+    expect(next.citizens[1]!.job).toBe('other');
+    expect(totalCurrency(next)).toBe(world.market.initialSupply);
+  });
+
   it('seeded long-running worlds replay exactly and preserve finite currency/housing', () => {
     for (const population of [20, 50, 100] as const) {
       for (const seed of [72, 2026]) {
