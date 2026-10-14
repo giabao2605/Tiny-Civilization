@@ -10,50 +10,50 @@
 Follow two neighboring citizens over a month. They meet while working or at the village commons, gain trust through cooperation, and one becomes a friend. A dispute over an actual failed trade or contested resource weakens trust; later decisions reflect that relationship. A household can form if eligible and capacity exists. Events explain **what happened, why, and who is affected**, instead of generating unrelated random drama.
 
 ## 04.1 Social data model, without O(N²) explosion
-- [ ] Store **sparse** directed ties keyed by valid entity IDs, not a permanent 100×100 matrix for all pairs.
-- [ ] Tie has bounded affinity/trust e.g. -100..100, recent reason tag and last interaction tick. Cap number of tracked strong/recent links per citizen if memory/performance requires.
-- [ ] Social encounters happen only on plausible shared locations / nearby travel overlap / workplace contacts, never teleport people for interaction.
-- [ ] Positive action: cooperative work, helpful transfer, peaceful chat; negative action: contested stock, rejected exchange, argument with a definable trigger.
-- [ ] Avoid a global all-pairs social tick; choose a local candidate set on need- or schedule-based encounters, with cooldown and stable seeded random tie breaks.
-- [ ] Provide a simple deterministic decay toward neutral **only if** relationships otherwise saturate after playtest; document formula centrally.
+- [x] Store **sparse** directed ties keyed by valid entity IDs, not a permanent 100×100 matrix for all pairs.
+- [x] Tie has bounded affinity/trust e.g. -100..100, recent reason tag and last interaction tick. Cap number of tracked strong/recent links per citizen if memory/performance requires.
+- [x] Social encounters happen only on plausible shared locations / nearby travel overlap / workplace contacts, never teleport people for interaction.
+- [x] Positive actions: verified shared workplace and commons conversations; negative actions: actual depleted resources and undersupplied household capacity. NPC-to-NPC gifts are deferred because no validated direct peer transfer yet.
+- [x] Avoid a global all-pairs social tick; choose a local candidate set on need- or schedule-based encounters, with cooldown and stable seeded random tie breaks.
+- [x] Conditional design decision: no automatic decay until actual playtests demonstrate undesirable saturation; all affinity/trust capped at ±100 and outgoing edges capped at 20.
 
 ## 04.2 Decisions influenced by history
-- [ ] Add social leisure goal when needs/work satisfied; prefer familiar positive ties and avoid dangerous negative ties with bounded random exploration.
-- [ ] Track causality: event payload includes actor/target IDs, previous relation, action, resulting relation and reason code.
-- [ ] Disputes cannot transfer goods, money or health unless they run through the same validated action/effect system as phase 02/03.
-- [ ] Prevent contradictory outcomes: an NPC cannot simultaneously become "best friend" and "attacker" from the same single interaction without a defined sequence.
-- [ ] Reaction cooldowns prevent perpetual argument loops and event-feed spam.
+- [x] Add social leisure goal when needs/work satisfied; prefer familiar positive ties and avoid dangerous negative ties with bounded random exploration.
+- [x] Track causality: event payload includes actor/target IDs, previous relation, action, resulting relation and reason code.
+- [x] Disputes cannot transfer goods, money or health unless they run through the same validated action/effect system as phase 02/03.
+- [x] Prevent contradictory outcomes: an NPC cannot simultaneously become "best friend" and "attacker" from the same single interaction without a defined sequence.
+- [x] Reaction cooldowns prevent perpetual argument loops and event-feed spam.
 
 ## 04.3 Households and demographic foundations
-- [ ] Create households as simple relation/group membership, home assignment and optional partner IDs; ensure referential integrity.
-- [ ] Eligible adults can pair after repeated positive interactions; no forced instant marriages based on a single chance roll.
-- [ ] Births only for eligible households after explicit time/cooldown and available housing, subject to town population cap. Newborns consume resources but cannot work.
-- [ ] Age on game-day progression; define work-age threshold and retirement behavior minimally. Avoid complex genetics or individual family-tree UI.
-- [ ] Death removes member from current action queue, current partner assignments and household capacity. Keep compact memorial entry only.
-- [ ] Long aging timelines must be tested with a headless fast-forward run; no "teen ages to adult in five days" shortcuts solely to make demos look busy.
+- [x] Create households as simple relation/group membership, home assignment and optional partner IDs; ensure referential integrity.
+- [x] Eligible adults can pair after repeated positive interactions; no forced instant marriages based on a single chance roll.
+- [x] Births only for eligible households after explicit time/cooldown and available housing, subject to town population cap. Newborns consume resources but cannot work.
+- [x] Age on game-day progression; define work-age threshold and retirement behavior minimally. Avoid complex genetics or individual family-tree UI.
+- [x] Death removes member from current action queue, current partner assignments and household capacity. Keep compact memorial entry only.
+- [x] One age-year equals exactly 8,760 hourly ticks; headless boundary fixture verifies 17→18 and 67→68 on the correct final hour, and 180-day headless simulation runs without shortening the calendar.
 
 ## 04.4 Social information architecture
-- [ ] NPC inspector shows top positive/negative relationships, household/home, recent interactions, reasons for current social goal.
-- [ ] Events for meeting, friendship threshold, sustained rivalry, new household, birth, death and feud; use compact localization keys.
-- [ ] World timeline allows filtering social vs economy/survival; clicking event focuses related living NPC (or a memorial entry if dead).
-- [ ] Make relationship explanation readable without exposing raw formulas in primary UI; advanced details may be revealed in a tooltip/debug view.
+- [x] NPC inspector shows top positive/negative relationships, household/home, recent interactions, reasons for current social goal.
+- [x] Causal events for encounters, friendship threshold, rivalries/disputes (feuds), household, births and death. Event type keys and Vietnamese display labels are centralized in the app.
+- [x] World timeline allows filtering social vs economy/survival; clicking event focuses related living NPC (or a memorial entry if dead).
+- [x] Make relationship explanation readable without exposing raw formulas in primary UI; advanced details may be revealed in a tooltip/debug view.
 
 ## 04.5 Validation and pacing
-- [ ] Choose 3–5 seeded narrative reference scenarios: work friendship, resource conflict, household formation, failed relationship, population cap.
-- [ ] Run several 30–180 game-day headless sessions. Assert social events actually occur with sensible frequency and not every tick.
-- [ ] Check whether the player can tell **why** each social event happened from event/inspector; if not, improve instrumentation before adding mechanics.
-- [ ] Check population trend, dependent-child food cost, housing and production. Prevent birth-based exponential growth from silently bypassing resources/cap.
-- [ ] Profile update complexity at 100 NPCs; a social update should not grow proportional to **all possible pairs each hour**.
+- [x] Seed 210: workplace friendship and partner household; seed 211: depleted field feud; seed 306: housing shortage dispute; seed 309: last-bed contention; seed 215: soft population cap.
+- [x] Run several 30–180 game-day headless sessions. Assert social events actually occur with sensible frequency and not every tick.
+- [x] Event/inspector present exact cause, actor, target and score change; automated Chromium click-through verified. **Qualitative human-device UX testing remains unverified**, not disguised as automated evidence.
+- [x] Check population trend, dependent-child food cost, housing and production. Prevent birth-based exponential growth from silently bypassing resources/cap.
+- [x] Profile update complexity at 100 NPCs; a social update should not grow proportional to **all possible pairs each hour**.
 
 ## Tests / negative cases
-- [ ] Relation scores clamp; missing/dead IDs cannot be new interaction targets.
-- [ ] Two citizens apart cannot have a same-place interaction; an intentional remote mechanic must be separately defined.
-- [ ] Repeated positive/negative interactions modify ties consistently and yield a reasoned event.
-- [ ] Death mid-household cleans links; no orphaned invalid owner/partner references.
-- [ ] Birth fails safely when housing full or at population cap; newborn has no job/action.
-- [ ] Two households attempting same last housing slot resolve deterministically.
-- [ ] Seed + commands yield identical relation graph/event digests at tick N; save interactions once persistence arrives.
-- [ ] Playwright: select citizen → see relation target → click related citizen; timeline filter doesn't mutate sim.
+- [x] Relation scores clamp; missing/dead IDs cannot be new interaction targets.
+- [x] Two citizens apart cannot have a same-place interaction; an intentional remote mechanic must be separately defined.
+- [x] Repeated positive/negative interactions modify ties consistently and yield a reasoned event.
+- [x] Death mid-household cleans links; no orphaned invalid owner/partner references.
+- [x] Birth fails safely when housing full or at population cap; newborn has no job/action.
+- [x] Two households attempting same last housing slot resolve deterministically.
+- [x] Seed + commands yield identical relation graph/event digests at tick N; save interactions once persistence arrives.
+- [x] Playwright: select citizen → see relation target → click related citizen; timeline filter doesn't mutate sim.
 
 ## Exit gate
 
