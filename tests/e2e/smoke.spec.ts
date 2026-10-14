@@ -208,6 +208,8 @@ test('governance leader, bounded policy rejection, visible crop shock and crisis
   await expect(page.getByTestId('active-shocks')).toContainText('Mất mùa');
   await page.getByTestId('timeline-filter').selectOption('governance');
   await expect(page.getByTestId('event-feed')).toContainText(/Biến cố|Tác động|trưởng làng/i);
+  await page.getByTestId('event-feed').getByRole('button', { name: /Xem nguyên nhân/ }).first().click();
+  await expect(page.getByTestId('crisis-event-details')).toContainText('Nguyên nhân');
   await page.screenshot({ path: testInfo.outputPath('phase-05-governance-desktop.png'), fullPage: true });
   expect(failures).toEqual([]);
 });
