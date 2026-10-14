@@ -185,7 +185,8 @@ export function advanceOneTick(previous: WorldState): WorldState {
     }
     const moved = citizen.lastMove.length > 1;
     const arrived = same(citizen.tile, citizen.destination);
-    const nextActivity = activityFor(citizen.goal, !arrived);
+    const nextActivity = citizen.goal === 'food' && arrived && inventory.food === 0
+      ? 'waitingForFood' : activityFor(citizen.goal, !arrived);
     if (nextActivity !== citizen.activity) {
       citizen.activity = nextActivity;
       citizen.reason = reasonFor(citizen.goal, !arrived, citizen);
