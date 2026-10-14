@@ -153,6 +153,32 @@ describe('Phase 03 deterministic economy and adversarial invariants', () => {
     expect(sellToMarket(w, c, 'food')).toBe(false);
   });
 
+
+  it('atomic seller contention and wood purchase cannot overspend either owner', () => {
+    const w = createWorld(41);
+    w.tick = 1;
+    const [first, second] = w.citizens;
+    for (const c of [first!, second!]) {
+      c.tile = { ...marketTile(w) };
+      c.inventory.wood = 1;
+    }
+    w.market.cash = w.market.prices.woodBuy;
+    const before = totalCurrency(w);
+    expect(sellToMarket(w, first!, 'wood')).toBe(true);
+    expect(sellToMarket(w, second!, 'wood')).toBe(false);
+    expect(w.market.cash).toBe(0);
+    expect(first!.wallet).toBe(BALANCE.initialWallet + w.market.prices.woodBuy);
+    expect(second!.inventory.wood).toBe(1);
+    expect(totalCurrency(w)).toBe(before);
+    w.tick += 1;
+    second!.wallet = w.market.prices.woodSell;
+    const balance = totalCurrency(w);
+    expect(buyFromMarket(w, second!, 'wood')).toBe(true);
+    expect(second!.wallet).toBe(0);
+    expect(second!.inventory.wood).toBe(2);
+    expect(totalCurrency(w)).toBe(balance);
+  });
+
   it('wood is reserved once at start, builders require time, life and funded wages', () => {
     const w = createWorld(5, 100);
     w.inventory.wood = BALANCE.houseWoodCost;
@@ -179,6 +205,14 @@ describe('Phase 03 deterministic economy and adversarial invariants', () => {
     deadBuilder.tile = { ...job2.tile }; deadBuilder.alive = false;
     expect(buildOneHour(w2, deadBuilder, job2)).toBe(false);
     expect(job2.progress).toBe(0);
+    const stalled = createWorld(8, 100);
+    const unpaid = startConstruction(stalled)!;
+    const assigned = stalled.citizens.find((c) => c.id === unpaid.builderId)!;
+    assigned.tile = { ...unpaid.tile };
+    stalled.market.cash = 0;
+    expect(buildOneHour(stalled, assigned, unpaid)).toBe(false);
+    expect(unpaid.progress).toBe(0);
+    expect(stalled.inventory.wood).toBeGreaterThanOrEqual(0);
     const w3 = createWorld(5, 100);
     w3.inventory.wood = 0;
     expect(startConstruction(w3)).toBeNull();
@@ -206,6 +240,7 @@ describe('Phase 03 deterministic economy and adversarial invariants', () => {
       check(after);
       expect(after.citizens).toHaveLength(100);
       expect(after.market.completedTrades).toBeGreaterThan(0);
+      expect(after.citizens.filter((c) => c.alive)).toHaveLength(100);
       rows.push({ seed, alive: after.citizens.filter((c) => c.alive).length,
         dead: after.stats.deaths, food: after.inventory.food, wood: after.inventory.wood,
         produced: after.stats.totalFoodProduced, consumed: after.stats.totalFoodConsumed,
@@ -222,39 +257,22 @@ describe('Phase 03 deterministic economy and adversarial invariants', () => {
 
   it('20 and 50 NPC simulations remain deterministic for 30 days', () => {
     for (const population of [20, 50] as const) {
-      for (let seed = 1; seed <= 3; seed += 1) {
+      for (let seed = 1; seed <= 10; seed += 1) {
         const a = advanceTicks(createWorld(seed, population), 720);
         check(a);
+        expect(a.citizens.filter((c) => c.alive)).toHaveLength(population);
         expect(stateDigest(a)).toBe(stateDigest(advanceTicks(createWorld(seed, population), 720)));
-        if (population === 50 && seed === 1) console.log('PHASE03_50_DIAG=' + JSON.stringify({
-          dead: a.citizens.filter((c) => !c.alive).map((c) => ({ id: c.id, job: c.job, wallet: c.wallet,
-            ownFood: c.inventory.food, ownWood: c.inventory.wood, workNodeId: c.workNodeId,
-            hunger: c.hunger, reason: c.reason, tile: c.tile })),
-          nodes: a.resourceNodes.map((node) => ({ id: node.id, kind: node.kind, stock: node.stock })),
-          marketCash: a.market.cash }));
         console.log('PHASE03_BALANCE=' + JSON.stringify({ population, seed,
           alive: a.citizens.filter((c) => c.alive).length, trades: a.market.completedTrades,
-          food: a.inventory.food, wood: a.inventory.wood, money: totalCurrency(a) }));
+          food: a.inventory.food, wood: a.inventory.wood, produced: a.stats.totalFoodProduced,
+          consumed: a.stats.totalFoodConsumed, marketCash: a.market.cash,
+          housing: housing(a), meanHealth: Math.round(a.citizens.reduce((sum, c) => sum + c.health, 0) / population),
+          failed: a.stats.failedActions, money: totalCurrency(a) }));
       }
     }
   }, 180000);
 
 
-  it('diagnoses bankrupt former woodcutters without mutating production rules', () => {
-    let world = createWorld(1, 50);
-    const trace: unknown[] = [];
-    for (let t = 1; t <= 720; t += 1) {
-      world = advanceOneTick(world);
-      if (t % 48 === 0) {
-        const c = world.citizens.find((c) => c.id === 30)!;
-        trace.push({ t, alive: c.alive, job: c.job, wallet: c.wallet, food: c.inventory.food,
-          wood: c.inventory.wood, need: c.needMode, goal: c.goal, action: c.activity,
-          workNode: c.workNodeId, workHours: c.workHours, energy: c.energy, health: c.health,
-          blockedGoal: c.blockedGoal, retry: c.retryAfterTick, reason: c.reason });
-      }
-    }
-    console.log('PHASE03_CITIZEN_TRACE=' + JSON.stringify(trace));
-  });
 
   it('single ticks, batch, JSON clone and snapshots have identical outcomes', () => {
     const original = createWorld(13, 50);
