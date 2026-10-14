@@ -215,6 +215,23 @@ describe('Phase 03 deterministic economy and adversarial invariants', () => {
     }
   }, 180000);
 
+
+  it('diagnoses bankrupt former woodcutters without mutating production rules', () => {
+    let world = createWorld(1, 50);
+    const trace: unknown[] = [];
+    for (let t = 1; t <= 720; t += 1) {
+      world = advanceOneTick(world);
+      if (t % 48 === 0) {
+        const c = world.citizens.find((c) => c.id === 30)!;
+        trace.push({ t, alive: c.alive, job: c.job, wallet: c.wallet, food: c.inventory.food,
+          wood: c.inventory.wood, need: c.needMode, goal: c.goal, action: c.activity,
+          workNode: c.workNodeId, workHours: c.workHours, energy: c.energy, health: c.health,
+          blockedGoal: c.blockedGoal, retry: c.retryAfterTick, reason: c.reason });
+      }
+    }
+    console.log('PHASE03_CITIZEN_TRACE=' + JSON.stringify(trace));
+  });
+
   it('single ticks, batch, JSON clone and snapshots have identical outcomes', () => {
     const original = createWorld(13, 50);
     let steps = JSON.parse(JSON.stringify(original)) as WorldState;
