@@ -59,6 +59,7 @@ export const BALANCE = {
   populationSoftCap: 100,
   populationHardCap: 120,
   socialCooldown: 8,
+  housingDisputeCooldown: 24,
   socialInteractionsPerTick: 8,
   socialEdgeLimit: 20,
   socialFriendThreshold: 24,
