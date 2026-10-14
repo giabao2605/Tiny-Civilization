@@ -1,7 +1,7 @@
 # Tiny Civilization — Progress / handoff log
 
 **Updated:** 2026-10-14  
-**Current stage:** Phase 02 Survival **DONE on feature branch, PR #3 open and unmerged**; Phase 00/01 merged to main. CI verification is recorded below; no MVP released.  
+**Current stage:** Phase 02 merged into main at `0c8db616` and main CI [38510396152](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38510396152) passed. **Phase 03 is IN PROGRESS** on `feat/phase-03-economy`, draft [PR #4](https://github.com/giabao2605/Tiny-Civilization/pull/4). No MVP release.  
 **Authoritative roadmap:** [MASTER_PLAN](MASTER_PLAN.md)  
 **Rules/contract:** [SIMULATION_CONTRACT](SIMULATION_CONTRACT.md)
 
@@ -9,13 +9,33 @@
 | --- | --- | --- |
 | 00 Foundation | DONE, merged to main | npm ci, typecheck, lint, Vitest, build, Playwright Chromium PASS |
 | 01 Living world | DONE, merged to main (PR #2) | 48×48 map, 20 purposeful agents, inspector, controls; CI PASS |
-| 02 Survival | DONE in PR #3, awaiting merge | Finite food/wood, needs, production, shortage/death and verified 10-seed balance |
-| 03 Economy | NOT STARTED | 100 agents, finite transactions, sustainable seeded runs |
+| 02 Survival | DONE, merged (PR #3) | Finite food/wood, needs, production, shortage/death and verified 10-seed balance |
+| 03 Economy | IN PROGRESS, draft PR #4 | 100 agents, finite transactions, sustainable seeded runs |
 | 04 Social | NOT STARTED | Persistent relationships, legible social causes |
 | 05 Governance | NOT STARTED | Policies/crises with costs and real consequences |
 | 06 Quality | NOT STARTED | Save/load determinism, profiling, UX/balance |
 | 07 MVP release | NOT STARTED | CI green, deployed playable build |
 | 08 Expansion | DEFERRED | Only after MVP validation and new go/no-go |
+
+## Phase 03 Economy, housing and 100 NPCs (2026-10-14)
+
+**Status: IN PROGRESS, NOT YET DONE.** Development branch created from main merge commit 0c8db616. Draft PR: https://github.com/giabao2605/Tiny-Civilization/pull/4. No auto merge.
+
+**Implemented source (requires green CI):**
+- src/sim/world.ts: 20/50/100 deterministic worlds; unique IDs; bounded site capacities, nullable homelessness, citizens' wallets and owned goods, one market/treasury, construction records, expanded finite field/forest production nodes.
+- src/sim/economy.ts: atomic buy/sell with enough funds, owned stock, location, storage capacity and live citizen checks; wood reservation at construction start, paid hourly builders and house completion.
+- src/sim/engine.ts: stable ascending NPC effects; physical harvested goods enter NPC bags, travel and one-hour market trades, paid meal purchases, self-owned meals, finite builders and survival priority; events read from committed simulation.
+- src/sim/balance.ts: integer prices, fixed initial cash, population-scaled map resources, node slot caps, house costs/durations and cooldowns.
+- src/app/App.tsx, livingCoordinator.ts and WorldScene.ts: population choice, responsive inspectors/dashboard, wallets, trade history, builder progress, market marker and dynamically completed houses; no React/Phaser economy mutations.
+- economy.test.ts, benchmark.test.ts, updated survival and browser smoke suites: conservation and failed trade tests, parallel buyers/builders, no free-food escape, 720-tick 100-NPC scenarios and Chromium 100-NPC coverage.
+
+**Ownership:** Market warehouse equals the existing WorldState.inventory (not duplicated). NPC bags are separate and finite. Initial supply is 122 coins per NPC (32 in citizen wallet, 90 at market); trades and builder wages are transfers. Fixed food prices 3/4 and wood prices 2/3 have a spread retained in market cash. Houses hold 4 residents; construction consumes 8 market wood at initiation and 8 paid hours. Details in SIMULATION_CONTRACT.md.
+
+**Verification state:** Initial PR CI run [38511631535](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38511631535) failed strict TypeScript on new null house ID and literal narrowing; these were addressed on later commits. Later runs, per-seed outcomes, sustainability, performance and screenshot evidence must be recorded from real output before marking PASS. The authoring container cannot resolve GitHub/npm (git ls-remote DNS error), so GitHub-hosted Ubuntu Actions is the execution environment.
+
+**Known open checks:** Validate all old Phase 02 coverage is preserved by updated owned-food tests, get green typecheck/lint/unit/build/E2E on the final SHA, inspect baseline 20/50/100 and stressed bankrupt seeds, measure 100-NPC timing, inspect captured screenshots and review any build deadlocks, buyer contention, or event throttling. PR stays draft and must not merge while any gate fails.
+
+---
 
 ## Phase 02 Survival implementation and verification (2026-10-14)
 
