@@ -2,7 +2,7 @@
 
 **Tóm tắt tiếng Việt:** Dựng ứng dụng nền, test tự động và giao diện Phaser. Chỉ được qua phase khi thật sự mở được web, build và test chạy.
 
-**Status:** NOT STARTED · **Depends on:** none · **Target:** minimal working browser app + repeatable tests, NOT a feature-complete game.
+**Status:** DONE (verified on implementation branch; awaiting PR merge) · **Depends on:** none · **Target:** minimal working browser app + repeatable tests, NOT a feature-complete game.
 **Scope boundary:** no citizen economy/social mechanics, no backend, no full art pack, no speculative engine framework.
 
 ## User-visible success story
@@ -12,25 +12,25 @@ Opening the local dev URL shows a clean Tiny Civilization shell with a Phaser-re
 ## Slice-by-slice implementation plan
 
 ### 00.1 Repository hygiene and reproducibility
-- [ ] Inspect branch/current files before writing. Do not overwrite planning docs or user modifications.
-- [ ] Scaffold **Vite + React + TypeScript** into repo root; use npm and commit `package-lock.json`.
-- [ ] Pin Node LTS major via `.nvmrc` and mention npm version expectations in README; use versions supported by all chosen tools. Pin compatible installed dependency versions in lockfile, not vague untested "latest".
-- [ ] Add strict TypeScript, ESLint for project sources, predictable formatting (simple config, avoid adding three formatters), `.gitignore` for `node_modules`, `dist`, output and local caches.
-- [ ] Add scripts: `dev`, `build`, `lint`, `test`, `test:e2e` (and `typecheck` if `build` alone does not run TS).
-- [ ] Add a concise development README with install, run, test and troubleshooting instructions; explain that the repository currently has no release.
+- [x] Inspect branch/current files before writing. Do not overwrite planning docs or user modifications.
+- [x] Scaffold **Vite + React + TypeScript** into repo root; use npm and commit `package-lock.json`.
+- [x] Pin Node LTS major via `.nvmrc` and mention npm version expectations in README; use versions supported by all chosen tools. Pin compatible installed dependency versions in lockfile, not vague untested "latest".
+- [x] Add strict TypeScript, ESLint for project sources, predictable formatting (simple config, avoid adding three formatters), `.gitignore` for `node_modules`, `dist`, output and local caches.
+- [x] Add scripts: `dev`, `build`, `lint`, `test`, `test:e2e` (and `typecheck` if `build` alone does not run TS).
+- [x] Add a concise development README with install, run, test and troubleshooting instructions; explain that the repository currently has no release.
 
 ### 00.2 UI / game renderer bridge
-- [ ] Create a small React shell with header, canvas area, placeholder HUD/inspector column and footer. Use simple CSS; no global state library.
-- [ ] Mount exactly one Phaser Game within a React-owned container, with proper resize and game instance teardown on unmount; use `Phaser.AUTO` renderer fallback.
-- [ ] Render a primitive tile grid/camera preview using generated shapes or original minimal tiles, avoiding external paid sprites.
-- [ ] Define narrow bridge interface: React sends validated UI commands; Phaser emits selections; simulation snapshot comes from one coordinator. No React state mutation from Phaser render loop.
-- [ ] Keep world simulation out of this phase except a typed placeholder; optional standalone empty tick method can be created without premature abstraction.
+- [x] Create a small React shell with header, canvas area, placeholder HUD/inspector column and footer. Use simple CSS; no global state library.
+- [x] Mount exactly one Phaser Game within a React-owned container, with proper resize and game instance teardown on unmount; use `Phaser.AUTO` renderer fallback.
+- [x] Render a primitive tile grid/camera preview using generated shapes or original minimal tiles, avoiding external paid sprites.
+- [x] Define narrow bridge interface: React sends validated UI commands; Phaser emits selections; simulation snapshot comes from one coordinator. No React state mutation from Phaser render loop.
+- [x] Keep world simulation out of this phase except a typed placeholder; optional standalone empty tick method can be created without premature abstraction.
 
 ### 00.3 Automated testing and CI starting point
-- [ ] Configure **Vitest** and write one useful pure TypeScript test, e.g. coordinate bounds or time conversion, not only `expect(true).toBe(true)`.
-- [ ] Configure **Playwright Chromium** one smoke flow: page loads, title visible, single canvas exists, no uncaught browser errors, UI doesn't create second canvas after rerender.
-- [ ] Add a minimal GitHub Actions workflow for npm ci → typecheck → lint → unit test → build. Browser E2E in CI only if installation runtime fits; otherwise add by phase 01/07 and document current gap.
-- [ ] Verify locally with real commands and inspect browser screenshot. If current environment cannot run browser, mark that check blocked rather than pretending.
+- [x] Configure **Vitest** and write one useful pure TypeScript test, e.g. coordinate bounds or time conversion, not only `expect(true).toBe(true)`.
+- [x] Configure **Playwright Chromium** one smoke flow: page loads, title visible, single canvas exists, no uncaught browser errors, UI doesn't create second canvas after rerender.
+- [x] Add a minimal GitHub Actions workflow for npm ci → typecheck → lint → unit test → build. Browser E2E in CI only if installation runtime fits; otherwise add by phase 01/07 and document current gap.
+- [x] Verify locally with real commands and inspect browser screenshot. If current environment cannot run browser, mark that check blocked rather than pretending.
 
 ## Proposed files (adjust only to simplify)
 
