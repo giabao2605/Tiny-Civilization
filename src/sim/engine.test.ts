@@ -86,6 +86,18 @@ describe('deterministic world', () => {
     const later = advanceTicks(after, 9);
     expect(later.events.filter((event) => event.type === 'routeBlocked' && event.citizenId === citizen.id)).toHaveLength(1);
   });
+  it('rechecks a route when a future tile becomes blocked', () => {
+    const before = advanceTicks(createWorld(12345), 6);
+    const moving = before.citizens.find((citizen) => citizen.route.length >= 2)!;
+    const blocked = moving.route[1]!;
+    const index = tileIndex(blocked)!;
+    before.tiles[index] = 'water';
+    const after = advanceOneTick(before);
+    const updated = after.citizens.find((citizen) => citizen.id === moving.id)!;
+    expect(after.events.some((event) => event.type === 'routeBlocked' && event.citizenId === moving.id)).toBe(true);
+    expect(updated.lastMove.every((point) => walkable(after, point))).toBe(true);
+    expect(updated.route.every((point) => walkable(after, point))).toBe(true);
+  });
   it('moves via four-neighbor tiles with hourly travel time, not teleportation', () => {
     let world = createWorld(12345);
     for (let i = 0; i < 72; i += 1) {

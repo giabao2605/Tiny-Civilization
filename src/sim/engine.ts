@@ -81,7 +81,7 @@ export function advanceOneTick(previous: WorldState): WorldState {
       }
     }
     // A route can become invalid if future phases edit terrain.
-    if (citizen.route.length && !walkable(previous, citizen.route[0]!)) {
+    if (citizen.route.some((point) => !walkable(previous, point))) {
       const home = getSite(previous, citizen.homeId).tile;
       const fallback = walkable(previous, home) ? home : citizen.tile;
       citizen.blockedGoal = citizen.goal;
