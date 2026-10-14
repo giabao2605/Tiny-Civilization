@@ -2,7 +2,7 @@
 
 **Tóm tắt tiếng Việt:** NPC ghi nhớ quan hệ, kết bạn/mâu thuẫn, lập hộ gia đình, sinh/lão/tử theo luật hợp lý; tránh drama ngẫu nhiên vô căn cứ.
 
-**Status:** IN PROGRESS on [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5), draft until CI and benchmarks meet the gate · **Requires:** merged Phase 03 economy.
+**Status:** IMPLEMENTED, exit gate verified by [GitHub Actions CI 38520465893](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38520465893); [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5) awaiting independent review, **not merged** · **Requires:** merged Phase 03 economy.
 **Intent:** Citizens remember encounters, form social ties and produce meaningful conflicts. Emergence matters more than chatty fake dialogue.
 
 ## Player story
@@ -63,11 +63,11 @@ At least **three distinct emergent social stories** are reproducible with seed/t
 
 No LLM conversations, text-generation costs, detailed romance, genealogical database, fully simulated childhood schooling, legal system, sexual content or arbitrary reputation propagation to the entire world.
 
-## Implementation notes and verification ledger (2026-10-14)
+## Completed implementation and verification ledger (2026-10-14)
 
 - Implemented on branch: schema v4 sparse directed affinity/trust ties, local deterministic work/commons contact, actual last-unit scarcity witness, capped per-NPC edges and per-tick encounters; mutual pairing with sustained contacts and physical housing; infant age/needs, caregiver-owned food transfer, bounded births, retirement, memorial cleanup.
 - UI: relationship/household links, demographic status, social reasons, Social/Economy/Survival filters, clickable actor/target in event feed; React and Phaser remain consumers of canonical state.
 - Three reproducible fixtures: seed 210 friendship after repeated shared encounters, seed 211 exhausted-field rivalry with a real depleted node, seed 210 partnership after repeated positive contact and compatible housing. See `src/sim/social.test.ts`.
 - Tests added: negative interaction/IDs/distance/death, relationship clamp, household consistency, real dependent food, birth cooldown/house capacity, deterministic 20/50/100 replay. Benchmarks: seed 543 (20 NPC × 180 days), seed 613 (100 NPC × 30 days), stress 119 residents, logged p95 and social counters in GitHub Actions.
-- Evidence still required: review final CI typecheck/lint/unit/build/Chromium logs; document measured values; spot-check that actual organic stories appear for normal seeded worlds; do not mark all acceptance boxes or DONE without this evidence.
+- **Verified:** [CI 38520465893](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38520465893) ran clean install, production dependency audit, typecheck, lint, unit/regression/long-running simulation, build and Playwright 5/5 in Chromium (desktop/mobile, canvas reset, event/relationship links). See [PROGRESS](../PROGRESS.md) for measured session data and initial failing test fixes. Benchmark Node CPU cost is not browser FPS. Seed 543: 20 NPC × 180 days, 7 births, 9 pairings, p95 around 1.2ms/tick. Seed 613: 100 NPC × 30 days, 67 shortage-driven disputes, 17 pairings, p95 around 4.6ms/tick. Two-seed 20/50/100 ×30-day replay, 119-person stress, Phase03 ten-seed regression pass.
 - Explicit deferral: Phase 05 governance, Phase 06 save/load, global reputation, inheritance and LLM dialogue.
