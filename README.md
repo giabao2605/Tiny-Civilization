@@ -2,7 +2,7 @@
 
 **Tiny Civilization** là game web pixel-art mô phỏng một ngôi làng tự vận hành. Người chơi là người quan sát: dân làng có nghề, nhu cầu, tiền, quan hệ và chịu hậu quả từ quyết định của chính họ. Câu chuyện xuất hiện từ quy luật mô phỏng, không phải các dòng sự kiện bịa sẵn.
 
-**Trạng thái: Phase 00–03 DONE và đã merge vào `main`. Phase 04 — Social đang triển khai trên [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5), chưa merge.** Xem `docs/PROGRESS.md` để biết bằng chứng thực tế.
+**Trạng thái: Phase 00–03 DONE và đã merge vào `main`. Phase 04 — Social đã triển khai và vượt CI/benchmark trên [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5), đang chờ review, chưa merge vào `main`.** Xem `docs/PROGRESS.md` để biết bằng chứng thực tế.
 
 ## Đọc tài liệu theo thứ tự
 
@@ -87,10 +87,10 @@ Cấu hình lúc này không chứa backend, database, đăng nhập, lưu game 
 
 Để kiểm chứng, dùng npm ci, npm run typecheck, npm run lint, npm run test, npm run build và npm run test:e2e. Kết quả thực tế được ghi trong docs/PROGRESS.md và GitHub Actions của PR #4, không suy luận từ source code.
 
-## Phase 04 Social (PR #5, chưa merge)
+## Phase 04 Social (CI PASS, PR #5 chưa merge)
 
 - Engine schema v4: graph quan hệ thưa có hướng, hạn mức cạnh/cooldown, tương tác tại quảng trường/nơi làm thật, mâu thuẫn khi nguồn tài nguyên vừa cạn; seed quyết định kết quả.
 - Hộ gia đình ban đầu có 1 người, người trưởng thành ghép đôi sau nhiều lần tiếp xúc và có chỗ ở. Tuổi tăng 1 giờ mỗi tick; trẻ phụ thuộc không đi làm, được người cùng hộ cho ăn bằng food thật.
 - Sinh con có thời gian chờ, cooldown, yêu cầu nhà/food/tuổi/sức khỏe và soft cap 100 / hard cap 120. Người chết được dọn liên kết household/partner; tiền/hàng vẫn thuộc túi người chết để bảo toàn nguồn lực.
-- Inspector có liên kết quan hệ, hộ, partner, memorial; timeline lọc Social/Economy/Survival. Đây là tính năng trên branch đang đợi kiểm chứng CI, **chưa tuyên bố exit gate PASS**.
+- Inspector có liên kết quan hệ, hộ, partner, memorial; timeline lọc Social/Economy/Survival. [CI 38520465893](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38520465893) xác nhận typecheck, lint, unit/stress/build, Chromium E2E 5/5 PASS; Node benchmark 20/100 NPC cùng hệ thống bảo toàn tiền/food/wood. Xem docs/PROGRESS.md để biết benchmark, seed và các giới hạn. Vẫn cần review PR trước khi merge.
 
