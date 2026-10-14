@@ -1,0 +1,152 @@
+# Simulation Contract v1 — mechanics shared by all phases
+
+**Purpose:** Prevent each coding session from inventing a different time model, data model or physics. This is a *minimal contract*, not a framework specification. Initial formulas are tunable once tests and playtests produce evidence.
+
+## 1. Absolute rules
+
+- Canonical `WorldState` is plain, serializable JSON-compatible data. No Phaser sprites, React components, promises, timers, maps/sets requiring special JSON support, circular references or DOM nodes.
+- World evolution is an explicit pure-ish function: `advance(world, commands) -> newWorld + emittedEvents` (implementation may use controlled local mutation for performance but observable behavior must be deterministic).
+- No `Date.now`, `performance.now`, `Math.random`, network calls or UI frame deltas inside decision/effect logic. Runtime scheduler alone controls whether a tick happens.
+- Save includes *PRNG internal state* and all counters needed to continue deterministically, not only initial seed.
+- Stable ascending entity-ID resolution order, documented conflict arbitration and monotonic event IDs. A dead entity cannot execute an action afterward.
+- All resources and money have explicit sources, sinks and transfers. Stock cannot become negative or be double-spent.
+- Calculate simulation decisions, resolve legal transactions, apply resulting effects, then publish one coherent snapshot.
+
+## 2. Clock and speed
+
+**Time unit:** 1 engine tick = 1 game-hour; 24 ticks/day; 30-day "month" for HUD summaries is an optional display abstraction; 365 days/game-year for aging.
+
+**Realtime pacing:** 1× = 2 ticks/second; 5× = 10 ticks/second; 20× = 40 ticks/second (targets, not a guarantee under heavy load). Tick advances independent of render FPS. Paused = exactly zero ticks. Browser tab throttling must **not** silently simulate wall-clock catch-up hours; report pause/resume explicitly if needed.
+
+- Day number = floor(tick / 24) + 1.
+- Hour = tick mod 24.
+- World order-of-operations is fixed and covered by regression tests.
+- Pause/speed setting is runtime UI state, not a random gameplay input; explicit player world commands are timestamped at a tick boundary.
+- Animation interpolation does not apply simulation effects.
+
+Why hourly? At 1× one game-day is ~12 real seconds; at 20× ~0.6 seconds; a game-year at 20× is ~219 real seconds, *if performance sustains target pacing*. If multi-year narratives still feel too slow, add a measured batch-skip later rather than redefining the clock after saves exist.
+
+## 3. Suggested entities: implement fields only when needed
+
+**WorldState**:
+- `schemaVersion`, `seed`, `tick`, `rngState`, `nextEntityId`, `nextEventId`
+- `tiles`: fixed 48×48 terrain/walkability/resource cells; no infinite world
+- `citizens`: entities indexed or array with stable `id`, consistent sort behavior
+- `buildings`, `resourceNodes` as needed
+- `town`: settlement stock, treasury, housing, policy, price/production metrics
+- `events`: bounded recent feed (e.g. 200–500 entries), plus aggregate history counters
+- `commandsApplied` or equivalent command ledger **only if** replay verification requires it; avoid endlessly storing every tick
+
+**Citizen**:
+- identity: `id`, `name`, `ageDays` or birth tick, visual appearance seed, `alive`
+- location: valid walkable `tile`, optional route/target and travel progress
+- needs: bounded `hunger`, `energy`, `health` (agree on 0–100 semantics; 100 = best)
+- job & state: finite job enum, current `goal`, action type, time-to-complete, cooldown
+- economy (phase 03): wallet nonnegative integer, small integer inventory, home/building relation
+- social (phase 04): sparse relations by unique citizen IDs; family/household IDs where necessary
+- deceased are removed from action scheduler immediately; keep only bounded memorial records, no ghost actors.
+
+**Buildings/resource nodes:** stable ID, type, grid position, production capacity/storage where relevant, ownership as an ID only when phase 03 needs it.
+
+**Events:** stable ID, tick, type, subject IDs, compact payload with reason tags, severity. Not a full prose paragraph; UI can turn reasons into Vietnamese text.
+
+**Data hygiene:** Prefer integer resource quantities and money. Needs 0–100 clamped. Avoid floating-point cumulative economic error; if using probabilities rely only on seeded RNG. Referential integrity must be tested.
+
+## 4. Tick pipeline (recommended fixed order)
+
+1. Accept at most the validated commands scheduled for this tick, stable order; reject invalid/no-op without crashing.
+2. Decrement timers / update daily counters at defined boundaries. Apply hunger/energy/aging at a known cadence (e.g. once per game-day) and health impacts from severe deficit.
+3. For each living NPC in ascending ID: evaluate emergency needs, existing commitment, work/home/social options; choose exactly **one** goal/action. Critical needs preempt work; stable tie-break + seeded RNG.
+4. Route and travel; walking across tiles consumes simulated time, not a teleport. Unreachable target fails gracefully and triggers fallback.
+5. Collect requested transactions/interactions (harvest, purchase, eat, talk, sleep, tax) in a temporary effects list.
+6. Resolve conflicts deterministically: check actual stock, funds, capacity and alive status **at application time**; reserve/transfer at most available quantity, then apply one authoritative effect.
+7. Update aggregate town metrics, evaluate world events / policy with proper cool-downs, append reasoned event records.
+8. Assert/debug-check invariants, increment tick, publish one snapshot/diff.
+
+Exact stage ordering can be refined in phase 02 with tests, but must be **documented and stable** before save/load is implemented.
+
+## 5. NPC goal model
+
+Prefer a **small utility/priority system** over hardcoded random walking or sophisticated ML:
+
+- Emergency health/safety > critical hunger > necessary rest > job commitment > social goal > leisure.
+- Goals specify **why**, **where**, **duration/cost**, **preconditions** and **success/failure effects**.
+- At most one active primary action per NPC, plus a bounded recent action history.
+- Avoid rapid state oscillation using a minimum commitment duration / hysteresis; emergencies may preempt.
+- If path impossible or an action fails, record a bounded failure reason and select safe fallback. Do not retry endlessly every frame.
+- Homes/workplaces/social targets must exist before assigned; dangling references are invalid.
+- **No direct wandering as the only life cycle.** Phase 01 uses simple home/work/communal goals until survival systems arrive.
+
+## 6. Map and travel rules
+
+- 48×48 bounded grid, 4-way adjacency, water/unwalkable cells block entry, roads may have lower travel cost later.
+- Initialize world with enough connected housing, food/resource areas and public tile(s) for 20 citizens; regenerated seeds must be validated so no spawn on water/islands with no path.
+- Routes use BFS initially for small uniform-cost grid; introduce A* only if profiling shows route expansion dominates. Cache a route for an active goal; recalc on change/block, not every render frame.
+- Travel speed: initial balance assumption **up to 6 orthogonal tiles per simulated hour**; tune against spatial scale and work day. Renderer interpolates positions while simulation owns hourly arrival state.
+- Two sprites may share a tile in v1; do not introduce expensive per-NPC collision arbitration. Buildings occupy specified blocking or enterable tiles consistently.
+
+## 7. Resources, needs, production, economy
+
+**First resources (phases 02–03):** food, wood and integer money. Avoid 12 goods before two balance correctly.
+
+- Food is created by farmland/gather actions with explicit production limits / cooldown, consumed when eating. Town stock is finite.
+- Wood is created by bounded woodland gathering/regrowth, consumed for construction. Regrowth should not produce more than tile/node capacity.
+- Citizen need values decrease on a consistent daily schedule; eating consumes food, sleeping consumes time and restores energy. No magical full meal when stock is zero.
+- Citizen death can occur after persistent severe health decline with explainable cause; never instant death from one tick of low food.
+- Phase 03 allows one market clearing mechanism, NPC wallet balances and bounded prices; **not** order books or hundreds of competing shops.
+- For each transaction, assert buyer funds >= charge and seller stock >= amount. Transfer ownership and money atomically; total currency changes only through separately documented explicit money-source/sink mechanics.
+- No unlimited public wages or "pay everyone daily" without a reserve; use a small finite village treasury and visible transfers.
+- Track food produced, consumed, stock, shortages, money circulation and approximate average happiness. Use seed-based long-run tests before pretending economy is stable.
+
+**Balance parameters:** Keep in a small `balance.ts` module with comments and scenario tests. First tune 20-agent sustainability, then 100-agent; do not hardcode "100" into production formulas.
+
+## 8. Social / institution mechanics
+
+**Phase 04:** Sparse directed relationship score (e.g. -100..100) with reasons from interactions, not all-to-all scoring every tick. NPCs with repeated cooperation gain trust; theft/argument worsens it. Mutual relationships may differ. Social events reference living subjects and actual shared location/contact preconditions. Household/group links must be valid.
+
+**Population change:** Aging progresses by game days; births only after eligible household and housing conditions, with an initial cooldown. Newborns do not immediately enter the workforce. Deaths stop actions and clean up references; more realistic demographic detail deferred.
+
+**Phase 05:** One elected/appointed head of village and a small set of public policies, with finite treasury/reserves. Election/leadership change is triggered by clear periodic/conditional rules, not arbitrary random slogans. Shocks (crop disease, epidemic, fire or shortage) require a defined affected resource/area, duration, mitigation and recovery. Start with two shocks and one policy, add more only if readable.
+
+**Event causality:** Store machine-readable reason tags and relevant before/after metric snapshots for notable events. UI event text must not claim a policy caused an outcome unless the mechanism actually supports that link.
+
+## 9. Determinism and saves
+
+- Seed creation uses a pinned PRNG algorithm (choose one simple 32-bit algorithm in phase 00/01 and lock it in tests), state advanced only through engine APIs.
+- Same engine version + same initial state + same ordered commands -> identical state/event digests at tick N.
+- A save records a **schema version** and actual RNG state; imports verify version, size, legal shape, bounds, references and resource constraints before replacing a running world.
+- Save/load compare after split run: advance 500 ticks → save → load → advance 500; equal 1000-tick continuous-run outcome.
+- Keep save data reasonably small, report storage quota errors; manual JSON export/import as backup. Never silently overwrite an unparseable save.
+- Schema migrations only when real saved versions exist; initially reject incompatible versions with clear message rather than building speculative migration framework.
+
+## 10. Invariant checklist and exact failure examples
+
+Mandatory tests, increasingly enabled by phase:
+
+- `tick >= 0`; RNG state valid; IDs unique; all tile positions finite integers inside map.
+- Any living citizen has valid job/action enum and reachable safe fallback; deceased never work or trade.
+- `0 <= need <= 100`; inventory, public stock, resource capacity and wallet/treasury are integers >= 0.
+- No two operations can spend the same last food item; buying without funds fails gracefully.
+- All social/household ownership IDs resolve or are explicitly null; dead persons cannot be newly selected as living transaction parties.
+- Paused world remains bit-for-bit unchanged after an arbitrary number of render frames.
+- Batch ticking vs one-by-one ticking yields equal state digest if commands/tick schedule match.
+- Save/load restore PRNG stream, event counters, assignments and resource amounts exactly.
+- 30-day scenario has no crashes, no endless impossible task loop, no runaway IDs/log growth, and no pathological death spiral in **every** test seed.
+- Test negative scenarios: isolated village spawn, missing home, empty food, depleted resource, simultaneous buyers, trade partner dies, save tampered, tab loses focus, 20× + open inspector.
+
+## 11. Observability and performance
+
+HUD minimally exposes simulated day/time, living population, food stock, approximate food runway in days, mood, selected person, recent high-impact events and currently active speed.
+
+Development-only inspector may show: seed, tick, FPS, tick duration, number of pathfinding calls, resource source/sink counters, invalid-action count. No heavy external telemetry.
+
+Events capped (e.g. newest 300) and aggregate yearly/daily metrics summarized rather than storing one object per NPC per tick. Avoid ever-growing arrays. UI updates at human-readable frequency; renderer continues animating independently of simulation.
+
+## 12. Implementation checkpoints
+
+- Phase 01 must establish deterministic world/tick, stable IDs, map connectivity and single authoritative selection.
+- Phase 02 must implement the entire resource/needs loop before claiming intelligent NPCs.
+- Phase 03 tests financial conservation; document any authorized currency injection/sink explicitly.
+- Phase 04/05 use the same action/effects pipeline, not a second social/government clock.
+- Phase 06 fixes save format, benchmark harness, fuzz/seeds and event inspector.
+- Phase 07 certifies all invariants. Never paper over failing tests by deleting the asserts.
