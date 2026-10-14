@@ -178,6 +178,33 @@ describe('Phase 05 leadership, bounded policy and causal shocks', () => {
     verify(a); verify(b);
   });
 
+  it('sick farmer produces measurably less food than the same healthy worker over three work hours', () => {
+    const sickInput = advanceTicks(createWorld(928), 174);
+    const shock = sickInput.governance.shocks.find(s => s.kind === 'localIllness')!;
+    expect(shock).toBeDefined();
+    const farmer = shock.affectedIds.map(id => sickInput.citizens.find(c => c.id === id)!)
+      .find(c => c.job === 'farmer')!;
+    expect(farmer).toBeDefined();
+    const field = sickInput.resourceNodes.find(n => n.kind === 'field' && n.stock >= 3)!;
+    expect(field).toBeDefined();
+    Object.assign(farmer, { tile: { ...field.tile }, destination: { ...field.tile },
+      job: 'farmer', goal: 'work', activity: 'atWork', route: [], workNodeId: field.id,
+      workHours: 0, hunger: 100, energy: 100, health: 90, inventory: { food: 0, wood: 0 },
+      needMode: null, blockedGoal: null, retryAfterTick: 0 });
+    const healthyInput = structuredClone(sickInput);
+    const healthyFarmer = healthyInput.citizens.find(c => c.id === farmer.id)!;
+    healthyFarmer.illnessUntil = 0;
+    healthyFarmer.illnessSeverity = 0;
+    const sick = advanceTicks(sickInput, 3);
+    const healthy = advanceTicks(healthyInput, 3);
+    const sickOutput = sick.citizens.find(c => c.id === farmer.id)!;
+    const healthyOutput = healthy.citizens.find(c => c.id === farmer.id)!;
+    expect(sickOutput.workHours).toBeGreaterThan(0); // at least one legitimate work-hour skipped
+    expect(healthyOutput.inventory.food).toBeGreaterThan(sickOutput.inventory.food);
+    expect(healthy.stats.totalFoodProduced).toBeGreaterThan(sick.stats.totalFoodProduced);
+    verify(sick); verify(healthy);
+  });
+
   it('multi-seed long-run deterministic replay conserves food, wood, money and household limits', () => {
     for (const population of [20, 50, 100] as const) for (const seed of [543, 613]) {
       const initial = createWorld(seed, population);
