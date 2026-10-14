@@ -48,15 +48,20 @@ describe('deterministic world', () => {
   });
   it('runs 500 Node-only ticks, preserves invariants and bounds logs', () => {
     let world = createWorld(12345);
+    let sawGather = false;
+    let sawWork = false;
     for (let i = 0; i < 500; i += 1) {
+      const before = world.nextEventId;
       world = advanceOneTick(world);
+      sawGather ||= world.events.some((event) => event.id >= before && event.type === 'gather');
+      sawWork ||= world.events.some((event) => event.id >= before && event.type === 'work');
       validate(world);
     }
     expect(world.tick).toBe(500);
     expect(dayOf(world.tick)).toBe(21);
     expect(hourOf(world.tick)).toBe(20);
-    expect(world.events.some((event) => event.type === 'work')).toBe(true);
-    expect(world.events.some((event) => event.type === 'gather')).toBe(true);
+    expect(sawWork).toBe(true);
+    expect(sawGather).toBe(true);
     expect(world.citizens.every((citizen) => citizen.recent.length <= 8)).toBe(true);
   });
   it('240-tick replay and batched stepping match exactly', () => {
