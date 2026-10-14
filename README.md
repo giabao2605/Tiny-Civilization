@@ -2,7 +2,7 @@
 
 **Tiny Civilization** là game web pixel-art mô phỏng một ngôi làng tự vận hành. Người chơi là người quan sát: dân làng có nghề, nhu cầu, tiền, quan hệ và chịu hậu quả từ quyết định của chính họ. Câu chuyện xuất hiện từ quy luật mô phỏng, không phải các dòng sự kiện bịa sẵn.
 
-**Trạng thái: Phase 00–03 DONE và đã merge vào `main`. Phase 03 [PR #4](https://github.com/giabao2605/Tiny-Civilization/pull/4) merge tại commit `83ef46c`. Phase 04 — Social là bước tiếp theo, chưa triển khai.** Xem `docs/PROGRESS.md` để biết bằng chứng thực tế.
+**Trạng thái: Phase 00–03 DONE và đã merge vào `main`. Phase 04 — Social đang triển khai trên [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5), chưa merge.** Xem `docs/PROGRESS.md` để biết bằng chứng thực tế.
 
 ## Đọc tài liệu theo thứ tự
 
@@ -76,9 +76,9 @@ Playwright tự khởi động Vite tại port 4173 và kiểm tra Chromium desk
 
 Cấu hình lúc này không chứa backend, database, đăng nhập, lưu game hoặc AI API. Bản MVP/public release vẫn chưa có.
 
-## Phase 03 Economy (feature branch, awaiting verification)
+## Phase 03 Economy (merged)
 
-- Branch: feat/phase-03-economy. PR #4: https://github.com/giabao2605/Tiny-Civilization/pull/4
+- Phase 03 đã merge. Branch lịch sử: feat/phase-03-economy. PR #4: https://github.com/giabao2605/Tiny-Civilization/pull/4
 - Dân số deterministic: 20, 50 hoặc 100 trên cùng bản đồ 48×48; nhà có capacity 4, người dư ra có trạng thái vô gia cư.
 - NPC sở hữu ví, food/wood trong túi và nghề nghiệp. Một chợ có kho hàng và ngân quỹ hữu hạn. Người sản xuất phải mang hàng đến chợ để bán, nhận tiền thật, và chỉ mua được khi đủ tiền.
 - Thu hoạch tài nguyên hữu hạn; xây nhà tiêu 8 wood một lần ngay lúc khởi công. Thợ xây cần đến nơi, làm đủ 8 giờ và được trả tiền từ quỹ chợ thật.
@@ -86,4 +86,11 @@ Cấu hình lúc này không chứa backend, database, đăng nhập, lưu game 
 - Phase 03 đã PASS 10 seed × 720 tick cho cả ba mức dân số và 42 unit / 4 Chromium E2E tests, chi tiết trong PROGRESS; đã merge; chưa có hệ thống social, save/load hoàn chỉnh, backend hoặc release.
 
 Để kiểm chứng, dùng npm ci, npm run typecheck, npm run lint, npm run test, npm run build và npm run test:e2e. Kết quả thực tế được ghi trong docs/PROGRESS.md và GitHub Actions của PR #4, không suy luận từ source code.
+
+## Phase 04 Social (PR #5, chưa merge)
+
+- Engine schema v4: graph quan hệ thưa có hướng, hạn mức cạnh/cooldown, tương tác tại quảng trường/nơi làm thật, mâu thuẫn khi nguồn tài nguyên vừa cạn; seed quyết định kết quả.
+- Hộ gia đình ban đầu có 1 người, người trưởng thành ghép đôi sau nhiều lần tiếp xúc và có chỗ ở. Tuổi tăng 1 giờ mỗi tick; trẻ phụ thuộc không đi làm, được người cùng hộ cho ăn bằng food thật.
+- Sinh con có thời gian chờ, cooldown, yêu cầu nhà/food/tuổi/sức khỏe và soft cap 100 / hard cap 120. Người chết được dọn liên kết household/partner; tiền/hàng vẫn thuộc túi người chết để bảo toàn nguồn lực.
+- Inspector có liên kết quan hệ, hộ, partner, memorial; timeline lọc Social/Economy/Survival. Đây là tính năng trên branch đang đợi kiểm chứng CI, **chưa tuyên bố exit gate PASS**.
 
