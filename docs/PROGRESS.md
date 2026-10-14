@@ -1,13 +1,13 @@
 # Tiny Civilization — Progress / handoff log
 
 **Updated:** 2026-10-14  
-**Current stage:** Phase 00 Foundation **DONE on feat/phase-00-foundation**, pending PR merge to main; NO gameplay released.  
+**Current stage:** Phase 00 Foundation **DONE, merged into main via PR #1**; NO gameplay released.  
 **Authoritative roadmap:** [MASTER_PLAN](MASTER_PLAN.md)  
 **Rules/contract:** [SIMULATION_CONTRACT](SIMULATION_CONTRACT.md)
 
 | Phase | Status | Gate |
 | --- | --- | --- |
-| 00 Foundation | DONE on implementation branch (PR review pending) | npm ci, typecheck, lint, Vitest, build, Playwright Chromium PASS |
+| 00 Foundation | DONE, merged to main | npm ci, typecheck, lint, Vitest, build, Playwright Chromium PASS |
 | 01 Living world | NOT STARTED | 48×48 map, 20 purposeful agents, inspector, controls |
 | 02 Survival | NOT STARTED | Finite food/wood and consistent needs/actions |
 | 03 Economy | NOT STARTED | 100 agents, finite transactions, sustainable seeded runs |
@@ -20,6 +20,7 @@
 ## Phase 00 implementation handoff (2026-10-14)
 
 **Branch:** `feat/phase-00-foundation` from main `1b44da3ad5dee1721a6b9274154f91b23165b377`.  
+**Merged:** PR [#1](https://github.com/giabao2605/Tiny-Civilization/pull/1), merge commit `4c7d33e1dfe8e03c04cd0d8c5fbc6f1fe558be02`; final PR CI [38504538644](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38504538644) **PASS**.  
 **Purpose:** Vite + React + TypeScript strict + Phaser preview, one source of Foundation snapshot truth, inspectable tile click, mount/teardown, reproducible tests. This is NOT an autonomous simulation.
 
 ### Delivered
@@ -50,4 +51,4 @@
 - No published site, no gameplay release, no Phase 01 implementation.
 
 ### Next exact action
-Review/merge the Phase 00 pull request after required checks pass, then explicitly authorize starting Phase 01. Do not start Phase 01 automatically.
+Phase 00 was merged and verified. Next task may implement Phase 01 only after reading the master plan, simulation contract and `docs/phases/PHASE_01_LIVING_WORLD.md`; do not implement Phase 02.

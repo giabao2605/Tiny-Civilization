@@ -2,7 +2,7 @@
 
 **Tóm tắt tiếng Việt:** Dựng ứng dụng nền, test tự động và giao diện Phaser. Chỉ được qua phase khi thật sự mở được web, build và test chạy.
 
-**Status:** DONE (verified on implementation branch; awaiting PR merge) · **Depends on:** none · **Target:** minimal working browser app + repeatable tests, NOT a feature-complete game.
+**Status:** DONE (merged in PR #1; CI verified) · **Depends on:** none · **Target:** minimal working browser app + repeatable tests, NOT a feature-complete game.
 **Scope boundary:** no citizen economy/social mechanics, no backend, no full art pack, no speculative engine framework.
 
 ## User-visible success story
