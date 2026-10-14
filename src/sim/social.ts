@@ -63,6 +63,10 @@ export function applyInteraction(world: WorldState, actorId: number, targetId: n
     if (!commons || actor.homeId !== null || target.homeId !== null ||
       actor.tile.x !== commons.tile.x || actor.tile.y !== commons.tile.y ||
       housing(world).capacity >= world.citizens.filter((c) => c.alive).length) return false;
+    // One grounded housing argument per person per day; do not fill the feed with hourly noise.
+    const arguedRecently = (c: Citizen) => Object.values(c.relations).some((r) =>
+      r.reason.startsWith('Cả hai chưa có nhà') && world.tick - r.lastTick < BALANCE.housingDisputeCooldown);
+    if (arguedRecently(actor) || arguedRecently(target)) return false;
     change = BALANCE.socialNegativeScarcity;
     cause = 'Cả hai chưa có nhà, làng thiếu ' + housing(world).homeless + ' chỗ cư trú hợp lệ.';
   } else {
@@ -89,8 +93,7 @@ export function applyInteraction(world: WorldState, actorId: number, targetId: n
   } else if (change < 0 && left.before > BALANCE.socialRivalThreshold && left.after <= BALANCE.socialRivalThreshold) {
     emit('rivalry', actor, actor.name + ' và ' + target.name + ' trở nên đối địch: ' + cause,
       { targetCitizenId: target.id, cause, relationBefore: left.before, relationAfter: left.after });
-  } else if (change < 0 || left.before === 0 ||
-      world.tick % BALANCE.socialEventEveryHours === 0) {
+  } else if (left.before === 0 || world.tick % BALANCE.socialEventEveryHours === 0) {
     emit(change < 0 ? 'dispute' : 'encounter', actor,
       actor.name + (change < 0 ? ' tranh chấp với ' : ' gặp ') + target.name + ': ' + cause,
       { targetCitizenId: target.id, cause, relationBefore: left.before, relationAfter: left.after });
