@@ -241,3 +241,20 @@ test('valid UI emergency aid transfers owned food and enforces cooldown in dev c
   await page.screenshot({ path: testInfo.outputPath('phase-05-valid-food-aid-mobile.png'), fullPage: true });
   expect(failures).toEqual([]);
 });
+
+test('zero market reserve rejects policy via the real UI without minting food or coins', async ({ page }, testInfo) => {
+  const errors = collectErrors(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/?fixture=governance-empty-reserve');
+  await expect(page.getByTestId('governance-leader').getByRole('button')).toBeVisible({ timeout: 5000 });
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  await expect(page.getByTestId('food-stock')).toHaveText('0');
+  const coinsBefore = await page.getByTestId('total-currency').innerText();
+  await page.getByTestId('activate-food-aid').click();
+  await expect(page.getByTestId('aid-feedback')).toContainText('Kho chợ không còn food');
+  await expect(page.getByTestId('food-aid-transferred')).toContainText('0 đơn vị');
+  await expect(page.getByTestId('food-stock')).toHaveText('0');
+  await expect(page.getByTestId('total-currency')).toHaveText(coinsBefore);
+  await page.screenshot({ path: testInfo.outputPath('phase-05-zero-reserve-mobile.png'), fullPage: true });
+  expect(errors).toEqual([]);
+});
