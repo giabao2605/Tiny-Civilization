@@ -25,6 +25,7 @@ function reasonFor(goal: Goal, traveling: boolean, citizen: Citizen): string {
     citizen.job === 'farmer' ? 'Canh tác tại ruộng, 3 giờ cho một lần thu hoạch.' :
     citizen.job === 'woodcutter' ? 'Khai thác rừng, 3 giờ cho một lần khai thác.' : 'Đang trực ở kho cộng đồng.';
   if (goal === 'commons') return traveling ? 'Đến quảng trường sau giờ làm.' : 'Giao lưu tại quảng trường.';
+  if (citizen.health <= BALANCE.criticalHealthThreshold) return traveling ? 'Sức khỏe nguy hiểm; về nhà điều dưỡng.' : 'Điều dưỡng tại nhà vì sức khỏe nguy hiểm.';
   return traveling ? 'Về nhà để ngủ hoặc lấy lại sức.' : 'Nghỉ ở nhà để phục hồi năng lượng.';
 }
 function availableNode(world: WorldState, citizen: Citizen, nodes: ResourceNode[]): ResourceNode | null {
