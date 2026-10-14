@@ -140,7 +140,7 @@ describe('Phase 04 relationships and demographic invariants', () => {
 
   it('birth requires cooldown, food, empty real house capacity and below population soft cap', () => {
     const f = makePartners();
-    f.world.tick = 24 * 31;
+    f.world.tick = 24 * 35;
     f.a.inventory.food = 1; f.b.inventory.food = 1;
     const money = totalCurrency(f.world);
     advanceSocial(f.world, f.emit, []);
@@ -165,7 +165,7 @@ describe('Phase 04 relationships and demographic invariants', () => {
       old.homeId = houseId; other.homeId = houseId;
     }
     full.a.inventory.food = 2;
-    full.world.tick = 24 * 31;
+    full.world.tick = 24 * 35;
     advanceSocial(full.world, full.emit, []);
     expect(full.world.social.births).toBe(0);
 
@@ -177,7 +177,7 @@ describe('Phase 04 relationships and demographic invariants', () => {
 
   it('children only eat truly owned food provided by an onsite guardian', () => {
     const f = makePartners();
-    f.world.tick = 24 * 31;
+    f.world.tick = 24 * 35;
     f.a.inventory.food = 2;
     advanceSocial(f.world, f.emit, []);
     const child = f.world.citizens.at(-1)!;
