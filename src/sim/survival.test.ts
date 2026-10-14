@@ -256,4 +256,34 @@ describe('Phase 02 resource accounting and living needs', () => {
     expect(advanceOneTick(noRest).citizens[0]!.health).toBe(49);
   });
 
+  it('one farmer actually harvests, transfers to village store, then eats a stocked meal', () => {
+    let world = createWorld(12345);
+    const farmerId = world.citizens.find((citizen) => citizen.job === 'farmer')!.id;
+    let produced = false;
+    let ate = false;
+    for (let i = 0; i < 96; i += 1) {
+      const before = world.citizens.find((citizen) => citizen.id === farmerId)!;
+      const previousEventId = world.nextEventId;
+      const previousFood = world.inventory.food;
+      const previousTotalProduced = world.stats.totalFoodProduced;
+      const previousTotalConsumed = world.stats.totalFoodConsumed;
+      world = advanceOneTick(world);
+      const after = world.citizens.find((citizen) => citizen.id === farmerId)!;
+      const newEvents = world.events.filter((event) => event.id >= previousEventId && event.citizenId === farmerId);
+      if (newEvents.some((event) => event.type === 'foodProduced')) {
+        produced = true;
+        expect(world.stats.totalFoodProduced).toBeGreaterThan(previousTotalProduced);
+      }
+      if (newEvents.some((event) => event.type === 'foodEaten')) {
+        ate = true;
+        expect(after.hunger).toBeGreaterThan(before.hunger);
+        expect(world.stats.totalFoodConsumed).toBe(previousTotalConsumed + 1);
+        expect(world.inventory.food).toBe(previousFood - 1 + (world.stats.totalFoodProduced - previousTotalProduced));
+      }
+    }
+    expect(produced).toBe(true);
+    expect(ate).toBe(true);
+    invariants(world);
+  });
+
 });
