@@ -114,6 +114,23 @@ describe('Phase 04 relationships and demographic invariants', () => {
     expect(totalCurrency(f.world)).toBe(f.world.market.initialSupply);
   });
 
+  it('resolves actual homelessness conflict locally without transferring money or goods', () => {
+    const world = createWorld(306, 100);
+    const a = world.citizens[80]!, b = world.citizens[81]!;
+    const events: WorldEvent[] = [];
+    const money = totalCurrency(world);
+    expect(a.homeId).toBeNull(); expect(b.homeId).toBeNull();
+    expect(housing(world).homeless).toBe(20);
+    expect(applyInteraction(world, a.id, b.id, 'housing', (type, actor, reason, extra) => {
+      events.push({ ...extra, id: world.nextEventId++, tick: world.tick, type, citizenId: actor?.id ?? null, reason });
+    })).toBe(true);
+    expect(world.social.disputes).toBe(1);
+    expect(events.some((e) => e.type === 'dispute' && e.cause?.includes('chỗ cư trú'))).toBe(true);
+    expect(a.relations[b.id]?.affinity).toBeLessThan(0);
+    expect(totalCurrency(world)).toBe(money);
+    expect(world.inventory).toEqual(createWorld(306, 100).inventory);
+  });
+
   it('forms a two-person household only after a persistent bond with room (story #3)', () => {
     const f = makePartners();
     const household = f.world.households.find((h) => h.id === f.a.householdId)!;
