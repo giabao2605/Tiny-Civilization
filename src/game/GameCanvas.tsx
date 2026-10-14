@@ -1,46 +1,51 @@
 import { useEffect, useRef } from 'react';
+import type { LivingSnapshot } from '../app/livingCoordinator';
 import { createGame } from './createGame';
-import type { TilePosition } from '../sim/grid';
 
 type Props = {
-  selectedTile: TilePosition | null;
-  onTileSelected: (tile: TilePosition) => void;
+  snapshot: LivingSnapshot;
+  onCitizenSelected: (id: number) => void;
 };
 
-export function GameCanvas({ selectedTile, onTileSelected }: Props) {
+export function GameCanvas({ snapshot, onCitizenSelected }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
-  const selectedRef = useRef(selectedTile);
-  const onSelectRef = useRef(onTileSelected);
+  const snapshotRef = useRef(snapshot);
+  const callbackRef = useRef(onCitizenSelected);
   const liveRef = useRef<ReturnType<typeof createGame> | null>(null);
 
-  selectedRef.current = selectedTile;
-  onSelectRef.current = onTileSelected;
+  snapshotRef.current = snapshot;
+  callbackRef.current = onCitizenSelected;
 
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
-
-    // Defer boot one frame so React StrictMode setup/cleanup doesn't spawn two games.
     const frame = requestAnimationFrame(() => {
       if (!host.isConnected) return;
-      const live = createGame(host, (tile) => onSelectRef.current(tile));
+      const current = snapshotRef.current;
+      const live = createGame(host, current.world, (id) => callbackRef.current(id));
       liveRef.current = live;
-      live.scene.setSelection(selectedRef.current);
+      live.scene.setSnapshot(current);
     });
-
     return () => {
       cancelAnimationFrame(frame);
       const live = liveRef.current;
       liveRef.current = null;
       if (live) live.game.destroy(true);
-      // Phaser finalizes destroy on its loop; remove the canvas immediately as well.
       host.replaceChildren();
     };
   }, []);
 
   useEffect(() => {
-    liveRef.current?.scene.setSelection(selectedTile);
-  }, [selectedTile]);
+    liveRef.current?.scene.setSnapshot(snapshot);
+  }, [snapshot]);
 
-  return <div ref={hostRef} className="canvas-host" data-testid="game-container" aria-label="Bản đồ pixel xem thử" />;
+  return (
+    <div
+      ref={hostRef}
+      className="canvas-host"
+      data-testid="game-container"
+      data-npc-count={snapshot.world.citizens.length}
+      aria-label="Bản đồ làng. Cuộn để phóng to, kéo để di chuyển, nhấn cư dân để xem chi tiết."
+    />
+  );
 }

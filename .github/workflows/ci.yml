@@ -1,7 +1,7 @@
-name: Phase 00 CI
+name: Tiny Civilization CI
 on:
   push:
-    branches: [main, feat/phase-00-foundation]
+    branches: [main, feat/phase-00-foundation, feat/phase-01-living-world]
   pull_request:
     branches: [main]
 permissions:
@@ -27,7 +27,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: phase-00-browser-evidence
+          name: phase-01-browser-evidence
           path: |
             test-results/
             playwright-report/
