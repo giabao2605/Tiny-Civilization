@@ -248,6 +248,36 @@ describe('Phase 05 leadership, bounded policy and causal shocks', () => {
     verify(world);
   }, 120000);
 
+  it('records a complete seed-backed causal crisis: crop shock, legal aid, reduced harvest, expiry', () => {
+    let world = advanceTicks(createWorld(612), 96);
+    const shock = world.governance.shocks.find(s => s.kind === 'poorHarvest')!;
+    expect(shock).toBeDefined();
+    expect(world.events.some(e => e.type === 'shockStarted' && e.shockId === shock.id)).toBe(true);
+    for (const c of world.citizens.slice(0, 3)) {
+      c.hunger = 20; c.inventory.food = 0;
+    }
+    world.inventory.food = 8;
+    const money = totalCurrency(world);
+    world = advanceOneTick(world, [aid(world, 15)]);
+    const transferred = world.events.find(e => e.tick === world.tick &&
+      e.type === 'foodAid' && e.success === true);
+    expect(transferred).toBeDefined();
+    expect(transferred!.before! - transferred!.after!).toBe(world.governance.policy.lastRecipients.length);
+    expect(world.governance.policy.transferred).toBeGreaterThan(0);
+    let ended: WorldState['events'][number] | undefined;
+    for (let t = 0; t < 146; t += 1) {
+      world = advanceOneTick(world);
+      const event = world.events.find(e => e.tick === world.tick &&
+        e.type === 'shockEnded' && e.shockId === shock.id);
+      if (event) ended = event;
+    }
+    expect(ended).toBeDefined();
+    expect(ended!.before).toBeGreaterThan(0); // real foregone production
+    expect(world.governance.shocks.some(s => s.id === shock.id)).toBe(false);
+    expect(totalCurrency(world)).toBe(money);
+    verify(world);
+  });
+
   it('multi-seed long-run deterministic replay conserves food, wood, money and household limits', () => {
     for (const population of [20, 50, 100] as const) for (const seed of [543, 613]) {
       const initial = createWorld(seed, population);
