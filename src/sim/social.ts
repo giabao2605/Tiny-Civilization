@@ -139,6 +139,7 @@ export function cleanupDeath(world: WorldState, citizen: Citizen) {
     household.members = household.members.filter((id) => id !== citizen.id);
     if (!household.members.length) world.households = world.households.filter((h) => h.id !== household.id);
   }
+  for (const other of world.citizens) if (other.id !== citizen.id) delete other.relations[citizen.id];
   citizen.partnerId = null;
   citizen.partneredTick = null;
   citizen.householdId = null;
@@ -248,7 +249,7 @@ export function advanceSocial(world: WorldState, emit: Emit, scarcity: ScarcityW
     const members = groups.get(key) ?? [];
     members.push(citizen); groups.set(key, members);
   }
-  let interactions = 0;
+  let interactions = used.size / 2;
   for (const members of groups.values()) {
     if (members.length < 2) continue;
     members.sort((a, b) => a.id - b.id);
