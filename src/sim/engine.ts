@@ -90,7 +90,7 @@ export function advanceOneTick(previous: WorldState): WorldState {
       citizen.destination = { ...fallback };
       citizen.route = findPath(previous, citizen.tile, fallback) ?? [];
       citizen.reason = 'Đường hiện tại bị chặn; tìm đường về nhà.';
-      citizen.recent = [...citizen.recent, { tick, activity: 'travelHome', reason: citizen.reason }].slice(-MAX_RECENT);
+      citizen.recent = [...citizen.recent, { tick, activity: 'travelHome' as const, reason: citizen.reason }].slice(-MAX_RECENT);
       announce('routeBlocked', citizen, citizen.reason);
     }
     for (let step = 0; step < MOVE_TILES_PER_HOUR && citizen.route.length; step += 1) {
