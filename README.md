@@ -1,6 +1,6 @@
 # Tiny Civilization
 
-**Tiny Civilization** là game web pixel-art mô phỏng một ngôi làng tự vận hành. Mày là người quan sát: dân làng có nghề, nhu cầu, tiền, quan hệ và chịu hậu quả từ quyết định của chính họ. Câu chuyện xuất hiện từ quy luật mô phỏng, không phải các dòng sự kiện bịa sẵn.
+**Tiny Civilization** là game web pixel-art mô phỏng một ngôi làng tự vận hành. Người chơi là người quan sát: dân làng có nghề, nhu cầu, tiền, quan hệ và chịu hậu quả từ quyết định của chính họ. Câu chuyện xuất hiện từ quy luật mô phỏng, không phải các dòng sự kiện bịa sẵn.
 
 **Trạng thái hiện tại: CHỈ MỚI LẬP KẾ HOẠCH, CHƯA CÓ GAME/CODE CHẠY ĐƯỢC.** Đây là repo dự án chính thức, kế hoạch đủ để bắt đầu code từng phần và kiểm thử nghiêm túc.
 

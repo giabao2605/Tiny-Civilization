@@ -1,6 +1,6 @@
 # Tiny Civilization — MASTER PLAN (single source of truth)
 
-**Version:** 1.0 · **Date:** 2026-10-14 · **Status:** Approved as a starting design hypothesis, not yet playtested.
+**Version:** 1.0 · **Date:** 2026-10-14 · **Status:** Draft baseline, pending implementation and gameplay validation.
 **Document hierarchy:** This file owns scope, priorities, phase gates and non-goals. `SIMULATION_CONTRACT.md` owns state/time/invariants. Each `phases/PHASE_XX.md` owns implementation tasks, deliverables and acceptance tests. `PROGRESS.md` tracks factual execution status.
 
 ## 0. Tóm tắt định hướng (tiếng Việt)
