@@ -16,6 +16,7 @@ export type LivingCommand =
   | { type: 'reset-seed'; seed: number; population?: 20 | 50 | 100 };
 
 export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 20 | 50 | 100 = 20) {
+  let presetPopulation = initialPopulation;
   let snapshot: LivingSnapshot = { world: createWorld(initialSeed, initialPopulation), selectedCitizenId: null, speed: 1, paused: false };
   const listeners = new Set<() => void>();
   let timer: ReturnType<typeof setInterval> | null = null;
@@ -66,7 +67,8 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
         snapshot = { ...snapshot, paused: command.paused };
       } else {
         if (!Number.isSafeInteger(command.seed) || (command.population !== undefined && ![20, 50, 100].includes(command.population))) return false;
-        snapshot = { ...snapshot, world: createWorld(command.seed, command.population ?? snapshot.world.citizens.length as 20 | 50 | 100), selectedCitizenId: null };
+        presetPopulation = command.population ?? presetPopulation;
+        snapshot = { ...snapshot, world: createWorld(command.seed, presetPopulation), selectedCitizenId: null };
         clock.reset();
       }
       notify();
