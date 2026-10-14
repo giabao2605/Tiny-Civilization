@@ -18,9 +18,20 @@ export type LivingCommand =
   | { type: 'reset-seed'; seed: number; population?: 20 | 50 | 100 }
   | { type: 'trigger-food-aid' };
 
-export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 20 | 50 | 100 = 20) {
+export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 20 | 50 | 100 = 20,
+  fixture?: 'governance-food-shortage') {
   let presetPopulation = initialPopulation;
-  let snapshot: LivingSnapshot = { world: createWorld(initialSeed, initialPopulation), selectedCitizenId: null, speed: 1, paused: false, lastPolicyMessage: '' };
+  // Explicit development/test scenario, not a player command or an engine shortcut.
+  const initialWorld = createWorld(initialSeed, initialPopulation);
+  if (fixture === 'governance-food-shortage') {
+    initialWorld.inventory.food = 12;
+    for (const c of initialWorld.citizens.slice(0, 6)) {
+      c.hunger = 5;
+      c.inventory.food = 0;
+    }
+  }
+  let snapshot: LivingSnapshot = { world: initialWorld, selectedCitizenId: null, speed: 1,
+    paused: false, lastPolicyMessage: '' };
   let pending: GovernanceCommand[] = [];
   let nextRequestId = 1;
   const listeners = new Set<() => void>();
