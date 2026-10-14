@@ -48,7 +48,9 @@ export function advanceOneTick(previous: WorldState): WorldState {
       recent: old.recent.slice(),
       lastMove: [{ ...old.tile }],
     };
-    const desired = scheduledGoal(hour);
+    const requested = scheduledGoal(hour);
+    if (citizen.blockedGoal !== requested) citizen.blockedGoal = null;
+    const desired = citizen.blockedGoal === requested && tick < citizen.retryAfterTick ? 'home' : requested;
     const target = desired === 'commons' ? commons.tile : getSite(previous, desired === 'work' ? citizen.workId : citizen.homeId).tile;
     if (citizen.goal !== desired || !same(citizen.destination, target)) {
       citizen.goal = desired;
@@ -56,9 +58,12 @@ export function advanceOneTick(previous: WorldState): WorldState {
       const path = findPath(previous, citizen.tile, target);
       if (path === null) {
         const home = getSite(previous, citizen.homeId).tile;
-        const safePath = findPath(previous, citizen.tile, home);
+        const fallback = walkable(previous, home) ? home : citizen.tile;
+        citizen.blockedGoal = requested;
+        citizen.retryAfterTick = tick + 24;
+        const safePath = findPath(previous, citizen.tile, fallback);
         citizen.goal = 'home';
-        citizen.destination = { ...home };
+        citizen.destination = { ...fallback };
         citizen.route = safePath ?? [];
         const reason = safePath === null
           ? 'Không thể tới mục tiêu hoặc nhà; đứng yên tại ô an toàn.'
@@ -77,7 +82,10 @@ export function advanceOneTick(previous: WorldState): WorldState {
     }
     // A route can become invalid if future phases edit terrain.
     if (citizen.route.length && !walkable(previous, citizen.route[0]!)) {
-      const fallback = getSite(previous, citizen.homeId).tile;
+      const home = getSite(previous, citizen.homeId).tile;
+      const fallback = walkable(previous, home) ? home : citizen.tile;
+      citizen.blockedGoal = citizen.goal;
+      citizen.retryAfterTick = tick + 24;
       citizen.goal = 'home';
       citizen.destination = { ...fallback };
       citizen.route = findPath(previous, citizen.tile, fallback) ?? [];

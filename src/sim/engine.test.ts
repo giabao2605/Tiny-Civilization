@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { GRID_HEIGHT, GRID_WIDTH, tileIndex } from './grid';
+import { GRID_WIDTH, tileIndex } from './grid';
 import { advanceOneTick, advanceTicks, hourOf, dayOf, stateDigest } from './engine';
 import { findPath } from './pathfinding';
-import { createWorld, getSite, walkable, type Citizen, type WorldState } from './world';
+import { createWorld, getSite, walkable, type WorldState } from './world';
 
 function validate(world: WorldState) {
   expect(world.tiles).toHaveLength(GRID_WIDTH * GRID_HEIGHT);
@@ -83,6 +83,8 @@ describe('deterministic world', () => {
     expect(citizen.route).toHaveLength(0);
     expect(after.events.some((event) => event.type === 'routeBlocked')).toBe(true);
     expect(citizen.tile).toEqual(getSite(after, citizen.homeId).tile);
+    const later = advanceTicks(after, 9);
+    expect(later.events.filter((event) => event.type === 'routeBlocked')).toHaveLength(1);
   });
   it('moves via four-neighbor tiles with hourly travel time, not teleportation', () => {
     let world = createWorld(12345);

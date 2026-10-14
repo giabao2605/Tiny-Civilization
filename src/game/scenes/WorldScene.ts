@@ -11,7 +11,6 @@ function yPixel(y: number) { return y * TILE_PIXELS + CENTER; }
 export class WorldScene extends Phaser.Scene {
   private world: WorldState;
   private selectedId: number | null = null;
-  private paused = false;
   private speed = 1;
   private sprites = new Map<number, Phaser.GameObjects.Container>();
   private highlighter?: Phaser.GameObjects.Graphics;
@@ -47,7 +46,6 @@ export class WorldScene extends Phaser.Scene {
 
   setSnapshot(snapshot: LivingSnapshot): void {
     this.selectedId = snapshot.selectedCitizenId;
-    this.paused = snapshot.paused;
     this.speed = snapshot.speed;
     const before = this.world;
     this.world = snapshot.world;
@@ -131,7 +129,7 @@ export class WorldScene extends Phaser.Scene {
     body.fillStyle(0xf2ca9e).fillRect(-3, -7, 6, 5);
     body.fillStyle(citizen.appearance % 2 ? 0x403329 : 0x6c4d2f).fillRect(-3, -8, 6, 2);
     body.fillStyle(0x1b2922).fillRect(-2, -5, 1, 1).fillRect(1, -5, 1, 1);
-    const label = this.add.text(0, -12, String(citizen.id - 25), { fontFamily: 'monospace', fontSize: '6px', color: '#fff6db', backgroundColor: '#152b23aa' }).setOrigin(0.5, 1);
+    const label = this.add.text(0, -12, String(citizen.id - 26), { fontFamily: 'monospace', fontSize: '6px', color: '#fff6db', backgroundColor: '#152b23aa' }).setOrigin(0.5, 1);
     const sprite = this.add.container(xPixel(citizen.tile.x), yPixel(citizen.tile.y), [body, label]).setDepth(15);
     sprite.setData('citizenId', citizen.id);
     return sprite;

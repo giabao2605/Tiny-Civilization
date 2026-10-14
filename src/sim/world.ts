@@ -23,6 +23,8 @@ export type Citizen = {
   activity: Activity;
   route: TilePosition[];
   lastMove: TilePosition[];
+  blockedGoal: Goal | null;
+  retryAfterTick: number;
   recent: ActivityEntry[];
 };
 export type WorldEvent = { id: number; tick: number; type: EventType; citizenId: number | null; reason: string };
@@ -121,6 +123,8 @@ export function createWorld(seed = 12345): WorldState {
       activity: 'rest',
       route: [],
       lastMove: [{ ...home.tile }],
+      blockedGoal: null,
+      retryAfterTick: 0,
       recent: [{ tick: 0, activity: 'rest', reason: 'Bắt đầu ngày mới tại nhà.' }],
     });
   }
