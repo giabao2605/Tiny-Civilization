@@ -206,7 +206,7 @@ export function App() {
                       <dt>Ví tiền</dt><dd data-testid="citizen-wallet">{citizen.wallet}</dd>
                       <dt>Túi đồ</dt><dd data-testid="citizen-inventory">Food {citizen.inventory.food} · Wood {citizen.inventory.wood}</dd>
                       <dt>Giao dịch gần đây</dt><dd>{market.trades.filter((trade) => trade.citizenId === citizen.id).slice(-1).map((t) => t.direction === 'buy' ? 'Mua ' + t.quantity + ' ' + t.good : 'Bán ' + t.quantity + ' ' + t.good).join('') || 'Chưa có'}</dd>
-                      <dt>Nơi làm việc</dt><dd>{getSite(world, citizen.workId).name}</dd>
+                      <dt>Nơi làm việc</dt><dd>{citizen.workNodeId !== null ? (() => { const node = world.resourceNodes.find((item) => item.id === citizen.workNodeId); return node ? (node.kind === 'field' ? 'Ruộng' : 'Rừng') + ' #' + node.id + ' (' + node.tile.x + ', ' + node.tile.y + ')' : 'Không có'; })() : getSite(world, citizen.workId).name}</dd>
                       <dt>Mục tiêu</dt><dd>{citizen.goal === 'food' ? 'Mua / ăn food' : citizen.goal === 'sell' ? 'Bán sản phẩm' : citizen.goal === 'build' ? 'Xây dựng' : citizen.goal === 'home' ? 'Trở về nhà' : citizen.goal === 'work' ? 'Đi làm' : 'Gặp gỡ cộng đồng'}</dd>
                       <dt>Thời gian hành động</dt><dd>{citizen.actionDuration ? citizen.actionDuration + ' giờ; tiến độ ' + citizen.workHours + ' giờ' : 'Không có'}</dd>
                       <dt>Điểm đến</dt><dd>({citizen.destination.x}, {citizen.destination.y})</dd>
