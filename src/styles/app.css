@@ -114,3 +114,19 @@ h3 { letter-spacing: -.025em; font-size: 19px; margin-bottom: 0; }
   .sidebar { grid-template-columns: 1fr; }
   .site-footer { flex-direction: column; }
 }
+
+/* Phase 02 observable resource and survival indicators. */
+.resource-dashboard { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; margin-top: 13px; }
+.resource-value { padding: 10px; background: #162d23; border: 1px solid #486247; border-radius: 9px; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.resource-value span { font-size: 10px; color: #a7bca8; }
+.resource-value strong { font-size: 17px; color: #e9f0d9; overflow-wrap: anywhere; }
+.dashboard-note { font-size: 10px; color: #9cb39f; line-height: 1.45; margin: 10px 0 0; }
+.needs-panel { width: 100%; display: grid; gap: 11px; padding: 12px 0; }
+.need > div:first-child { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; }
+.need > div:first-child strong { font-size: 11px; }
+.need-track { height: 8px; background: #13291e; border-radius: 6px; overflow: hidden; border: 1px solid #527157; }
+.need-fill { display: block; height: 100%; background: #a3c981; transition: width .12s linear; }
+.need-fill.low { background: #db7968; }
+.citizen-dead { opacity: .5; }
+.legend-tile.field { background: #d6bb6e; }
+.legend-tile.depleted { background: #994949; }
