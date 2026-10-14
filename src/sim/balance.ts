@@ -63,6 +63,7 @@ export const BALANCE = {
   socialEdgeLimit: 20,
   socialFriendThreshold: 24,
   socialRivalThreshold: -24,
+  socialAvoidThreshold: -35,
   socialPairThreshold: 22,
   socialPairInteractions: 5,
   socialPairMinHours: 72,
