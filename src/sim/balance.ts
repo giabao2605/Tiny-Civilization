@@ -13,6 +13,8 @@ export const BALANCE = {
   foodNutrition: 55,
   foodActionHours: 1,
   lowEnergyThreshold: 25,
+  criticalHealthThreshold: 30,
+  recoveredHealthThreshold: 55,
   restedEnergyThreshold: 78,
   criticalHunger: 10,
   starvationGraceHours: 24,
