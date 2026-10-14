@@ -113,7 +113,7 @@ test('Phase 03: 100 NPCs, real wallets, market and construction stay observable'
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.goto('/');
   await page.getByTestId('population-input').selectOption('100');
-  await page.getByRole('button', { name: 'Tạo lại' }).click();
+  await page.getByRole('button', { name: 'Tạo lại', exact: true }).click();
   await expect(page.getByTestId('game-container')).toHaveAttribute('data-npc-count', '100');
   await expect(page.getByTestId('population-value')).toHaveText('100');
   await expect(page.getByTestId('homeless-count')).toHaveText('20');
