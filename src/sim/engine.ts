@@ -147,7 +147,10 @@ export function advanceOneTick(previous: WorldState): WorldState {
     let requested: Goal;
     if (citizen.needMode === 'rest' && citizen.health <= BALANCE.criticalHealthThreshold) requested = 'home';
     else if (citizen.needMode === 'food') {
-      if (citizen.inventory.food > 0) requested = 'food';
+      // Prefer selling a full harvest before buying food, but never delay a
+      // critically hungry resident or re-sell a one-unit purchased meal.
+      if (citizen.inventory.food >= BALANCE.farmYield && citizen.hunger > BALANCE.criticalHunger && canSell('food')) requested = 'sell';
+      else if (citizen.inventory.food > 0) requested = 'food';
       else if (citizen.wallet >= world.market.prices.foodSell && world.inventory.food > 0) requested = 'food';
       else if (canSell('food') || canSell('wood')) requested = 'sell';
       else if (construction?.status === 'active' && construction.builderId === citizen.id &&

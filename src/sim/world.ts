@@ -28,6 +28,7 @@ export type Market = {
   siteId: number; cash: number; initialSupply: number;
   prices: { foodBuy: number; foodSell: number; woodBuy: number; woodSell: number };
   trades: Trade[]; completedTrades: number; volumeToday: number; volumeYesterday: number;
+  boughtFromCitizens: number; soldToCitizens: number;
 };
 export type Construction = {
   id: number; tile: TilePosition; woodSpent: number; hoursRequired: number; progress: number;
@@ -177,7 +178,8 @@ export function createWorld(seed = 12345, population: 20 | 50 | 100 = 20): World
     market: { siteId: marketId, cash, initialSupply: cash + population * BALANCE.initialWallet,
       prices: { foodBuy: BALANCE.foodBuyPrice, foodSell: BALANCE.foodSellPrice,
         woodBuy: BALANCE.woodBuyPrice, woodSell: BALANCE.woodSellPrice },
-      trades: [], completedTrades: 0, volumeToday: 0, volumeYesterday: 0 },
+      trades: [], completedTrades: 0, volumeToday: 0, volumeYesterday: 0,
+      boughtFromCitizens: 0, soldToCitizens: 0 },
     constructions: [],
     stats: { day: 1, foodProducedToday: 0, foodConsumedToday: 0,
       foodProducedYesterday: 0, foodConsumedYesterday: 0, totalFoodProduced: 0, totalFoodConsumed: 0,

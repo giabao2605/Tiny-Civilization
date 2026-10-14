@@ -240,11 +240,14 @@ describe('Phase 03 deterministic economy and adversarial invariants', () => {
       check(after);
       expect(after.citizens).toHaveLength(100);
       expect(after.market.completedTrades).toBeGreaterThan(0);
+      expect(after.market.boughtFromCitizens).toBeGreaterThan(0);
+      expect(after.market.soldToCitizens).toBeGreaterThan(0);
       expect(after.citizens.filter((c) => c.alive)).toHaveLength(100);
       rows.push({ seed, alive: after.citizens.filter((c) => c.alive).length,
         dead: after.stats.deaths, food: after.inventory.food, wood: after.inventory.wood,
         produced: after.stats.totalFoodProduced, consumed: after.stats.totalFoodConsumed,
         money: totalCurrency(after), marketCash: after.market.cash, trades: after.market.completedTrades,
+        boughtByMarket: after.market.boughtFromCitizens, soldByMarket: after.market.soldToCitizens,
         housing: housing(after), failed: after.stats.failedActions });
       if (seed === 1) {
         const replay = advanceTicks(createWorld(seed, 100), 720);
@@ -260,12 +263,15 @@ describe('Phase 03 deterministic economy and adversarial invariants', () => {
       for (let seed = 1; seed <= 10; seed += 1) {
         const a = advanceTicks(createWorld(seed, population), 720);
         check(a);
+        expect(a.market.boughtFromCitizens).toBeGreaterThan(0);
+        expect(a.market.soldToCitizens).toBeGreaterThan(0);
         expect(a.citizens.filter((c) => c.alive)).toHaveLength(population);
         expect(stateDigest(a)).toBe(stateDigest(advanceTicks(createWorld(seed, population), 720)));
         console.log('PHASE03_BALANCE=' + JSON.stringify({ population, seed,
           alive: a.citizens.filter((c) => c.alive).length, trades: a.market.completedTrades,
           food: a.inventory.food, wood: a.inventory.wood, produced: a.stats.totalFoodProduced,
           consumed: a.stats.totalFoodConsumed, marketCash: a.market.cash,
+          boughtByMarket: a.market.boughtFromCitizens, soldByMarket: a.market.soldToCitizens,
           housing: housing(a), meanHealth: Math.round(a.citizens.reduce((sum, c) => sum + c.health, 0) / population),
           failed: a.stats.failedActions, money: totalCurrency(a) }));
       }

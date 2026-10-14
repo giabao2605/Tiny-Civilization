@@ -15,6 +15,8 @@ function price(world: WorldState, good: Good, direction: 'buy' | 'sell'): number
     : (direction === 'buy' ? world.market.prices.woodSell : world.market.prices.woodBuy);
 }
 function recordTrade(world: WorldState, citizen: Citizen, good: Good, quantity: number, amount: number, direction: 'buy' | 'sell'): void {
+  if (direction === 'buy') world.market.soldToCitizens += quantity;
+  else world.market.boughtFromCitizens += quantity;
   world.market.completedTrades += 1;
   world.market.volumeToday += quantity;
   world.market.trades.push({ tick: world.tick, citizenId: citizen.id, good, quantity, amount, direction });

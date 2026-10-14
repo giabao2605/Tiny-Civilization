@@ -157,6 +157,8 @@ export function App() {
                 <div className="resource-value"><span>Vô gia cư</span><strong data-testid="homeless-count">{homes.homeless}</strong></div>
                 <div className="resource-value"><span>Có việc / chưa có việc</span><strong data-testid="employed-count">{employed}/{living.length - employed}</strong></div>
                 <div className="resource-value"><span>Giao dịch hoàn tất</span><strong data-testid="trade-count">{market.completedTrades}</strong></div>
+                <div className="resource-value"><span>Chợ mua từ dân</span><strong data-testid="market-bought-units">{market.boughtFromCitizens} đơn vị</strong></div>
+                <div className="resource-value"><span>Chợ bán cho dân</span><strong data-testid="market-sold-units">{market.soldToCitizens} đơn vị</strong></div>
                 <div className="resource-value"><span>Khối lượng giao dịch hôm nay</span><strong data-testid="trade-volume">{market.volumeToday}</strong></div>
                 <div className="resource-value"><span>Công trình đang xây</span><strong data-testid="construction-count">{activeSites.length}</strong></div>
                 <div className="resource-value"><span>Sức khỏe bình quân</span><strong data-testid="average-health">{averageHealth}/100</strong></div>

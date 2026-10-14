@@ -179,7 +179,7 @@ Phase 02 direct-to-town harvest and free communal meals documented above are HIS
 
 - WorldState.inventory is the market-owned physical warehouse; it is not copied into WorldState.market. Citizens individually own wallet coins and personal food/wood inventories. Harvested goods first enter producer-owned inventory, not the public warehouse.
 - Each citizen starts with 32 integer coins. The market treasury starts with 90 coins per citizen. Global supply therefore equals population times 122. All wallets, including those of dead citizens, and the market treasury are counted exactly once. There is no other monetary account and no money mint/burn.
-- Fixed integer prices: market buys and sells food at 3, and buys and sells wood at 2. A zero spread prevents passive coin accumulation while retaining strictly finite funds. Unpaid work never creates wages. Builder wages are subtracted from the treasury and added to the builder's wallet.
+- Fixed integer prices: market buys food at 2 and sells food at 3; buys wood at 1 and sells wood at 2. The spread stays in the market treasury (not a money sink), helping retain enough finite liquidity while food producers and consumers trade. Unpaid work never creates wages. Builder wages are subtracted from the treasury and added to the builder's wallet.
 - At all times the sum of the market cash and ALL citizen wallets equals initial supply. A dead person's belongings remain owned but temporarily inaccessible; no confiscation or inheritance is implemented.
 
 ### Hourly ordered effects
@@ -210,3 +210,5 @@ Last-unit contention is resolved by sequential ID order and post-guard transacti
 - Market cash + sum of citizen wallets = initial money supply.
 - All balances are nonnegative integers; occupied per house never exceeds capacity. IDs are unique and monotonically allocated across all entities.
 - No DOM, game-engine clock or performance counter affects these results. Optional pathfinding diagnostics are observational only. State digests cover market, construction and housing alongside existing citizen/resource state.
+
+**Circulation review:** A farmer with a full three-unit harvest may sell it first when safely nourished, then purchase a meal using the obtained coins. An already-purchased one-unit meal is eaten rather than re-sold, and critical hunger always permits immediate consumption of owned food. The warehouse may become full and forbid further purchases from producers; producers then lawfully consume privately owned harvest without conjuring free market food. Two monotonic counters (market.boughtFromCitizens and market.soldToCitizens) measure actual commodity units in both directions, making zero-consumer-trade deadlocks observable.
