@@ -132,6 +132,14 @@ export function advanceOneTick(previous: WorldState): WorldState {
       }
     }
 
+    if (desired === 'home' && citizen.goal === 'home' && same(citizen.tile, target) &&
+        citizen.needMode === 'rest') {
+      const recoveryReason = reasonFor('home', false, citizen);
+      if (citizen.reason !== recoveryReason) {
+        citizen.reason = recoveryReason;
+        decision('rest', recoveryReason);
+      }
+    }
     if (citizen.goal !== desired || !same(citizen.destination, target)) {
       citizen.goal = desired;
       citizen.destination = { ...target };
