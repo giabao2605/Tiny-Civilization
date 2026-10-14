@@ -167,8 +167,22 @@ export function applyIllnessHealth(world: WorldState, citizen: Citizen): void {
 }
 
 function eligibleRecipients(world: WorldState) {
-  return world.citizens.filter(c => c.alive && c.hunger <= 65 && c.inventory.food < 2)
-    .sort((a,b) => a.hunger - b.hunger || a.id - b.id);
+  // Phase 04 dependents eat food owned by their adult guardian; giving a child a
+  // private ration would strand it, because children cannot perform eat actions.
+  const dependentNeeds = new Map<number, number>();
+  for (const child of world.citizens) {
+    if (!child.alive || child.age >= BALANCE.adultAge || child.hunger > 65 ||
+      child.householdId === null) continue;
+    const home = world.households.find(h => h.id === child.householdId);
+    const guardian = home?.members.map(id => world.citizens.find(c => c.id === id))
+      .find(c => c && c.alive && c.age >= BALANCE.adultAge);
+    if (guardian) dependentNeeds.set(guardian.id,
+      Math.min(child.hunger, dependentNeeds.get(guardian.id) ?? 100));
+  }
+  const urgency = (c: Citizen) => Math.min(c.hunger, dependentNeeds.get(c.id) ?? 100);
+  return world.citizens.filter(c => c.alive && c.age >= BALANCE.adultAge &&
+    c.inventory.food < 2 && (c.hunger <= 65 || dependentNeeds.has(c.id)))
+    .sort((a,b) => urgency(a) - urgency(b) || a.id - b.id);
 }
 export function foodAidRejection(world: WorldState, leaderId: number, atTick: number): string | null {
   const g = world.governance;
