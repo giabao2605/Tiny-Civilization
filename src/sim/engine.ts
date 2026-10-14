@@ -39,6 +39,11 @@ function localHome(world: WorldState, citizen: Citizen): TilePosition {
 function availableNode(world: WorldState, citizen: Citizen, occupancy: Map<number, number>): ResourceNode | null {
   const kind = citizen.job === 'farmer' ? 'field' : citizen.job === 'woodcutter' ? 'forest' : null;
   if (!kind) return null;
+  // Preserve a reachable active work commitment: rebalancing every tick can
+  // reset travel/work progress and permanently starve slower settlements.
+  const assigned = world.resourceNodes.find((node) => node.id === citizen.workNodeId && node.kind === kind &&
+    node.stock > 0 && (occupancy.get(node.id) ?? 0) < BALANCE.resourceNodeJobSlots);
+  if (assigned && findPath(world, citizen.tile, assigned.tile) !== null) return assigned;
   const list = world.resourceNodes.filter((node) => node.kind === kind && node.stock > 0 &&
     (occupancy.get(node.id) ?? 0) < BALANCE.resourceNodeJobSlots);
   list.sort((a, b) => {
