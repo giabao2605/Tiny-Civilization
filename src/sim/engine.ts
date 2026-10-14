@@ -409,7 +409,8 @@ export function advanceTicks(world: WorldState, count: number): WorldState {
   return state;
 }
 export function stateDigest(world: WorldState): string {
-  const data = JSON.stringify([world.seed, world.tick, world.rngState, world.sites, world.citizens,
+  const data = JSON.stringify([world.schemaVersion, world.seed, world.tick, world.rngState,
+    world.nextEntityId, world.nextEventId, world.sites, world.citizens,
     world.resourceNodes, world.inventory, world.market, world.constructions, world.stats, world.events,
     world.households, world.memorials, world.social]);
   let hash = 2166136261;
