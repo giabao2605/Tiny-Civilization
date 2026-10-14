@@ -202,6 +202,12 @@ describe('Phase 03 deterministic economy and adversarial invariants', () => {
         const a = advanceTicks(createWorld(seed, population), 720);
         check(a);
         expect(stateDigest(a)).toBe(stateDigest(advanceTicks(createWorld(seed, population), 720)));
+        if (population === 50 && seed === 1) console.log('PHASE03_50_DIAG=' + JSON.stringify({
+          dead: a.citizens.filter((c) => !c.alive).map((c) => ({ id: c.id, job: c.job, wallet: c.wallet,
+            ownFood: c.inventory.food, ownWood: c.inventory.wood, workNodeId: c.workNodeId,
+            hunger: c.hunger, reason: c.reason, tile: c.tile })),
+          nodes: a.resourceNodes.map((node) => ({ id: node.id, kind: node.kind, stock: node.stock })),
+          marketCash: a.market.cash }));
         console.log('PHASE03_BALANCE=' + JSON.stringify({ population, seed,
           alive: a.citizens.filter((c) => c.alive).length, trades: a.market.completedTrades,
           food: a.inventory.food, wood: a.inventory.wood, money: totalCurrency(a) }));
