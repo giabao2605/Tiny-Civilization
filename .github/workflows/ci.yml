@@ -1,0 +1,44 @@
+name: Phase 00 CI
+on:
+  push:
+    branches: [main, feat/phase-00-foundation]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      # One-time bootstrap: lockfile generated on trusted GitHub runner because
+      # the authoring environment has no registry connectivity. Remove after bootstrapping.
+      - name: Bootstrap lockfile (branch push only)
+        if: github.event_name == 'push' && hashFiles('package-lock.json') == ''
+        run: |
+          npm install --package-lock-only --ignore-scripts
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "chore: lock Phase 00 dependencies"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase-00-browser-evidence
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
