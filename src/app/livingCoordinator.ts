@@ -30,7 +30,7 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
   const clock = createClock(() => {
     const world = advanceOneTick(snapshot.world, pending);
     pending = [];
-    const policyEvent = world.events.findLast(event => event.tick === world.tick &&
+    const policyEvent = world.events.slice().reverse().find(event => event.tick === world.tick &&
       (event.type === 'foodAid' || event.type === 'foodAidDenied'));
     snapshot = { ...snapshot, world,
       lastPolicyMessage: policyEvent ? policyEvent.reason : snapshot.lastPolicyMessage };
