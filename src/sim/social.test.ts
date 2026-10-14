@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from './balance';
 import { advanceOneTick, advanceTicks, stateDigest } from './engine';
-import { applyInteraction, advanceSocial, cleanupDeath } from './social';
+import { applyInteraction, advanceSocial, cleanupDeath, tryFormPartnership } from './social';
 import { createWorld, getSite, housing, totalCurrency, type Citizen, type WorldEvent, type WorldState } from './world';
 
 function fixture(seed = 210) {
@@ -158,6 +158,39 @@ describe('Phase 04 relationships and demographic invariants', () => {
     expect(formed.a.householdId).toBeNull();
     expect(formed.world.memorials.at(-1)?.citizenId).toBe(formed.a.id);
     assertHouseholds(formed.world);
+  });
+
+  it('two eligible couples compete deterministically for the last actual home vacancy', () => {
+    const world = createWorld(309, 100);
+    const [a, c, removed, b, d] = [world.citizens[0]!, world.citizens[20]!,
+      world.citizens[40]!, world.citizens[80]!, world.citizens[81]!];
+    const room = a.homeId!;
+    expect(c.homeId).toBe(room);
+    world.households = world.households.filter((h) => h.id !== removed.householdId);
+    removed.homeId = null; removed.householdId = null;
+    const commons = world.sites.find((site) => site.kind === 'commons')!.tile;
+    for (const person of [a, c, b, d]) {
+      person.tile = { ...commons }; person.lastMove = [{ ...commons }];
+      person.goal = 'commons'; person.age = 25; person.ageHours = 25 * BALANCE.hoursPerYear;
+    }
+    const events: WorldEvent[] = [];
+    const emit = (type: WorldEvent['type'], actor: Citizen | null, reason: string, extras: Partial<WorldEvent> = {}) => {
+      events.push({ ...extras, id: world.nextEventId++, tick: world.tick, type, citizenId: actor?.id ?? null, reason });
+    };
+    for (let tick = 0; tick <= 64; tick += BALANCE.socialCooldown) {
+      world.tick = tick;
+      expect(applyInteraction(world, a.id, b.id, 'chat', emit)).toBe(true);
+      expect(applyInteraction(world, c.id, d.id, 'chat', emit)).toBe(true);
+    }
+    world.tick = 80;
+    expect(tryFormPartnership(world, a, b, emit)).toBe(true);
+    expect(tryFormPartnership(world, c, d, emit)).toBe(false);
+    expect(b.homeId).toBe(room);
+    expect(d.homeId).toBeNull();
+    expect(a.partnerId).toBe(b.id);
+    expect(c.partnerId).toBeNull();
+    expect(world.citizens.filter((person) => person.alive && person.homeId === room)).toHaveLength(4);
+    assertHouseholds(world);
   });
 
   it('birth requires cooldown, food, empty real house capacity and below population soft cap', () => {
