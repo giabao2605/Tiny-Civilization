@@ -87,6 +87,30 @@ describe('Phase 03 deterministic economy and adversarial invariants', () => {
     expect(totalCurrency(w)).toBe(before);
   });
 
+
+  it('last warehouse slot accepts one unit from two-unit inventory without unbounded sell retry', () => {
+    const w = createWorld(3);
+    const seller = w.citizens.find((c) => c.job === 'woodcutter')!;
+    const price = w.market.prices.woodBuy;
+    seller.tile = { ...marketTile(w) };
+    seller.destination = { ...seller.tile };
+    seller.goal = 'sell';
+    seller.inventory.wood = 2;
+    seller.hunger = 100;
+    seller.energy = 100;
+    seller.needMode = null;
+    w.inventory.wood = BALANCE.townWoodCapacity - 1;
+    w.tick = 6;
+    const before = totalCurrency(w);
+    const after = advanceOneTick(w);
+    const updated = after.citizens.find((c) => c.id === seller.id)!;
+    expect(updated.inventory.wood).toBe(1);
+    expect(after.inventory.wood).toBe(BALANCE.townWoodCapacity);
+    expect(updated.wallet).toBe(seller.wallet + price);
+    expect(after.market.completedTrades).toBe(1);
+    expect(totalCurrency(after)).toBe(before);
+  });
+
   it('bankruptcy, no stock, invalid location, dead agent and invalid quantity are no-ops', () => {
     const w = createWorld(4);
     const c = w.citizens[0]!;
