@@ -181,3 +181,33 @@ test('Phase 04: social relationships, household navigation and timeline filters 
   expect(widths.page).toBeLessThanOrEqual(widths.viewport + 1);
   expect(failures).toEqual([]);
 });
+
+
+test('governance leader, bounded policy rejection, visible crop shock and crisis timeline', async ({ page }, testInfo) => {
+  const failures = collectErrors(page);
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto('/');
+  const panel = page.getByTestId('governance-panel');
+  await expect(panel).toBeVisible();
+  await expect(page.getByTestId('governance-leader').getByRole('button')).toBeVisible();
+  const button = page.getByTestId('governance-leader').getByRole('button');
+  const label = await button.innerText();
+  const id = label.match(/#(\\d+)/)?.[1];
+  expect(id).toBeTruthy();
+  await button.click();
+  await expect(page.getByTestId('selected-citizen')).toContainText('ID #' + id);
+  await expect(page.getByTestId('citizen-illness')).toBeVisible();
+  await page.getByTestId('activate-food-aid').click();
+  await expect(page.getByTestId('aid-feedback')).toContainText(/chưa có|Chưa có|khủng hoảng|cooldown|không có/i);
+  await page.getByRole('button', { name: '20×' }).click();
+  await expect.poll(async () => {
+    const label = await page.getByTestId('world-tick').innerText();
+    return Number(label.match(/Tick (\\d+)/)?.[1] ?? 0);
+  }, { timeout: 15000 }).toBeGreaterThanOrEqual(100);
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  await expect(page.getByTestId('active-shocks')).toContainText('Mất mùa');
+  await page.getByTestId('timeline-filter').selectOption('governance');
+  await expect(page.getByTestId('event-feed')).toContainText(/Biến cố|Tác động|trưởng làng/i);
+  await page.screenshot({ path: testInfo.outputPath('phase-05-governance-desktop.png'), fullPage: true });
+  expect(failures).toEqual([]);
+});
