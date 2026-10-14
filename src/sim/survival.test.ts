@@ -277,8 +277,11 @@ describe('Phase 02 resource accounting and living needs', () => {
       if (newEvents.some((event) => event.type === 'foodEaten')) {
         ate = true;
         expect(after.hunger).toBeGreaterThan(before.hunger);
-        expect(world.stats.totalFoodConsumed).toBe(previousTotalConsumed + 1);
-        expect(world.inventory.food).toBe(previousFood - 1 + (world.stats.totalFoodProduced - previousTotalProduced));
+        // Other residents can legally eat later in the SAME hourly tick.
+        expect(world.stats.totalFoodConsumed).toBeGreaterThan(previousTotalConsumed);
+        expect(world.inventory.food).toBe(previousFood +
+          (world.stats.totalFoodProduced - previousTotalProduced) -
+          (world.stats.totalFoodConsumed - previousTotalConsumed));
       }
     }
     expect(produced).toBe(true);
