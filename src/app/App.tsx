@@ -17,6 +17,12 @@ const ACTIVITY: Record<Activity, string> = {
   waitingForFood: 'Đợi thức ăn',
   dead: 'Đã chết',
 };
+const EVENT_LEVEL: Record<WorldEvent['type'], 'info' | 'warning' | 'critical'> = {
+  founded: 'info', departure: 'info', work: 'info', gather: 'info',
+  home: 'info', routeBlocked: 'warning', foodProduced: 'info',
+  woodProduced: 'info', foodEaten: 'info', shortage: 'warning',
+  depleted: 'warning', recovery: 'info', danger: 'critical', death: 'critical',
+};
 const EVENTS: Record<WorldEvent['type'], string> = {
   founded: 'Thành lập làng',
   departure: 'Bắt đầu di chuyển',
@@ -218,7 +224,7 @@ export function App() {
               <h3>10 sự kiện gần nhất</h3>
               <ol className="event-feed" data-testid="event-feed">
                 {world.events.slice(-10).reverse().map((event) => (
-                  <li key={event.id}><span>Ngày {dayOf(event.tick)} · {String(hourOf(event.tick)).padStart(2, '0')}:00 · {EVENTS[event.type]}</span><p>{event.reason}</p></li>
+                  <li key={event.id} className={'event-' + EVENT_LEVEL[event.type]}><span>Ngày {dayOf(event.tick)} · {String(hourOf(event.tick)).padStart(2, '0')}:00 · {EVENTS[event.type]}</span><p>{event.reason}</p></li>
                 ))}
               </ol>
             </section>
