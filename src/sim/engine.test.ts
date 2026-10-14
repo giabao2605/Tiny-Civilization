@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GRID_WIDTH, tileIndex } from './grid';
+import { GRID_HEIGHT, GRID_WIDTH, tileIndex } from './grid';
 import { advanceOneTick, advanceTicks, hourOf, dayOf, stateDigest } from './engine';
 import { findPath } from './pathfinding';
 import { createWorld, getSite, walkable, type WorldState } from './world';
