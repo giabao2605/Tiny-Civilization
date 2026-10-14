@@ -81,3 +81,28 @@ test('narrow viewport is readable without horizontal overflow', async ({ page },
   await page.screenshot({ path: testInfo.outputPath('living-world-mobile.png'), fullPage: true });
   expect(failures).toEqual([]);
 });
+
+test('survival stocks, hunger/health inspector and deterministic playback are observable', async ({ page }, testInfo) => {
+  const failures = collectErrors(page);
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto('/');
+  await expect(page.getByTestId('food-stock')).toHaveText('30');
+  await expect(page.getByTestId('wood-stock')).toHaveText('6');
+  await expect(page.getByTestId('hungry-count')).toBeVisible();
+  await expect(page.getByTestId('food-runway')).toHaveText('Chưa đủ dữ liệu');
+  await page.getByTestId('citizen-27').click();
+  await expect(page.getByTestId('selected-citizen')).toContainText('Nông dân');
+  await expect(page.getByTestId('citizen-needs').getByRole('progressbar')).toHaveCount(3);
+  await expect(page.getByTestId('need-hunger')).toContainText('/100');
+  const initialHunger = await page.getByTestId('need-hunger').innerText();
+  await page.getByRole('button', { name: '20×' }).click();
+  await expect.poll(async () => await page.getByTestId('need-hunger').innerText(), { timeout: 6000 }).not.toBe(initialHunger);
+  await expect.poll(async () => Number(await page.getByTestId('food-produced').innerText()), { timeout: 10000 }).toBeGreaterThan(0);
+  await expect.poll(async () => Number(await page.getByTestId('food-consumed').innerText()), { timeout: 10000 }).toBeGreaterThan(0);
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  const tick = await page.getByTestId('world-tick').innerText();
+  await page.waitForTimeout(450);
+  expect(await page.getByTestId('world-tick').innerText()).toBe(tick);
+  await page.screenshot({ path: testInfo.outputPath('phase-02-survival.png'), fullPage: true });
+  expect(failures).toEqual([]);
+});
