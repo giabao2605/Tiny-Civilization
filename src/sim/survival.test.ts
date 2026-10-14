@@ -286,4 +286,20 @@ describe('Phase 02 resource accounting and living needs', () => {
     invariants(world);
   });
 
+  it('critical health preempts work and retains medical rest until safely recovered', () => {
+    const world = createWorld(12345);
+    world.tick = 6;
+    const citizen = world.citizens[0]!;
+    citizen.health = 20;
+    citizen.energy = 100;
+    citizen.hunger = 100;
+    const after = advanceOneTick(world);
+    expect(after.citizens[0]!.goal).toBe('home');
+    expect(after.citizens[0]!.needMode).toBe('rest');
+    expect(after.citizens[0]!.reason).toMatch(/sức khỏe/i);
+    const again = advanceOneTick(after);
+    expect(again.citizens[0]!.goal).toBe('home');
+    expect(again.citizens[0]!.needMode).toBe('rest');
+  });
+
 });
