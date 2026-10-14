@@ -2,7 +2,7 @@
 
 **Tóm tắt tiếng Việt:** Có trưởng làng, chính sách giới hạn và hai loại biến cố tác động thật tới kinh tế/sức khỏe. Chưa làm chiến tranh.
 
-**Status:** NOT STARTED · **Requires:** social/economic stability through phase 04.
+**Status:** IN PROGRESS (PR #6, verification pending) · **Requires:** social/economic stability through phase 04.
 **Intent:** Town decisions and small disasters create real history without implementing nations, diplomacy or battles.
 
 ## Player story
@@ -61,3 +61,13 @@ One full crisis chronology with measurable cause and consequence, one defensible
 ## Defer
 
 National politics, factions with deep ideology, procedural war, elaborate public spending budgets, complex medicine, multi-village elections and diplomacy. These belong after v1, if at all.
+
+## Implementation notes / decisions (PR #6)
+
+- Base `main`: `b25007a7f19921b9431a98253abdf994eddd0885`; independent branch `feat/phase-05-governance`.
+- Micro-prototype decision: choose **emergency food release** instead of ration restrictions. A ration system would need retuning household child-feeding, buyer purchase frequency and fairness, while a validated transfer of up to 6 real food units reuses the existing market-to-person ownership model and makes the trade-off measurable immediately.
+- Elections happen every 720 ticks or upon death/vacancy. A candidate's score combines available directed social edges from living adult voters, health, food, wallet and job. Higher score wins; ties break on ascending ID. Empty pool stays vacant and retries daily. Public reputation follows actual health/starvation once per day.
+- First poor harvest starts at tick 96, lasts 144 hours, repeats no sooner than 720 hours and respects cooldown. Seed determines 25%/50% lost potential for up to three valid fields. First local illness starts tick 168, lasts 96 hours, repeats no sooner than 840 hours, and affects at most six live workers. Severity changes missed work hours and daily HP loss. Both can overlap but there are at most two active shocks.
+- `emergency-food` accepts only a valid leader and a command stamped for the current hour, only during shocks or extreme starvation, with positive market food stock, living needy recipients, one action per interval and 72-hour cooldown. Transfer is 1 real item per recipient to at most six, sorted by hunger and ID. No money is transferred; it is market inventory donated in-kind, with explicit opportunity cost and before/after numbers. Active policy display lasts 24 hours. Eligible leader may propose it automatically once on a daily boundary when a shock co-occurs with severe shortages.
+- Bounded causal events include stable IDs and before/after data when applicable. Schema bumped v4 → v5; no speculative save/load implementation.
+- Adversarial fixtures and multi-seed performance log are in `src/sim/governance.test.ts`, screenshot test in `tests/e2e/smoke.spec.ts`. **Exit gate remains incomplete until latest CI, long-run simulation, browser screenshot evidence and self-review are confirmed.**
