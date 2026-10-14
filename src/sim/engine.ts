@@ -285,7 +285,11 @@ export function advanceOneTick(previous: WorldState): WorldState {
       citizen.actionDuration = 1;
       citizen.energy = clampNeed(citizen.energy - BALANCE.energyIdlePerHour);
       const good: Good = canSell('food') ? 'food' : 'wood';
-      const quantity = Math.min(3, citizen.inventory[good]);
+      // Resolve affordable warehouse headroom *before* the atomic trade. Trying to
+      // sell 2 units into the final 1-unit slot caused a permanent bankrupt loop.
+      const freeSlots = (good === 'food' ? BALANCE.townFoodCapacity : BALANCE.townWoodCapacity) - world.inventory[good];
+      const unitPayout = good === 'food' ? world.market.prices.foodBuy : world.market.prices.woodBuy;
+      const quantity = Math.min(3, citizen.inventory[good], freeSlots, Math.floor(world.market.cash / unitPayout));
       if (quantity > 0 && sellToMarket(world, citizen, good, quantity)) {
         citizen.activity = 'trading';
         citizen.reason = 'Bán ' + quantity + ' ' + good + ' bằng tiền thật; ví hiện có ' + citizen.wallet + '.';
