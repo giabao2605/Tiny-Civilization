@@ -48,6 +48,7 @@ describe('Phase 02 resource accounting and living needs', () => {
     expect(after.citizens[0]!.hunger).toBe(51);
     expect(after.citizens[0]!.energy).toBeGreaterThanOrEqual(0);
     expect(after.inventory.food).toBe(0);
+    expect(after.stats.failedActions).toBeGreaterThan(0);
     invariants(after);
   });
 
