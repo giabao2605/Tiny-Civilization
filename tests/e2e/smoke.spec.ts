@@ -164,7 +164,7 @@ test('Phase 04: social relationships, household navigation and timeline filters 
   await expect(page.getByTestId('timeline-filter')).toHaveValue('social');
   const eventActor = page.getByTestId('event-feed').getByRole('button', { name: /NPC #/ }).first();
   await expect(eventActor).toBeVisible();
-  const eventActorId = (await eventActor.innerText()).match(/NPC #(\\d+)/)?.[1];
+  const eventActorId = (await eventActor.innerText()).match(/NPC #([0-9]+)/)?.[1];
   expect(eventActorId).toBeTruthy();
   await eventActor.click();
   await expect(page.getByTestId('selected-citizen')).toContainText('ID #' + eventActorId);
