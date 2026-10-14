@@ -130,3 +130,6 @@ h3 { letter-spacing: -.025em; font-size: 19px; margin-bottom: 0; }
 .citizen-dead { opacity: .5; }
 .legend-tile.field { background: #d6bb6e; }
 .legend-tile.depleted { background: #994949; }
+
+.event-feed li.event-warning { border-left-color: #dfb269; }
+.event-feed li.event-critical { border-left-color: #e67b70; background: #402d2b88; border-radius: 0 6px 6px 0; }
