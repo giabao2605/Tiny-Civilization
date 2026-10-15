@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { GameCanvas } from '../game/GameCanvas';
+import { LOCAL_SAVE_KEY, MAX_SAVE_BYTES } from '../persistence/save';
 import { dayOf, hourOf, stateDigest } from '../sim/engine';
 import { foodAidRejection } from '../sim/governance';
 import { GRID_HEIGHT, GRID_WIDTH } from '../sim/grid';
@@ -82,6 +83,8 @@ export function App() {
   const [inspectedEventId, setInspectedEventId] = useState<number | null>(null);
   const [seedInput, setSeedInput] = useState('12345');
   const [populationInput, setPopulationInput] = useState<20 | 50 | 100>(20);
+  const [saveMessage, setSaveMessage] = useState('Chưa lưu trong phiên này. File JSON có thể sao lưu sang thiết bị khác.');
+  const [saveTick, setSaveTick] = useState<number | null>(null);
   const { world, selectedCitizenId, paused, speed } = snapshot;
   const governance = world.governance;
   const leader = world.citizens.find(c => c.id === governance.leaderId);
@@ -121,6 +124,53 @@ export function App() {
     if (Number.isSafeInteger(value)) { setInspectedEventId(null); coordinator.dispatch({ type: 'reset-seed', seed: value, population: populationInput }); }
   };
 
+  const saveToBrowser = () => {
+    try {
+      const json = coordinator.exportSave();
+      window.localStorage.setItem(LOCAL_SAVE_KEY, json);
+      setSaveTick(world.tick);
+      setSaveMessage('Đã lưu tick ' + world.tick + ' vào trình duyệt (' + new Blob([json]).size + ' byte).');
+    } catch (error) {
+      setSaveMessage('Lưu thất bại: ' + (error instanceof Error ? error.message : 'Không có quyền lưu hoặc hết quota') +
+        '. Thử Xuất JSON để giữ bản sao.');
+    }
+  };
+  const restore = (json: string, origin: string) => {
+    coordinator.importSave(json);
+    const restored = coordinator.getSnapshot().world;
+    setSeedInput(String(restored.seed));
+    setInspectedEventId(null);
+    setSaveTick(restored.tick);
+    setSaveMessage('Đã tải ' + origin + ' ở tick ' + restored.tick + '. Trò chơi tạm dừng để kiểm tra.');
+  };
+  const loadFromBrowser = () => {
+    try {
+      const json = window.localStorage.getItem(LOCAL_SAVE_KEY);
+      if (json === null) throw new Error('Chưa có bản lưu trong trình duyệt.');
+      restore(json, 'bản lưu trình duyệt');
+    } catch (error) { setSaveMessage('Tải thất bại: ' + (error instanceof Error ? error.message : String(error))); }
+  };
+  const exportJson = () => {
+    try {
+      const json = coordinator.exportSave();
+      const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = 'tiny-civilization-seed-' + world.seed + '-tick-' + world.tick + '.json';
+      anchor.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setSaveMessage('Đã tạo file JSON tick ' + world.tick + '.');
+    } catch (error) { setSaveMessage('Xuất thất bại: ' + (error instanceof Error ? error.message : String(error))); }
+  };
+  const importJson = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      if (file.size > MAX_SAVE_BYTES) throw new Error('File vượt giới hạn 8 MiB.');
+      const json = await file.text();
+      restore(json, 'file JSON');
+    } catch (error) { setSaveMessage('Import thất bại: ' + (error instanceof Error ? error.message : String(error))); }
+  };
+
   return (
     <div className="site-shell">
       <header className="topbar">
@@ -131,7 +181,7 @@ export function App() {
             <h1>Tiny Civilization<span className="title-dot">.</span></h1>
           </div>
         </div>
-        <span className="version-tag">PHASE 05 <span aria-hidden="true">●</span> GOVERNANCE</span>
+        <span className="version-tag">PHASE 06 <span aria-hidden="true">●</span> QUALITY</span>
       </header>
 
       <main>
@@ -140,6 +190,7 @@ export function App() {
             <p className="section-kicker">LIFE BEGINS IN THE VALLEY</p>
             <h2>Một ngôi làng nhỏ.<br /><em>{world.citizens.length} cuộc đời.</em></h2>
             <p className="intro-copy">Cư dân tự kiếm sống, kết bạn và xây dựng gia đình; trưởng làng đưa ra quyết định hữu hạn khi mất mùa hay bệnh tật đe dọa.</p>
+            <p className="quick-start" data-testid="onboarding"><strong>Bắt đầu:</strong> Chọn dân số và Seed rồi tạo thế giới. Dùng 1×/5×/20× để theo dõi, nhấn vào cư dân để xem lý do hành động. Lưu trong trình duyệt hoặc xuất JSON trước khi đóng tab.</p>
           </div>
           <div className="phase-note">
             <span className="note-pulse" aria-hidden="true" />
@@ -213,6 +264,12 @@ export function App() {
                 <div className="resource-value"><span>NPC sức khỏe nguy hiểm</span><strong data-testid="danger-count">{endangered}</strong></div>
               </div>
               <p className="dashboard-note">Kho hiển thị thuộc sở hữu chợ; hàng NPC giữ trong túi không bị tính trùng. Mỗi giao dịch chuyển cả hàng và tiền.</p>
+              <div className="hud-summary" aria-label="Tình hình làng" data-testid="hud-summary">
+                <span>Ngày {day} · {String(hour).padStart(2, '0')}:00 · {living.length} người</span>
+                <span>Food chợ {world.inventory.food} · dự trữ {runway}</span>
+                <span>Sức khỏe {averageHealth}/100 · đang đói {hungry}</span>
+                <span>{governance.shocks.length ? 'Cảnh báo: ' + governance.shocks.map(s => s.kind === 'poorHarvest' ? 'Mất mùa' : 'Dịch bệnh').join(', ') : 'Không có khủng hoảng đang diễn ra'}</span>
+              </div>
               <div className="time-controls" aria-label="Điều khiển thời gian">
                 <button type="button" className={paused ? 'control active' : 'control'} onClick={() => coordinator.dispatch({ type: 'set-paused', paused: !paused })} aria-label={paused ? 'Tiếp tục' : 'Tạm dừng'}>{paused ? '▶ Tiếp tục' : 'Ⅱ Tạm dừng'}</button>
                 {([1, 5, 20] as const).map((value) => (
@@ -230,6 +287,22 @@ export function App() {
               <select id="population-input" data-testid="population-input" value={populationInput} onChange={(event) => setPopulationInput(Number(event.target.value) as 20 | 50 | 100)}>
                 <option value={20}>20 NPC</option><option value={50}>50 NPC</option><option value={100}>100 NPC</option>
               </select>
+              <section className="save-panel" aria-label="Lưu và khôi phục thế giới">
+                <h4>Lưu &amp; khôi phục</h4>
+                <p className="dashboard-note">Dữ liệu chỉ nằm trong trình duyệt này. Xuất JSON để sao lưu trước khi xóa dữ liệu trang web.</p>
+                <div className="save-actions">
+                  <button type="button" className="ghost-button" data-testid="save-world" onClick={saveToBrowser}>Lưu thế giới</button>
+                  <button type="button" className="ghost-button" data-testid="load-world" onClick={loadFromBrowser}>Tải bản lưu</button>
+                  <button type="button" className="ghost-button" data-testid="export-world" onClick={exportJson}>Xuất JSON</button>
+                  <label className="import-button" htmlFor="import-world">Nhập JSON</label>
+                  <input id="import-world" type="file" data-testid="import-world" accept=".json,application/json" onChange={event => {
+                    const file = event.currentTarget.files?.[0]; event.currentTarget.value = '';
+                    void importJson(file);
+                  }} />
+                </div>
+                <p data-testid="save-status" role="status" aria-live="polite" className="save-status">{saveMessage}</p>
+                {saveTick !== null && <p className="dashboard-note">Snapshot gần nhất thao tác: tick {saveTick}</p>}
+              </section>
               <p className="debug-line" data-testid="world-tick">Tick {world.tick} · Seed {world.seed}{import.meta.env.DEV ? ' · #' + stateDigest(world) : ''}</p>
             </section>
 
@@ -283,6 +356,7 @@ export function App() {
                       <dt>Nhân khẩu</dt><dd>{citizen.age < 18 ? 'Trẻ phụ thuộc' : citizen.age >= 68 ? 'Nghỉ lao động' : 'Trưởng thành'}</dd>
                       <dt>Nghề</dt><dd data-testid="citizen-job">{jobNames[citizen.job]}</dd>
                       <dt>Đang làm</dt><dd>{ACTIVITY[citizen.activity]}</dd>
+                       <dt>Trạng thái đường đi</dt><dd>{citizen.route.length ? citizen.route.length + ' ô còn lại' : 'Không có tuyến đang đi'} · {citizen.alive ? citizen.reason : 'Đã kết thúc hoạt động'}</dd>
                       <dt>Vị trí</dt><dd>({citizen.tile.x}, {citizen.tile.y})</dd>
                       <dt>Nhà</dt><dd>{citizen.homeId === null ? 'Chưa có nhà' : getSite(world, citizen.homeId).name}</dd>
                       <dt>Hộ gia đình</dt><dd data-testid="citizen-household">{selectedHousehold ? '#' + selectedHousehold.id + ' · ' + selectedHousehold.members.length + ' người' : 'Chưa có hộ'}</dd>
@@ -402,7 +476,7 @@ export function App() {
         </div>
       </main>
 
-      <footer className="site-footer"><span>TINY CIVILIZATION / PHASE 05</span><span>20/50/100 NPC · Lãnh đạo · Mất mùa · Bệnh cục bộ</span></footer>
+      <footer className="site-footer"><span>TINY CIVILIZATION / PHASE 06</span><span>20/50/100 NPC · Lãnh đạo · Mất mùa · Bệnh cục bộ</span></footer>
     </div>
   );
 }
