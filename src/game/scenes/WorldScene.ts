@@ -97,8 +97,9 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
 
   /** Reset = centered starting composition, 1.15 times closer than Fit. */
   reset(): void {
-    if (!this.sys.isActive()) return;
+    // Scene.create can run before sys.isActive() becomes true in some Phaser lifecycles.
     const camera = this.cameras.main;
+    if (!camera) return;
     this.cameraMode = 'reset';
     camera.setZoom(Math.min(3, fitZoom(camera.width, camera.height, this.worldWidth, this.worldHeight) * 1.15));
     camera.centerOn(this.worldWidth / 2, this.worldHeight / 2);
@@ -128,10 +129,15 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       scrollY: camera.scrollY, viewportWidth: camera.width, viewportHeight: camera.height };
   }
 
-  resizeViewport(width: number, height: number): void {
+  getViewportCenter(): { x: number; y: number } {
+    const camera = this.cameras.main;
+    const point = camera.getWorldPoint(camera.width / 2, camera.height / 2);
+    return { x: point.x, y: point.y };
+  }
+
+  resizeViewport(width: number, height: number, focus = this.getViewportCenter()): void {
     if (!this.sys.isActive()) return;
     const camera = this.cameras.main;
-    const focus = camera.getWorldPoint(camera.width / 2, camera.height / 2);
     camera.setSize(width, height);
     if (this.cameraMode === 'fit') { this.fit(); return; }
     if (this.cameraMode === 'reset') { this.reset(); return; }

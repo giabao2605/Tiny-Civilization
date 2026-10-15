@@ -62,9 +62,11 @@ export function GameCanvas({ snapshot, onCitizenSelected, onCameraReady, onCamer
           if (width === lastWidth && height === lastHeight) return;
           lastWidth = width;
           lastHeight = height;
-          // Backing buffer must match pointer/CSS geometry, not scale a fixed 576px canvas.
+          // Phaser may resize its cameras synchronously with the scale manager.
+          // Capture the world focus before the backing-buffer change.
+          const focus = live.scene.sys.isActive() ? live.scene.getViewportCenter() : undefined;
           live.game.scale.resize(width, height);
-          live.scene.resizeViewport(width, height);
+          live.scene.resizeViewport(width, height, focus);
         });
         observer.observe(host);
       }).catch(error => { if (!disposed) console.error('Không tải được bản đồ Phaser:', error); });
