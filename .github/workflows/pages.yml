@@ -1,7 +1,7 @@
 name: Tiny Civilization Pages
 on:
   push:
-    branches: [main, feat/phase-07-release]
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
@@ -10,6 +10,9 @@ concurrency:
   cancel-in-progress: true
 jobs:
   verify-build:
+    # Only main is permitted to publish the public release. A manual run on a
+    # feature branch must never replace the currently deployed site.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
