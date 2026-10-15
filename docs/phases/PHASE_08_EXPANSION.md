@@ -2,13 +2,13 @@
 
 **Tóm tắt tiếng Việt:** **Tạm hoãn sau MVP.** Chỉ xem xét nhiều làng, giao thương và chiến tranh nếu game 1 làng đã đủ hay và chạy ổn.
 
-**Status:** DEFERRED (not part of MVP) · **Requires:** playable phase-07 public game + user feedback.
+**Status:** DEFERRED (not part of MVP) · **Requires:** playable phase-07 desktop-local game + user feedback (owner revised scope 2026-10-15).
 **Purpose:** Preserve ambition without forcing kingdoms/war into the first release. Do not execute simply because this document exists.
 
 ## Go/no-go decision before engineering
 
 Proceed only if:
-- [ ] MVP is genuinely playable and deployed, has stable saves and seed determinism.
+- [ ] MVP is genuinely playable in local Chrome/Edge on PC, has stable saves and seed determinism. Public deployment is optional.
 - [ ] At least some players find observing one village interesting over 30–180 days.
 - [ ] Measured 100-NPC performance leaves headroom or there's a sound lower-cost multi-settlement approach.
 - [ ] Evidence shows trade/conflict would create meaningful new observation loops, not simply a bigger map.
@@ -49,3 +49,7 @@ If any is false, prioritize stronger individual NPC stories, better economic tun
 ## Gate for each subphase
 
 A second settlement only counts when actual trade conserves goods and both economies still run; diplomacy only when relationships change decisions; conflict only when actual resources, health, morale or political outcomes change. Each subphase should have independent seed fixtures, screenshots, browser smoke and a go/no-go review before the next.
+
+## Actual gate audit (2026-10-15)
+
+**NO-GO / PENDING PLAYER VALIDATION for 08A** after Phase 07 merge. Main CI PASS and local production-preview testing exists; owner accepts PC localhost, so Pages/Android are **not blockers**. Still missing independent novice PC playtest, sustained PC headroom and gameplay evidence that two-village trade improves observation. The testable conditions and non-implementation ADR sketch are tracked in [docs/PHASE_08_READINESS.md](../PHASE_08_READINESS.md). No 08A/08B/08C simulation implementation is authorized by this audit.
