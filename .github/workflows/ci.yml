@@ -31,7 +31,7 @@ jobs:
         run: |
           mkdir -p observer-v01-a-evidence
           if [ -d test-results ]; then
-            find test-results -type f \\( -name 'v01-a-*.png' -o -name 'v01-a-*.json' \\) -exec cp '{}' observer-v01-a-evidence/ \\;
+            find test-results -type f -name 'v01-a-*' -exec cp '{}' observer-v01-a-evidence/ ';'
           fi
       - name: Build for GitHub Pages project path
         run: GITHUB_PAGES=true npm run build
