@@ -48,8 +48,8 @@ export function GameCanvas({ snapshot, onCitizenSelected, onCameraReady, onCamer
             changeRef.current?.(controls.getCameraSnapshot());
           }
         };
-        live.scene.events.on('create', announceReady);
-        removeSceneReady = () => { live.scene.events.off('create', announceReady); };
+        live.scene.sys.events.on('create', announceReady);
+        removeSceneReady = () => { live.scene.sys.events.off('create', announceReady); };
         live.scene.setSnapshot(current);
         announceReady();
 
