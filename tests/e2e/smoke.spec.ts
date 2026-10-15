@@ -346,7 +346,7 @@ test('Phase 06: hidden browser tab drops elapsed time without catch-up', async (
   const hidden = Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\d+)/)?.[1] ?? 0);
   expect(hidden).toBe(start);
   await page.evaluate(() => {
-    delete (document as Document & { visibilityState?: string }).visibilityState;
+    Reflect.deleteProperty(document, 'visibilityState');
     document.dispatchEvent(new Event('visibilitychange'));
   });
   await page.waitForTimeout(100);
