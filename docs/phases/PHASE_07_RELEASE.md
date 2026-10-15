@@ -57,7 +57,7 @@ A GitHub Pages (or other free static host) URL opens a playable Tiny Civilizatio
 ## Phase 07 implementation ledger (2026-10-15, pre-final CI)
 
 - [x] Verify Phase 06 merge commit `efa9fa23` and post-merge main CI success.
-- [x] Prepare `0.9.0` release-candidate UI/metadata, clear observer and local-save guidance, safe reset, Phas​​er remount on import and visible GitHub Issues link.
+- [x] Prepare `0.9.0` release-candidate UI/metadata, clear observer and local-save guidance, safe reset, Phaser remount on import and visible GitHub Issues link.
 - [x] Implement code paths for Vite Pages base, deployment workflow, production-preview Chromium smoke with 3 viewport sizes and bug-report template.
 - [x] Add minimal renderer optimizations without changing simulation laws or save schema.
 - [ ] Re-verify full CI at final PR head, collect browser FPS/p95 before/after and inspect screenshots.

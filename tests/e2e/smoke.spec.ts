@@ -413,7 +413,7 @@ test('Phase 06: Chromium 100-NPC 20× HUD/inspector/timeline/save and sampled fr
 test('Phase 07: reset needs confirmation and never deletes the previous browser save', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: '20×' }).click();
-  await expect.poll(async () => Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\\d+)/)?.[1] ?? 0),
+  await expect.poll(async () => Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\d+)/)?.[1] ?? 0),
     { timeout: 8000 }).toBeGreaterThan(4);
   await page.getByRole('button', { name: 'Tạm dừng' }).click();
   await page.getByTestId('save-world').click();

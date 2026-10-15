@@ -3,9 +3,8 @@ import { expect, test } from '@playwright/test';
 
 // This is deliberately run against vite preview serving the built Pages dist,
 // not the development server (which enables special test fixtures).
-test.skip(!process.env.PLAYWRIGHT_PRODUCTION, 'Run with PLAYWRIGHT_PRODUCTION=true after a GITHUB_PAGES=true build.');
-
 test('MVP production: Pages base path, 20/100 NPC, controls, backup, reload and responsive layout', async ({ page }, testInfo) => {
+  test.skip(!process.env.PLAYWRIGHT_PRODUCTION, 'Run with PLAYWRIGHT_PRODUCTION=true after a GITHUB_PAGES=true build.');
   const failures: string[] = [];
   page.on('pageerror', error => failures.push('Runtime: ' + error.message));
   page.on('console', msg => { if (msg.type() === 'error') failures.push('Console: ' + msg.text()); });
@@ -21,7 +20,7 @@ test('MVP production: Pages base path, 20/100 NPC, controls, backup, reload and 
   await expect(page.getByTestId('game-container').locator('canvas')).toBeVisible();
   await expect(page.getByTestId('population-value')).toHaveText('20');
   await page.getByRole('button', { name: '20×' }).click();
-  await expect.poll(async () => Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\\d+)/)?.[1] ?? 0),
+  await expect.poll(async () => Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\d+)/)?.[1] ?? 0),
     { timeout: 15000 }).toBeGreaterThan(24);
   await page.getByRole('button', { name: 'Tạm dừng' }).click();
   await page.getByTestId('citizen-27').click();
@@ -42,7 +41,7 @@ test('MVP production: Pages base path, 20/100 NPC, controls, backup, reload and 
   await expect(page.getByTestId('population-value')).toHaveText('100');
   await expect(page.getByTestId('game-container')).toHaveAttribute('data-npc-count', '100');
   await page.getByRole('button', { name: 'Tiếp tục' }).click();
-  await expect.poll(async () => Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\\d+)/)?.[1] ?? 0),
+  await expect.poll(async () => Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\d+)/)?.[1] ?? 0),
     { timeout: 15000 }).toBeGreaterThan(24);
   await page.getByRole('button', { name: 'Tạm dừng' }).click();
   await expect(page.getByTestId('governance-panel')).toBeVisible();
