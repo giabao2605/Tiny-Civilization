@@ -53,16 +53,27 @@ test('V01-A: capture seed 12345 at desktop and ultrawide sizes; audit current ca
 
   // Current input behavior, captured but not treated as V01-B acceptance.
   await page.setViewportSize({ width: 1366, height: 768 });
+  await page.getByTestId('citizen-30').click();
+  await expect(page.getByTestId('selected-citizen')).toContainText('ID #30');
   await canvas.hover();
   await page.mouse.wheel(0, -300);
   await page.screenshot({ path: testInfo.outputPath('v01-a-seed12345-1366x768-wheel-in.png'), fullPage: true });
+  // Source zoom range is 1..3. Observe both extremes, not just a single wheel notch.
+  for (let i = 0; i < 9; i += 1) await page.mouse.wheel(0, -300);
+  await page.screenshot({ path: testInfo.outputPath('v01-a-seed12345-1366x768-close-zoom.png'), fullPage: true });
   const box = await canvas.boundingBox();
   expect(box).not.toBeNull();
   await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
   await page.mouse.down();
   await page.mouse.move(box!.x + box!.width / 2 + 70, box!.y + box!.height / 2 + 40, { steps: 6 });
   await page.mouse.up();
+  await expect(page.getByTestId('selected-citizen')).toContainText('ID #30');
   await page.screenshot({ path: testInfo.outputPath('v01-a-seed12345-1366x768-drag-after-zoom.png'), fullPage: true });
+  for (let i = 0; i < 12; i += 1) await page.mouse.wheel(0, 300);
+  await page.screenshot({ path: testInfo.outputPath('v01-a-seed12345-1366x768-far-zoom.png'), fullPage: true });
+  // Existing click-selection contract must work again after zoom/pan.
+  await canvas.click({ position: { x: 13 * 12 + 6, y: 14 * 12 + 6 } });
+  await expect(page.getByTestId('selected-citizen')).toContainText('An');
   expect(await page.getByTestId('world-tick').innerText()).toBe(stoppedTick);
   await page.getByRole('button', { name: 'Khởi tạo lại canvas' }).click();
   await expect(canvas).toHaveCount(1);
