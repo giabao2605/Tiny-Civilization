@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { GameCanvas } from '../game/GameCanvas';
-import { LOCAL_SAVE_KEY, MAX_SAVE_BYTES } from '../persistence/save';
+import { ENGINE_VERSION, LOCAL_SAVE_KEY, MAX_SAVE_BYTES } from '../persistence/save';
 import { dayOf, hourOf, stateDigest } from '../sim/engine';
 import { foodAidRejection } from '../sim/governance';
 import { GRID_HEIGHT, GRID_WIDTH } from '../sim/grid';
@@ -121,15 +121,26 @@ export function App() {
 
   const setSeed = () => {
     const value = Number(seedInput);
-    if (Number.isSafeInteger(value)) { setInspectedEventId(null); coordinator.dispatch({ type: 'reset-seed', seed: value, population: populationInput }); }
+    if (!seedInput.trim() || !Number.isSafeInteger(value)) {
+      setSaveMessage('Seed phải là số nguyên hợp lệ.');
+      return;
+    }
+    // A new world must never silently discard the current unsaved timeline.
+    if (!window.confirm('Tạo thế giới mới? Tiến trình chưa lưu của thế giới hiện tại sẽ mất. Bản lưu trong trình duyệt và file JSON đã xuất sẽ được giữ nguyên.')) return;
+    setInspectedEventId(null);
+    if (coordinator.dispatch({ type: 'reset-seed', seed: value, population: populationInput })) {
+      setSaveTick(null);
+      setSaveMessage('Đã tạo thế giới mới. Bản lưu trong trình duyệt trước đó vẫn còn cho đến khi bạn lưu đè.');
+    }
   };
 
   const saveToBrowser = () => {
     try {
+      const current = coordinator.getSnapshot().world;
       const json = coordinator.exportSave();
       window.localStorage.setItem(LOCAL_SAVE_KEY, json);
-      setSaveTick(world.tick);
-      setSaveMessage('Đã lưu tick ' + world.tick + ' vào trình duyệt (' + new Blob([json]).size + ' byte).');
+      setSaveTick(current.tick);
+      setSaveMessage('Đã lưu tick ' + current.tick + ' vào trình duyệt (' + new Blob([json]).size + ' byte).');
     } catch (error) {
       setSaveMessage('Lưu thất bại: ' + (error instanceof Error ? error.message : 'Không có quyền lưu hoặc hết quota') +
         '. Thử Xuất JSON để giữ bản sao.');
@@ -139,7 +150,10 @@ export function App() {
     coordinator.importSave(json);
     const restored = coordinator.getSnapshot().world;
     setSeedInput(String(restored.seed));
+    setPopulationInput(restored.citizens.length <= 20 ? 20 : restored.citizens.length <= 50 ? 50 : 100);
     setInspectedEventId(null);
+    // Imported snapshots can be at the same or a later tick. Remount Phaser to avoid stale sprites.
+    setCanvasVersion(version => version + 1);
     setSaveTick(restored.tick);
     setSaveMessage('Đã tải ' + origin + ' ở tick ' + restored.tick + '. Trò chơi tạm dừng để kiểm tra.');
   };
@@ -152,14 +166,15 @@ export function App() {
   };
   const exportJson = () => {
     try {
+      const current = coordinator.getSnapshot().world;
       const json = coordinator.exportSave();
       const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
       const anchor = document.createElement('a');
       anchor.href = url;
-      anchor.download = 'tiny-civilization-seed-' + world.seed + '-tick-' + world.tick + '.json';
+      anchor.download = 'tiny-civilization-seed-' + current.seed + '-tick-' + current.tick + '.json';
       anchor.click();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setSaveMessage('Đã tạo file JSON tick ' + world.tick + '.');
+      setSaveMessage('Đã tạo file JSON tick ' + current.tick + '.');
     } catch (error) { setSaveMessage('Xuất thất bại: ' + (error instanceof Error ? error.message : String(error))); }
   };
   const importJson = async (file: File | undefined) => {
@@ -181,7 +196,7 @@ export function App() {
             <h1>Tiny Civilization<span className="title-dot">.</span></h1>
           </div>
         </div>
-        <span className="version-tag">PHASE 06 <span aria-hidden="true">●</span> QUALITY</span>
+        <span className="version-tag">MVP RC 0.9.0 <span aria-hidden="true">●</span> BUILD</span>
       </header>
 
       <main>
@@ -190,7 +205,7 @@ export function App() {
             <p className="section-kicker">LIFE BEGINS IN THE VALLEY</p>
             <h2>Một ngôi làng nhỏ.<br /><em>{world.citizens.length} cuộc đời.</em></h2>
             <p className="intro-copy">Cư dân tự kiếm sống, kết bạn và xây dựng gia đình; trưởng làng đưa ra quyết định hữu hạn khi mất mùa hay bệnh tật đe dọa.</p>
-            <p className="quick-start" data-testid="onboarding"><strong>Bắt đầu:</strong> Chọn dân số và Seed rồi tạo thế giới. Dùng 1×/5×/20× để theo dõi, nhấn vào cư dân để xem lý do hành động. Lưu trong trình duyệt hoặc xuất JSON trước khi đóng tab.</p>
+            <p className="quick-start" data-testid="onboarding"><strong>Bắt đầu:</strong> Chọn dân số và Seed rồi tạo thế giới. Dùng 1×/5×/20× để theo dõi, nhấn vào cư dân để xem lý do hành động. Lưu trong trình duyệt hoặc xuất JSON trước khi đóng tab. Mỗi tick tương đương 1 giờ game; Seed giống nhau sẽ tạo thế giới giống nhau.</p>
           </div>
           <div className="phase-note">
             <span className="note-pulse" aria-hidden="true" />
@@ -289,7 +304,7 @@ export function App() {
               </select>
               <section className="save-panel" aria-label="Lưu và khôi phục thế giới">
                 <h4>Lưu &amp; khôi phục</h4>
-                <p className="dashboard-note">Dữ liệu chỉ nằm trong trình duyệt này. Xuất JSON để sao lưu trước khi xóa dữ liệu trang web.</p>
+                <p className="dashboard-note">Bản lưu localStorage chỉ ở trình duyệt và thiết bị hiện tại, không phải cloud save. Tạo thế giới mới không xóa bản lưu cũ, nhưng lần lưu tiếp theo sẽ ghi đè. Xuất JSON để giữ bản sao độc lập.</p>
                 <div className="save-actions">
                   <button type="button" className="ghost-button" data-testid="save-world" onClick={saveToBrowser}>Lưu thế giới</button>
                   <button type="button" className="ghost-button" data-testid="load-world" onClick={loadFromBrowser}>Tải bản lưu</button>
@@ -303,6 +318,7 @@ export function App() {
                 <p data-testid="save-status" role="status" aria-live="polite" className="save-status">{saveMessage}</p>
                 {saveTick !== null && <p className="dashboard-note">Snapshot gần nhất thao tác: tick {saveTick}</p>}
               </section>
+              <p className="dashboard-note">Bản MVP thử nghiệm: một làng, 20/50/100 NPC, kinh tế và quản trị giản lược, ưu tiên desktop. Không có multiplayer hay đồng bộ đám mây. <a href="https://github.com/giabao2605/Tiny-Civilization/issues" target="_blank" rel="noopener noreferrer">Báo lỗi trên GitHub</a>.</p>
               <p className="debug-line" data-testid="world-tick">Tick {world.tick} · Seed {world.seed}{import.meta.env.DEV ? ' · #' + stateDigest(world) : ''}</p>
             </section>
 
@@ -476,7 +492,7 @@ export function App() {
         </div>
       </main>
 
-      <footer className="site-footer"><span>TINY CIVILIZATION / PHASE 06</span><span>20/50/100 NPC · Lãnh đạo · Mất mùa · Bệnh cục bộ</span></footer>
+      <footer className="site-footer"><span>TINY CIVILIZATION / MVP RC 0.9.0 · SAVE {ENGINE_VERSION}</span><span>20/50/100 NPC · Lãnh đạo · Mất mùa · Bệnh cục bộ</span></footer>
     </div>
   );
 }
