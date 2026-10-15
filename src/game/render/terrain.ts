@@ -28,7 +28,7 @@ export function drawTerrain(g: Phaser.GameObjects.Graphics, tiles: readonly Terr
     const h = visualHash(seed, x, y, 1);
     const shade = h % 3;
     if (kind === 'grass') {
-      rect(g, C.grass[shade], px, py, SIZE, SIZE);
+      rect(g, C.grass[shade]!, px, py, SIZE, SIZE);
       if (h % 19 === 0) {
         rect(g, C.dry, px + 3, py + 5, 5, 2, 0.45);
         rect(g, C.dry, px + 6, py + 7, 3, 2, 0.35);
@@ -48,14 +48,14 @@ export function drawTerrain(g: Phaser.GameObjects.Graphics, tiles: readonly Terr
       if (at(x - 1, y) === 'water') rect(g, 0xc1b886, px, py, 1, SIZE, 0.75);
       if (at(x + 1, y) === 'water') rect(g, 0xc1b886, px + 11, py, 1, SIZE, 0.75);
     } else if (kind === 'forest') {
-      rect(g, C.forest[shade], px, py, SIZE, SIZE);
+      rect(g, C.forest[shade]!, px, py, SIZE, SIZE);
       rect(g, C.forestDark, px + 2 + (h % 5), py + 8, 4, 2, 0.6);
       rect(g, C.forestLight, px + 1 + (h % 6), py + 3, 2, 2, 0.7);
       if (h % 3 === 0) rect(g, C.grassLight, px + 9, py + 7, 1, 3);
       if (at(x, y - 1) === 'grass') rect(g, C.grassDark, px + 2, py, 8, 1, 0.75);
       if (at(x - 1, y) === 'grass') rect(g, C.grassDark, px, py + 2, 1, 8, 0.75);
     } else if (kind === 'water') {
-      rect(g, C.water[shade], px, py, SIZE, SIZE);
+      rect(g, C.water[shade]!, px, py, SIZE, SIZE);
       if (at(x, y - 1) !== 'water') {
         rect(g, C.waterDark, px, py, SIZE, 2);
         rect(g, C.waterLight, px + 1, py + 2, 10, 1, 0.82);
@@ -68,7 +68,7 @@ export function drawTerrain(g: Phaser.GameObjects.Graphics, tiles: readonly Terr
         rect(g, C.waterLight, px + 1, py + 7, 2, 1, 0.5);
       }
     } else {
-      rect(g, C.road[shade], px, py, SIZE, SIZE);
+      rect(g, C.road[shade]!, px, py, SIZE, SIZE);
       const north = at(x, y - 1) === 'road';
       const south = at(x, y + 1) === 'road';
       const west = at(x - 1, y) === 'road';
