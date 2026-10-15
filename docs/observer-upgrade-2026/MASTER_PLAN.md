@@ -1,6 +1,6 @@
 # Nghiên cứu sâu và Master Plan cho game “Living Settlement”
 
-> **Lưu ý khi nhập vào GitHub:** Đây là nội dung báo cáo Deep Research Markdown do người dùng cung cấp, được đặt trong namespace \`docs/observer-upgrade-2026/\` để **không thay thế** \`docs/MASTER_PLAN.md\` và \`docs/phases/\` của chuỗi trước. Các trích dẫn dạng \`cite...\` và link \`sandbox:/\` thuộc bản báo cáo gốc; chúng không phải đường dẫn tài nguyên GitHub. Xem [README](README.md) để phân biệt tài liệu và tình trạng nhập 7 DOCX.
+> **Lưu ý khi nhập vào GitHub:** Đây là nội dung báo cáo Deep Research Markdown do người dùng cung cấp, được đặt trong namespace `docs/observer-upgrade-2026/` để **không thay thế** `docs/MASTER_PLAN.md` và `docs/phases/` của chuỗi trước. Các trích dẫn dạng `cite...` và link `sandbox:/` thuộc bản báo cáo gốc; chúng không phải đường dẫn tài nguyên GitHub. Xem [README](README.md) để phân biệt tài liệu và tình trạng nhập 7 DOCX.
 
 ## Chẩn đoán prototype hiện tại
 
@@ -112,17 +112,17 @@ Trọng tâm gameplay không phải “người chơi làm gì?” mà là **“
 | Audio | day/night/rain ambience, one-shots | district-specific soundscape |
 | Save | seed, time, NPC state, weather | world history, migrations |
 
-**NPC navigation** nên thay fixed-route bằng grid pathfinding. Một cost model ban đầu có thể là main road = \`1.0\`, side path = \`1.1\`, plaza = \`1.0\`, grass = khoảng \`1.8–2.5\`, còn water/building là blocked. Như vậy NPC vẫn thích dùng đường, nhưng khi cần có thể băng qua sân/công viên hoặc lựa chọn đường phụ. Đây là tham số thiết kế đề xuất, cần tune bằng playtest chứ không phải một chuẩn bắt buộc.
+**NPC navigation** nên thay fixed-route bằng grid pathfinding. Một cost model ban đầu có thể là main road = `1.0`, side path = `1.1`, plaza = `1.0`, grass = khoảng `1.8–2.5`, còn water/building là blocked. Như vậy NPC vẫn thích dùng đường, nhưng khi cần có thể băng qua sân/công viên hoặc lựa chọn đường phụ. Đây là tham số thiết kế đề xuất, cần tune bằng playtest chứ không phải một chuẩn bắt buộc.
 
 Quan trọng hơn A* là **destination system**. Random-walk thuần túy thường tạo movement nhưng không tạo “cuộc sống”. Mỗi NPC nên có home, role, một nhóm POI ưa thích, speed, sociability và vài trait rất nhẹ. State machine có thể chỉ gồm:
 
-\`Sleep → Home → Commute → Work/Errand → Eat → Wander → Social → Shelter → Return\`
+`Sleep → Home → Commute → Work/Errand → Eat → Wander → Social → Shelter → Return`
 
 Không cần AI phức tạp kiểu LLM, dialogue hoặc planning tree. WorldBox cho thấy chỉ cần needs/traits gắn với autonomous behavior đã đủ giúp sinh vật có vẻ như đang tự sống. citeturn12view0
 
 **Ngày–đêm** nên là một hệ thống chứ không phải overlay. Đề xuất một ngày game khoảng **15 phút mặc định**, cấu hình được 10–30 phút, kèm pause/1×/2×/4×. Dawn, daytime, golden hour, dusk và night cần blend liên tục. Đồng thời schedule NPC đổi, street/window lights bật, chimney smoke thay đổi, ambient sound crossfade và outdoor activity giảm vào đêm. Chillquarium đã dùng real-time day/night như một phần trực tiếp của trải nghiệm thư giãn, củng cố việc thời gian có thể tạo variation ngay cả trong một game idle. citeturn13view0
 
-**Weather MVP** nên có \`Clear\`, \`Cloudy\`, \`Rain\`, \`Fog\`; Storm để sau. Mỗi state có intensity \`0–1\`, thời lượng tối thiểu và transition dài khoảng 30–90 giây để tránh hiện tượng trời đổi tức thì.
+**Weather MVP** nên có `Clear`, `Cloudy`, `Rain`, `Fog`; Storm để sau. Mỗi state có intensity `0–1`, thời lượng tối thiểu và transition dài khoảng 30–90 giây để tránh hiện tượng trời đổi tức thì.
 
 Một nguyên tắc bắt buộc nên là:
 
@@ -130,11 +130,11 @@ Một nguyên tắc bắt buộc nên là:
 
 Ví dụ với mưa:
 
-\`Clouds → ánh sáng tối/mềm → rain particles → ground wetness → road darkens → puddle → roof drip/water ripple → NPC lấy umbrella hoặc chạy tới shelter → outdoor activity giảm → rain ambience tăng → sau mưa puddle còn lại một lúc.\`
+`Clouds → ánh sáng tối/mềm → rain particles → ground wetness → road darkens → puddle → roof drip/water ripple → NPC lấy umbrella hoặc chạy tới shelter → outdoor activity giảm → rain ambience tăng → sau mưa puddle còn lại một lúc.`
 
 Fog thì giảm contrast ở background/world distance thay vì chỉ phủ một hình chữ nhật xám lên màn hình. Clear/cloudy thay đổi shadow intensity và foliage ambience. Cách này giúp “map thay đổi theo thời tiết” đúng với yêu cầu, thay vì weather chỉ là hiệu ứng trang trí.
 
-Để tăng watchability, nên có **micro-event scheduler** phụ thuộc \`district + time + weather\`. Event không cần quest:
+Để tăng watchability, nên có **micro-event scheduler** phụ thuộc `district + time + weather`. Event không cần quest:
 
 - cart/delivery đi qua main road;
 - stall mở buổi sáng, đóng buổi tối;
@@ -155,13 +155,13 @@ Về kỹ thuật, nếu codebase hiện tại là Phaser/web hoặc kiến trú
 
 Một workflow phù hợp là:
 
-\`Tiled map → tile layers + object metadata → runtime world model → simulation → renderer\`
+`Tiled map → tile layers + object metadata → runtime world model → simulation → renderer`
 
-Object layer nên chứa \`buildingEntrance\`, \`spawnPoint\`, \`POI\`, \`districtBoundary\`, \`eventAnchor\`, \`weatherShelter\`. Render layer không nên là nơi chứa logic NPC.
+Object layer nên chứa `buildingEntrance`, `spawnPoint`, `POI`, `districtBoundary`, `eventAnchor`, `weatherShelter`. Render layer không nên là nơi chứa logic NPC.
 
 Ở runtime, nên **tách Simulation State khỏi Renderer**. Simulation có thể tick cố định khoảng 5–10 Hz trong khi rendering chạy theo frame; NPC offscreen có thể update thưa hơn. Dùng spatial partition/chunk để không scan toàn bộ map mỗi tick. Chỉ khi profiling cho thấy simulation JavaScript thật sự block UI mới đưa một phần logic sang Web Worker; MDN xác nhận Web Workers chạy script ở background thread tách khỏi main execution/UI thread. citeturn15view5
 
-Vì mục tiêu là **PC local, không deploy**, kiến trúc nên local-first: không backend, không auth, không API bắt buộc, save local gồm \`worldSeed\`, \`gameTime\`, \`weather state/intensity\`, core NPC state, map mutations và settings. Seed cố định cũng giúp QA tái hiện bug.
+Vì mục tiêu là **PC local, không deploy**, kiến trúc nên local-first: không backend, không auth, không API bắt buộc, save local gồm `worldSeed`, `gameTime`, `weather state/intensity`, core NPC state, map mutations và settings. Seed cố định cũng giúp QA tái hiện bug.
 
 ## Master Plan triển khai
 
