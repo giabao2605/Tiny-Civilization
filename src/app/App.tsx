@@ -77,7 +77,7 @@ export function App() {
     return createLivingCoordinator(12345, 20, fixture === 'governance-food-shortage' ||
       fixture === 'governance-empty-reserve' ? fixture : undefined);
   }, []);
-  const snapshot = useSyncExternalStore(coordinator.subscribe, coordinator.getSnapshot);
+  const snapshot = useSyncExternalStore(coordinator.subscribe, coordinator.getUiSnapshot);
   const [canvasVersion, setCanvasVersion] = useState(0);
   const [timelineCategory, setTimelineCategory] = useState<TimelineCategory>('all');
   const [inspectedEventId, setInspectedEventId] = useState<number | null>(null);

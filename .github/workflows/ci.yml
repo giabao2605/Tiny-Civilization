@@ -1,7 +1,7 @@
 name: Tiny Civilization CI
 on:
   push:
-    branches: [main, feat/phase-07-release]
+    branches: [main]
   pull_request:
     branches: [main]
 permissions:

@@ -81,6 +81,9 @@ export class WorldScene extends Phaser.Scene {
       return;
     }
     if (before.tick !== snapshot.world.tick) {
+      // Fast-forward UI batching may skip intermediate snapshots. Never animate
+      // only the last step while leaving an NPC at an obsolete coordinate.
+      const skippedTicks = snapshot.world.tick > before.tick + 1;
       for (const site of snapshot.world.sites) {
         if (!this.paintedSites.has(site.id)) { this.paintSite(site); this.paintedSites.add(site.id); }
       }
@@ -99,6 +102,12 @@ export class WorldScene extends Phaser.Scene {
           this.movementTweens.get(citizen.id)?.stop();
           this.movementTweens.delete(citizen.id);
           sprite.setVisible(false);
+          continue;
+        }
+        if (skippedTicks) {
+          this.movementTweens.get(citizen.id)?.stop();
+          this.movementTweens.delete(citizen.id);
+          sprite.setPosition(xPixel(citizen.tile.x), yPixel(citizen.tile.y));
           continue;
         }
         if (citizen.lastMove.length < 2) continue;

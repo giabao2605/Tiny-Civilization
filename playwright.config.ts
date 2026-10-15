@@ -6,6 +6,8 @@ const address = 'http://127.0.0.1:4173';
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
+  // A single headless Chromium profile is less distorted by another heavy E2E worker.
+  workers: process.env.CI ? 1 : undefined,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : 'list',
