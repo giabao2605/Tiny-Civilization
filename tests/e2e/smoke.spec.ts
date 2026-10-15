@@ -353,3 +353,51 @@ test('Phase 06: hidden browser tab drops elapsed time without catch-up', async (
   const resumed = Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\d+)/)?.[1] ?? 0);
   expect(resumed - hidden).toBeLessThanOrEqual(8);
 });
+
+
+test('Phase 06: Chromium 100-NPC 20× HUD/inspector/timeline/save and sampled frame time', async ({ page }, testInfo) => {
+  const errors = collectErrors(page);
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/');
+  await page.getByTestId('population-input').selectOption('100');
+  await page.getByRole('button', { name: 'Tạo lại', exact: true }).click();
+  await expect(page.getByTestId('population-value')).toHaveText('100');
+  await page.getByRole('button', { name: '20×' }).click();
+  await expect.poll(async () => Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\d+)/)?.[1] ?? 0),
+    { timeout: 20000 }).toBeGreaterThan(110);
+  await page.getByTestId('citizen-27').click();
+  await expect(page.getByTestId('selected-citizen')).toContainText('ID #27');
+  await page.getByTestId('timeline-filter').selectOption('governance');
+  await expect(page.getByTestId('event-feed')).toContainText('Biến cố');
+  const profile = await page.evaluate(async () => {
+    const frameDeltas: number[] = [];
+    await new Promise<void>(resolve => {
+      let previous = 0;
+      const collect = (now: number) => {
+        if (previous) frameDeltas.push(now - previous);
+        previous = now;
+        if (frameDeltas.length >= 45) resolve();
+        else requestAnimationFrame(collect);
+      };
+      requestAnimationFrame(collect);
+    });
+    const sorted = frameDeltas.sort((a, b) => a - b);
+    const total = frameDeltas.reduce((sum, x) => sum + x, 0);
+    const memory = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory;
+    return { frames: frameDeltas.length,
+      meanFps: Math.round(1000 * frameDeltas.length / total),
+      p95FrameMs: +sorted[Math.ceil(sorted.length * 0.95) - 1]!.toFixed(2),
+      memoryBytes: memory?.usedJSHeapSize ?? null };
+  });
+  console.log('PHASE06_CHROMIUM_PROFILE=' + JSON.stringify(profile));
+  await page.getByTestId('save-world').click();
+  await expect(page.getByTestId('save-status')).toContainText('Đã lưu tick');
+  await expect(page.getByTestId('game-container')).toHaveAttribute('data-npc-count', '100');
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  await page.screenshot({ path: testInfo.outputPath('phase-06-100npc-1920.png'), fullPage: true });
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await expect(page.getByTestId('save-world')).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('phase-06-100npc-1366.png'), fullPage: true });
+  expect(profile.frames).toBe(45);
+  expect(errors).toEqual([]);
+});
