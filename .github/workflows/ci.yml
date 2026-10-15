@@ -24,6 +24,15 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      # The following production Playwright command wipes test-results/.
+      # Preserve the V01-A baseline captures before that second invocation.
+      - name: Preserve V01-A visual baseline evidence
+        if: always()
+        run: |
+          mkdir -p observer-v01-a-evidence
+          if [ -d test-results ]; then
+            find test-results -type f \\( -name 'v01-a-*.png' -o -name 'v01-a-*.json' \\) -exec cp '{}' observer-v01-a-evidence/ \\;
+          fi
       - name: Build for GitHub Pages project path
         run: GITHUB_PAGES=true npm run build
       - name: Smoke-test the actual production build
@@ -35,6 +44,7 @@ jobs:
           path: |
             test-results/
             playwright-report/
+            observer-v01-a-evidence/
             dist/
           if-no-files-found: ignore
           retention-days: 7
