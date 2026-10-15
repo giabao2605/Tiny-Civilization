@@ -114,6 +114,7 @@ test('Phase 03: 100 NPCs, real wallets, market and construction stay observable'
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.goto('/');
   await page.getByTestId('population-input').selectOption('100');
+  page.once('dialog', dialog => { void dialog.accept(); });
   await page.getByRole('button', { name: 'Tạo lại', exact: true }).click();
   await expect(page.getByTestId('game-container')).toHaveAttribute('data-npc-count', '100');
   await expect(page.getByTestId('population-value')).toHaveText('100');
@@ -361,6 +362,7 @@ test('Phase 06: Chromium 100-NPC 20× HUD/inspector/timeline/save and sampled fr
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/');
   await page.getByTestId('population-input').selectOption('100');
+  page.once('dialog', dialog => { void dialog.accept(); });
   await page.getByRole('button', { name: 'Tạo lại', exact: true }).click();
   await expect(page.getByTestId('population-value')).toHaveText('100');
   await page.getByRole('button', { name: '20×' }).click();
@@ -406,4 +408,28 @@ test('Phase 06: Chromium 100-NPC 20× HUD/inspector/timeline/save and sampled fr
   await page.screenshot({ path: testInfo.outputPath('phase-06-100npc-1366.png'), fullPage: true });
   expect(profile.frames).toBe(45);
   expect(errors).toEqual([]);
+});
+
+test('Phase 07: reset needs confirmation and never deletes the previous browser save', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: '20×' }).click();
+  await expect.poll(async () => Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\\d+)/)?.[1] ?? 0),
+    { timeout: 8000 }).toBeGreaterThan(4);
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  await page.getByTestId('save-world').click();
+  const saved = await page.evaluate(() => localStorage.getItem('tiny-civilization:world:v1'));
+  const previousTick = await page.getByTestId('world-tick').innerText();
+
+  page.once('dialog', dialog => { void dialog.dismiss(); });
+  await page.getByRole('button', { name: 'Tạo lại', exact: true }).click();
+  await expect(page.getByTestId('world-tick')).toHaveText(previousTick);
+  expect(await page.evaluate(() => localStorage.getItem('tiny-civilization:world:v1'))).toBe(saved);
+
+  page.once('dialog', dialog => { void dialog.accept(); });
+  await page.getByRole('button', { name: 'Tạo lại', exact: true }).click();
+  await expect(page.getByTestId('world-tick')).toContainText('Tick 0 ');
+  expect(await page.evaluate(() => localStorage.getItem('tiny-civilization:world:v1'))).toBe(saved);
+  await page.getByTestId('load-world').click();
+  await expect(page.getByTestId('world-tick')).toHaveText(previousTick);
+  await expect(page.getByTestId('game-container').locator('canvas')).toHaveCount(1);
 });

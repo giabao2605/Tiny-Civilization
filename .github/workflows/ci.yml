@@ -1,7 +1,7 @@
 name: Tiny Civilization CI
 on:
   push:
-    branches: [main, feat/phase-00-foundation, feat/phase-01-living-world, feat/phase-02-survival, feat/phase-04-social, feat/phase-06-quality]
+    branches: [main, feat/phase-07-release]
   pull_request:
     branches: [main]
 permissions:
@@ -24,12 +24,17 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - name: Build for GitHub Pages project path
+        run: GITHUB_PAGES=true npm run build
+      - name: Smoke-test the actual production build
+        run: PLAYWRIGHT_PRODUCTION=true npm run test:e2e -- tests/e2e/release.spec.ts
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: phase-06-browser-evidence
+          name: phase-07-release-evidence
           path: |
             test-results/
             playwright-report/
+            dist/
           if-no-files-found: ignore
           retention-days: 7
