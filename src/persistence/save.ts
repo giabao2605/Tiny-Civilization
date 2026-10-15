@@ -201,6 +201,12 @@ export function validateWorld(value: unknown): asserts value is WorldState {
       string(tie.reason, path + '.reason', 1200);
     }
   });
+  for (const [i, c] of citizens.entries()) {
+    const citizen = object(c, 'world.citizens[' + i + ']');
+    if (citizen.householdId !== null &&
+      !households.some(h => (object(h, 'household').members as number[]).includes(citizen.id as number)))
+      fail('world.citizens[' + i + '].householdId', 'NPC không thuộc danh sách thành viên hộ');
+  }
   households.forEach((v, i) => {
     const p = 'world.households[' + i + ']', h = object(v, p);
     ids(h.members, p + '.members', BALANCE.populationHardCap, citizenIds);
@@ -214,6 +220,9 @@ export function validateWorld(value: unknown): asserts value is WorldState {
   if (!siteIds.has(marketId) || !sites.some(s => { const x = object(s, 'site'); return x.id === marketId && x.kind === 'market'; })) fail('world.market.siteId', 'chợ không tồn tại');
   nonnegative(market, ['cash', 'initialSupply', 'completedTrades', 'volumeToday', 'volumeYesterday',
     'boughtFromCitizens', 'soldToCitizens'], 'world.market');
+  const conservedMoney = (market.cash as number) + citizens.reduce((sum, v) =>
+    sum + (object(v, 'citizen').wallet as number), 0);
+  if (conservedMoney !== market.initialSupply) fail('world.market.initialSupply', 'tiền bị thiếu hoặc nhân đôi');
   goods(w.inventory, 'world.inventory');
   nonnegative(object(market.prices, 'world.market.prices'), ['foodBuy', 'foodSell', 'woodBuy', 'woodSell'], 'world.market.prices');
   array(market.trades, 'world.market.trades', BALANCE.tradeHistoryLimit).forEach((v, i) => {
@@ -245,7 +254,10 @@ export function validateWorld(value: unknown): asserts value is WorldState {
   const policy = object(g.policy, 'world.governance.policy');
   nonnegative(policy, ['activeUntil', 'cooldownUntil', 'successes', 'failures', 'transferred'], 'world.governance.policy');
   counters(policy, ['lastTick'], 'world.governance.policy');
-  nullableId(policy.lastId, 'world.governance.policy.lastId');
+  const lastPolicyId = nullableId(policy.lastId, 'world.governance.policy.lastId');
+  if (lastPolicyId !== null && lastPolicyId >= nextEntity)
+    fail('world.governance.policy.lastId', 'ID chính sách vượt bộ đếm');
+  if ((policy.lastTick as number) > tick) fail('world.governance.policy.lastTick', 'tick ở tương lai');
   ids(policy.lastRecipients, 'world.governance.policy.lastRecipients', BALANCE.aidMaxRecipients, citizenIds);
   array(w.memorials, 'world.memorials', BALANCE.maxMemorials).forEach((v, i) => {
     const p = 'world.memorials[' + i + ']', m = object(v, p);
