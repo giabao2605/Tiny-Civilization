@@ -2,7 +2,7 @@
 
 **Tóm tắt tiếng Việt:** Đóng gói và phát hành bản web chơi được; CI xanh, mở URL thật, xác minh save/reload, liệt kê giới hạn còn tồn tại.
 
-**Status:** NOT STARTED · **Requires:** phases 00–06 gates fully passed.
+**Status:** IN PROGRESS / PARTIAL on `feat/phase-07-release` (2026-10-15) · Phase 06 code merged, but novice playtest and physical-device benchmark gates remain open. No verified public URL or official v1 tag yet.
 **Intent:** Ship a real playable browser game, not a zip of hopeful source code.
 
 ## Release definition
@@ -53,3 +53,16 @@ A GitHub Pages (or other free static host) URL opens a playable Tiny Civilizatio
 ## Exit gate
 
 **DONE** requires verified **public playable URL**, reproducible clean build, all MVP acceptance tests and updated progress/evidence. Source pushed but site unverified means **PARTIAL**, not done.
+
+## Phase 07 implementation ledger (2026-10-15, pre-final CI)
+
+- [x] Verify Phase 06 merge commit `efa9fa23` and post-merge main CI success.
+- [x] Prepare `0.9.0` release-candidate UI/metadata, clear observer and local-save guidance, safe reset, Phas​​er remount on import and visible GitHub Issues link.
+- [x] Implement code paths for Vite Pages base, deployment workflow, production-preview Chromium smoke with 3 viewport sizes and bug-report template.
+- [x] Add minimal renderer optimizations without changing simulation laws or save schema.
+- [ ] Re-verify full CI at final PR head, collect browser FPS/p95 before/after and inspect screenshots.
+- [ ] Verify actual Pages deployment, public URL hard refresh and browser console/network.
+- [ ] Independent first-time player usability session (NOT TESTED).
+- [ ] Physical Android device browser performance (NOT TESTED).
+
+**Decision:** PARTIAL until verified live website and all blocking gates pass. The items marked implemented do not imply their remote CI/browser execution has succeeded; that evidence belongs in `docs/PROGRESS.md`.

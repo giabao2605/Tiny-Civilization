@@ -1,0 +1,63 @@
+name: Báo lỗi Tiny Civilization
+description: Gửi lỗi tái hiện được trong MVP, không đăng thông tin cá nhân.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cảm ơn bạn đã giúp kiểm thử. File save JSON có thể chứa lịch sử làng; hãy kiểm tra trước khi chia sẻ công khai.
+  - type: input
+    id: version
+    attributes:
+      label: Phiên bản
+      description: Ví dụ MVP RC 0.9.0
+      placeholder: 0.9.0
+    validations:
+      required: true
+  - type: input
+    id: seed
+    attributes:
+      label: Seed
+      placeholder: "12345"
+    validations:
+      required: true
+  - type: input
+    id: tick
+    attributes:
+      label: Tick
+      placeholder: "240"
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Thiết bị, hệ điều hành và phiên bản trình duyệt
+      placeholder: "Chrome 129 / Windows hoặc Android"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Các bước tái hiện
+      placeholder: "1. Mở trang...\n2. Nhập seed...\n3. Chọn..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Kết quả mong đợi
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Kết quả thực tế
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshot, console lỗi, JSON (tùy chọn)
+      description: Không đăng dữ liệu riêng tư hoặc bí mật.
+    validations:
+      required: false
