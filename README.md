@@ -2,7 +2,7 @@
 
 **Tiny Civilization** là game web pixel-art mô phỏng một ngôi làng tự vận hành. Người chơi là người quan sát: dân làng có nghề, nhu cầu, tiền, quan hệ và chịu hậu quả từ quyết định của chính họ. Câu chuyện xuất hiện từ quy luật mô phỏng, không phải các dòng sự kiện bịa sẵn.
 
-**Trạng thái: Phase 00–04 DONE, đã merge vào `main`. Phase 05 đã hoàn thành trên feature branch tại [PR #6](https://github.com/giabao2605/Tiny-Civilization/pull/6), chưa merge. Phase 04 [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5) merge tại commit `1a5933b7`, CI trước merge PASS. Phase 05 — Governance đã PASS CI, đang chờ merge theo yêu cầu.** Xem `docs/PROGRESS.md` để biết bằng chứng thực tế.
+**Trạng thái: Phase 00–05 DONE và đã merge vào `main` (Phase 05 [PR #6](https://github.com/giabao2605/Tiny-Civilization/pull/6), merge commit `4c03cd8596eb75d436b6df8159c1b9ccca7d65e6`, [CI main PASS](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38662711100)). Phase 06 đang triển khai trên `feat/phase-06-quality`, chưa merge hoặc phát hành MVP.** Xem `docs/PROGRESS.md` để biết bằng chứng thực tế.
 
 ## Đọc tài liệu theo thứ tự
 
@@ -42,7 +42,7 @@ Tài liệu chi tiết dùng thuật ngữ tiếng Anh để người viết cod
 
 [Repository GitHub](https://github.com/giabao2605/Tiny-Civilization)
 
-## Chạy bản Living World (Phase 01)
+## Chạy bản mô phỏng hiện tại (Phase 06 development)
 
 Yêu cầu Node.js **22.12+ (major 22)** và npm **10**; dùng phiên bản trong `.nvmrc`. Sau khi checkout branch triển khai và khi đã có `package-lock.json` được commit:
 
@@ -74,7 +74,7 @@ Playwright tự khởi động Vite tại port 4173 và kiểm tra Chromium desk
 - `tests/e2e`: Chromium desktop/mobile, sự kiện, chọn NPC, tốc độ, pause và lifecycle.
 - `.github/workflows/ci.yml`: xác minh từ checkout sạch và lưu screenshot artifact.
 
-Cấu hình lúc này không chứa backend, database, đăng nhập, lưu game hoặc AI API. Bản MVP/public release vẫn chưa có.
+Bản Phase 06 trên feature branch có **lưu/tải bằng localStorage và import/export JSON cục bộ**; không chứa backend, tài khoản, đồng bộ đám mây hoặc AI API. MVP/public release vẫn chưa có.
 
 ## Phase 03 Economy (merged)
 
@@ -92,13 +92,26 @@ Cấu hình lúc này không chứa backend, database, đăng nhập, lưu game 
 - Engine schema v4: graph quan hệ thưa có hướng, hạn mức cạnh/cooldown, tương tác tại quảng trường/nơi làm thật, mâu thuẫn khi nguồn tài nguyên vừa cạn; seed quyết định kết quả.
 - Hộ gia đình ban đầu có 1 người, người trưởng thành ghép đôi sau nhiều lần tiếp xúc và có chỗ ở. Tuổi tăng 1 giờ mỗi tick; trẻ phụ thuộc không đi làm, được người cùng hộ cho ăn bằng food thật.
 - Sinh con có thời gian chờ, cooldown, yêu cầu nhà/food/tuổi/sức khỏe và soft cap 100 / hard cap 120. Người chết được dọn liên kết household/partner; tiền/hàng vẫn thuộc túi người chết để bảo toàn nguồn lực.
-- Inspector có liên kết quan hệ, hộ, partner, memorial; timeline lọc Social/Economy/Survival. [CI 38520465893](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38520465893) xác nhận typecheck, lint, unit/stress/build, Chromium E2E 5/5 PASS; Node benchmark 20/100 NPC cùng hệ thống bảo toàn tiền/food/wood. Xem docs/PROGRESS.md để biết benchmark, seed và các giới hạn. Đã merge vào `main` qua PR #5 ngày 2026-10-14; Phase 05 chưa khởi động.
+- Inspector có liên kết quan hệ, hộ, partner, memorial; timeline lọc Social/Economy/Survival. [CI 38520465893](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38520465893) xác nhận typecheck, lint, unit/stress/build, Chromium E2E 5/5 PASS; Node benchmark 20/100 NPC cùng hệ thống bảo toàn tiền/food/wood. Xem docs/PROGRESS.md để biết benchmark, seed và các giới hạn. Đã merge vào `main` qua PR #5 ngày 2026-10-14; Phase 05 đã được hoàn tất và merge qua PR #6.
 
 
-## Phase 05 Governance (DONE on branch, PR #6 unmerged)
+## Phase 05 Governance (DONE, merged via PR #6)
 
 - Branch `feat/phase-05-governance` thêm `WorldState` schema v5; chọn trưởng làng bằng điểm ủng hộ từ quan hệ xã hội, sức khỏe, tài sản/việc làm và tie-break ID ổn định. Nhiệm kỳ 30 ngày game, xử lý chết/khuyết chức.
 - Chính sách **cứu trợ food khẩn cấp** chuyển tối đa 6 food thực có từ kho thuộc chợ sang túi của tối đa 6 người thiếu ăn; không cấp thêm tiền/hàng. Có xác thực trưởng làng, thời điểm lệnh, thời gian hiệu lực/cooldown và lý do từ chối.
 - Hai biến cố theo cùng tick: **mất mùa** giảm yield/regen trên tối đa ba ruộng thật; **bệnh cục bộ** giảm giờ lao động/HP của tối đa sáu người thật, hết bệnh không tự đầy máu.
 - UI **Village Governance** hiển thị trưởng làng có thể nhấn để inspect, luật cứu trợ, số lượng thực đã chuyển, biến cố hiện hành, số đo sản xuất/HP, các bản ghi timeline có nguyên nhân. Phần mô phỏng không có clock riêng, AI API hay kho ngân sách thứ hai.
 - Kiểm chứng: `npm run typecheck && npm run lint && npm run test && npm run build && npm run test:e2e`. Bằng chứng chính thức: [CI PASS 74/74 unit, 8/8 Chromium E2E](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38533542563), [ảnh kiểm thử](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38533542563/artifacts/11879336547) và [PROGRESS](docs/PROGRESS.md).
+
+
+## Phase 06 Quality (PARTIAL, PR #7 chưa merge)
+
+- Pull Request triển khai: [PR #7](https://github.com/giabao2605/Tiny-Civilization/pull/7) (mở để review; **không merge**). Trạng thái **PARTIAL** vì chưa playtest người mới và FPS trên thiết bị thật, dù CI nhánh đã xanh.
+- Mô phỏng vẫn dùng **một** `WorldState` schema v5. Snapshot versioned `sim-v5-phase06` lưu cả RNG state, ID counters, giao dịch, quan hệ/hộ, governance, biến cố, event history và lệnh chính sách đang xếp hàng. Không lưu Phaser/React hoặc real timers.
+- **Lưu thế giới** ghi snapshot vào localStorage của trình duyệt hiện tại; **Tải bản lưu** xác thực toàn bộ dữ liệu trước khi đổi world và tự pause; **Xuất JSON / Nhập JSON** dùng để sao lưu, chuyển thiết bị. Lỗi quota, JSON hỏng, phiên bản lạ hay ID vô hiệu được hiển thị mà không xóa thế giới đang chạy.
+- Mỗi file JSON tối đa **8 MiB**, chỉ hỗ trợ engine/schema hiện hành; không có migration cho bản save phiên bản trước. localStorage có thể bị xóa bởi trình duyệt, hãy giữ file JSON nếu thế giới quan trọng.
+- Kế hoạch kiểm chứng: replay 1.000 ticks vs 500 + save/load + 500 ở 20/50/100 NPC × nhiều seed, 10 seed × 30 ngày cả bình thường và thiếu dự trữ, benchmark Node tick p50/p95 và Chromium save/reload/import/error/mobile/hidden-tab.
+- **Kiểm chứng Chromium và unit:** [Actions #38671225735 PASS](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38671225735) tại commit `f5e886a`: 84/84 Vitest, 11/11 Chromium E2E, audit/typecheck/lint/build PASS. Screenshots: [artifact 11943838565](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38671225735/artifacts/11943838565).
+- **Số đo browser CI (Chromium headless, 100 NPC, 20×, 45 frame):** trung bình **25 FPS**, p95 frame **83.3 ms**, một mẫu JS heap **81.4 MB**. Có giật hình; **không tuyên bố 60 FPS**. Node tick p95 100 NPC trên lượt chạy này chưa trích xuất; lượt trước cùng code lõi là 8.841 ms/tick. Các phép đo phụ thuộc máy runner; chưa kiểm tra trên điện thoại vật lý.
+- **10 seed × 30 ngày ở 100 NPC:** kịch bản thường bảo toàn 100 dân, không thiếu food ở mốc lấy mẫu; kịch bản famine cố ý cắt toàn bộ food và tái sinh ruộng khiến cả 100 NPC chết trong 30 ngày nhưng không âm tài sản, không tạo hàng vô hạn. Không coi thử nghiệm cực đoan là cân bằng mặc định.
+- **Chưa phát hành Phase 07.** Playtest với người mới chưa thực hiện; xem [PROGRESS](docs/PROGRESS.md) để biết gate còn mở và phân biệt số đo Node / browser / thiết bị vật lý.

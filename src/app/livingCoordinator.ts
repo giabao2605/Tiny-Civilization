@@ -2,6 +2,7 @@ import { createClock, type Speed } from '../sim/clock';
 import { advanceOneTick } from '../sim/engine';
 import { foodAidRejection, type GovernanceCommand } from '../sim/governance';
 import { createWorld, type WorldState } from '../sim/world';
+import { parseSave, serializeSave } from '../persistence/save';
 
 export type LivingSnapshot = Readonly<{
   world: WorldState;
@@ -72,6 +73,21 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
         document.removeEventListener('visibilitychange', onVisibility);
         clock.reset();
       };
+    },
+    /** Synchronous tick-boundary snapshot; includes a queued policy command and its ID counter. */
+    exportSave: (): string => serializeSave(snapshot.world, pending, nextRequestId),
+    /** Validation finishes before any active state, timer or queued command is touched. */
+    importSave: (json: string): void => {
+      const restored = parseSave(json);
+      pending = restored.pending;
+      nextRequestId = restored.nextRequestId;
+      const count = restored.world.citizens.length;
+      presetPopulation = count <= 20 ? 20 : count <= 50 ? 50 : 100;
+      clock.setPaused(true);
+      snapshot = { world: restored.world, selectedCitizenId: null,
+        speed: clock.getSpeed(), paused: true, lastPolicyMessage: '' };
+      resetElapsed();
+      notify();
     },
     dispatch: (command: LivingCommand): boolean => {
       if (command.type === 'select-citizen') {
