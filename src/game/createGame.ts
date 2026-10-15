@@ -1,20 +1,21 @@
 import Phaser from 'phaser';
-import { GRID_HEIGHT, GRID_WIDTH, TILE_PIXELS } from '../sim/grid';
 import type { WorldState } from '../sim/world';
+import type { CameraSnapshot } from './camera/types';
 import { WorldScene } from './scenes/WorldScene';
 
 export function createGame(
   parent: HTMLElement,
   world: WorldState,
   onCitizenSelected: (id: number) => void,
+  onCameraChanged?: (camera: CameraSnapshot) => void,
 ): { game: Phaser.Game; scene: WorldScene } {
-  const scene = new WorldScene(world, onCitizenSelected);
+  const scene = new WorldScene(world, onCitizenSelected, onCameraChanged);
   const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent,
-    width: GRID_WIDTH * TILE_PIXELS,
-    height: GRID_HEIGHT * TILE_PIXELS,
-    backgroundColor: '#294835',
+    width: Math.max(1, Math.round(parent.clientWidth)),
+    height: Math.max(1, Math.round(parent.clientHeight)),
+    backgroundColor: '#10251b',
     render: { pixelArt: true, antialias: false },
     scene: [scene],
   });

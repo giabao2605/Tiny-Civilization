@@ -2,13 +2,16 @@ import Phaser from 'phaser';
 import type { LivingSnapshot } from '../../app/livingCoordinator';
 import { GRID_HEIGHT, GRID_WIDTH, TILE_PIXELS } from '../../sim/grid';
 import type { Citizen, Site, WorldState } from '../../sim/world';
+import { cameraCenterBounds, fitZoom, zoomAnchorCenter } from '../camera/cameraMath';
+import type { CameraMode, CameraSnapshot, WorldCameraControls } from '../camera/types';
 
 const PALETTE = [0xbc654f, 0xe2aa5d, 0x6d9bb3, 0x9c82b6, 0x8fad6b, 0xd2888d, 0x64afa0, 0xdbc17b];
 const CENTER = TILE_PIXELS / 2;
 function xPixel(x: number) { return x * TILE_PIXELS + CENTER; }
 function yPixel(y: number) { return y * TILE_PIXELS + CENTER; }
 
-export class WorldScene extends Phaser.Scene {
+export class WorldScene extends Phaser.Scene implements WorldCameraControls {
+  private cameraMode: CameraMode = 'reset';
   private world: WorldState;
   private selectedId: number | null = null;
   private speed = 1;
@@ -24,14 +27,16 @@ export class WorldScene extends Phaser.Scene {
   private lastDrag?: { x: number; y: number };
   private dragged = false;
 
-  constructor(world: WorldState, private readonly onCitizenSelected: (id: number) => void) {
+  constructor(world: WorldState, private readonly onCitizenSelected: (id: number) => void,
+    private readonly onCameraChanged?: (camera: CameraSnapshot) => void) {
     super({ key: 'WorldScene' });
     this.world = world;
   }
 
   create(): void {
-    this.cameras.main.setBounds(0, 0, GRID_WIDTH * TILE_PIXELS, GRID_HEIGHT * TILE_PIXELS);
-    this.cameras.main.centerOn(xPixel(24), yPixel(24));
+    // Manual bounds allow a smaller world to be centered inside a large viewport.
+    this.cameras.main.removeBounds();
+    this.reset();
     this.paintTerrain();
     for (const site of this.world.sites) { this.paintSite(site); this.paintedSites.add(site.id); }
     this.paintConstructions();
@@ -60,6 +65,79 @@ export class WorldScene extends Phaser.Scene {
       this.movementTweens.clear();
       this.highlighter = undefined;
     });
+  }
+
+
+  private get worldWidth(): number { return GRID_WIDTH * TILE_PIXELS; }
+  private get worldHeight(): number { return GRID_HEIGHT * TILE_PIXELS; }
+
+  private announceCamera(): void {
+    if (this.sys.isActive()) this.onCameraChanged?.(this.getCameraSnapshot());
+  }
+
+  /** Clamp the visible *center*, including letterboxed worlds. */
+  private clampCamera(): void {
+    const camera = this.cameras.main;
+    const center = camera.getWorldPoint(camera.width / 2, camera.height / 2);
+    const [minX, maxX] = cameraCenterBounds(this.worldWidth, camera.width, camera.zoom);
+    const [minY, maxY] = cameraCenterBounds(this.worldHeight, camera.height, camera.zoom);
+    camera.scrollX += Phaser.Math.Clamp(center.x, minX, maxX) - center.x;
+    camera.scrollY += Phaser.Math.Clamp(center.y, minY, maxY) - center.y;
+  }
+
+  fit(): void {
+    if (!this.sys.isActive()) return;
+    const camera = this.cameras.main;
+    this.cameraMode = 'fit';
+    camera.setZoom(fitZoom(camera.width, camera.height, this.worldWidth, this.worldHeight));
+    camera.centerOn(this.worldWidth / 2, this.worldHeight / 2);
+    this.clampCamera();
+    this.announceCamera();
+  }
+
+  /** Reset = centered starting composition, 1.15 times closer than Fit. */
+  reset(): void {
+    if (!this.sys.isActive()) return;
+    const camera = this.cameras.main;
+    this.cameraMode = 'reset';
+    camera.setZoom(Math.min(3, fitZoom(camera.width, camera.height, this.worldWidth, this.worldHeight) * 1.15));
+    camera.centerOn(this.worldWidth / 2, this.worldHeight / 2);
+    this.clampCamera();
+    this.announceCamera();
+  }
+
+  zoomBy(factor: number, screenPoint?: { x: number; y: number }): void {
+    if (!this.sys.isActive() || !Number.isFinite(factor) || factor <= 0) return;
+    const camera = this.cameras.main;
+    const point = screenPoint ?? { x: camera.width / 2, y: camera.height / 2 };
+    const before = camera.getWorldPoint(point.x, point.y);
+    const next = Phaser.Math.Clamp(camera.zoom * factor, 0.1, 3);
+    if (Math.abs(next - camera.zoom) < 0.00001) return;
+    const center = camera.getWorldPoint(camera.width / 2, camera.height / 2);
+    camera.setZoom(next);
+    camera.scrollX += zoomAnchorCenter(before.x, point.x, camera.width, next) - center.x;
+    camera.scrollY += zoomAnchorCenter(before.y, point.y, camera.height, next) - center.y;
+    this.clampCamera();
+    this.cameraMode = 'manual';
+    this.announceCamera();
+  }
+
+  getCameraSnapshot(): CameraSnapshot {
+    const camera = this.cameras.main;
+    return { mode: this.cameraMode, zoom: camera.zoom, scrollX: camera.scrollX,
+      scrollY: camera.scrollY, viewportWidth: camera.width, viewportHeight: camera.height };
+  }
+
+  resizeViewport(width: number, height: number): void {
+    if (!this.sys.isActive()) return;
+    const camera = this.cameras.main;
+    const focus = camera.getWorldPoint(camera.width / 2, camera.height / 2);
+    camera.setSize(width, height);
+    if (this.cameraMode === 'fit') { this.fit(); return; }
+    if (this.cameraMode === 'reset') { this.reset(); return; }
+    camera.centerOn(focus.x, focus.y);
+    this.clampCamera();
+    this.announceCamera();
   }
 
   setSnapshot(snapshot: LivingSnapshot): void {
@@ -257,6 +335,9 @@ export class WorldScene extends Phaser.Scene {
     if (this.dragged) {
       this.cameras.main.scrollX -= dx / this.cameras.main.zoom;
       this.cameras.main.scrollY -= dy / this.cameras.main.zoom;
+      this.clampCamera();
+      this.cameraMode = 'manual';
+      this.announceCamera();
     }
     this.lastDrag = { x: pointer.x, y: pointer.y };
   };
@@ -272,8 +353,10 @@ export class WorldScene extends Phaser.Scene {
     }
     if (best) this.onCitizenSelected(best.id);
   };
-  private readonly onWheel = (_pointer: Phaser.Input.Pointer, _objects: Phaser.GameObjects.GameObject[], _dx: number, dy: number): void => {
-    const camera = this.cameras.main;
-    camera.setZoom(Phaser.Math.Clamp(camera.zoom * (dy > 0 ? 0.88 : 1.14), 1, 3));
+  private readonly onWheel = (pointer: Phaser.Input.Pointer, _objects: Phaser.GameObjects.GameObject[],
+    _dx: number, dy: number, _dz: number, event?: WheelEvent): void => {
+    if (dy === 0) return;
+    event?.preventDefault();
+    this.zoomBy(dy > 0 ? 0.88 : 1.14, { x: pointer.x, y: pointer.y });
   };
 }
