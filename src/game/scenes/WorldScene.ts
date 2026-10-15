@@ -222,6 +222,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
           },
           onComplete: () => {
             sprite.setPosition(xPixel(citizen.tile.x), yPixel(citizen.tile.y));
+            sprite.setDepth(100 + sprite.y);
             this.movementTweens.delete(citizen.id);
           },
         });
