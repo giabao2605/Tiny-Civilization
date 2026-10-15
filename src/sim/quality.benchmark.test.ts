@@ -45,9 +45,14 @@ type Report = {
   saveBytes: number; tickP50Ms: number; tickP95Ms: number; wallMs: number; heapDeltaBytes: number;
 };
 
-function benchmark(seed: number, population: 20 | 50 | 100, scenario: 'normal' | 'low-reserve', ticks: number): Report {
+function benchmark(seed: number, population: 20 | 50 | 100, scenario: 'normal' | 'low-reserve' | 'famine', ticks: number): Report {
   let world = createWorld(seed, population);
   if (scenario === 'low-reserve') world = { ...world, inventory: { ...world.inventory, food: 0 } };
+  if (scenario === 'famine') world = {
+    ...world, inventory: { ...world.inventory, food: 0 },
+    resourceNodes: world.resourceNodes.map(node => node.kind === 'field'
+      ? { ...node, stock: 0, regenerationPerDay: 0 } : node),
+  };
   const startingFood = world.inventory.food;
   const startingWood = world.inventory.wood;
   const initialMoney = totalCurrency(world);
@@ -100,15 +105,17 @@ describe('Phase 06 measured stress and balance reports (Node, not browser FPS)',
     expect(result).toHaveLength(3);
   }, 180000);
 
-  it('compares 10 seeded 30-day normal settlements against real low-reserve crises', () => {
+  it('compares 10 seeded 30-day normal, low-reserve and non-regenerating famine scenarios', () => {
     const seeds = [101, 103, 107, 109, 113, 127, 131, 137, 139, 149];
     const results: Report[] = [];
     for (const seed of seeds) {
       results.push(benchmark(seed, 100, 'normal', 720));
       results.push(benchmark(seed, 100, 'low-reserve', 720));
+      results.push(benchmark(seed, 100, 'famine', 720));
     }
     console.log('PHASE06_BALANCE=' + JSON.stringify(results));
-    expect(results).toHaveLength(20);
+    expect(results).toHaveLength(30);
+    expect(results.filter(r => r.scenario === 'famine').every(r => r.foodStockoutDays >= 25)).toBe(true);
     expect(results.every(r => r.harvests > 0 && r.illness > 0 && r.days >= 30)).toBe(true);
   }, 180000);
 });
