@@ -1,7 +1,7 @@
 # Tiny Civilization — Progress / handoff log
 
-**Updated:** 2026-10-14  
-**Current stage:** Phase 00–04 DONE and merged to `main`. Phase 04 [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5) merged as `1a5933b74b04c32fc371f0fc3163bfed9fd5535b`. Last Phase 04 feature SHA `f8f01ef20dbfc38895c0545374daa927f383358c` passed [CI 38521166064](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38521166064) (all checks and 5 Chromium E2E). Post-merge CI: [run 38525000676](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38525000676) (verify its live conclusion). Phase 05 Governance is next, NOT STARTED. No MVP release.
+**Updated:** 2026-10-15  
+**Current stage:** Phase 00–05 DONE and merged to `main`. Phase 05 [PR #6](https://github.com/giabao2605/Tiny-Civilization/pull/6) merged at `4c03cd8596eb75d436b6df8159c1b9ccca7d65e6`, [post-merge CI #38662711100 PASS](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38662711100). Phase 06 is in progress on `feat/phase-06-quality`, NOT merged. Phase 07 release has not started.
 **Authoritative roadmap:** [MASTER_PLAN](MASTER_PLAN.md)  
 **Rules/contract:** [SIMULATION_CONTRACT](SIMULATION_CONTRACT.md)
 
@@ -12,10 +12,21 @@
 | 02 Survival | DONE, merged (PR #3) | Finite food/wood, needs, production, shortage/death and verified 10-seed balance |
 | 03 Economy | DONE, merged to `main` (PR #4) | All 20/50/100 ten-seed 30-day runs and GitHub Actions PASS |
 | 04 Social | DONE, merged to `main` (PR #5) | Directed relationships, causal stories, households/birth/death, 30–180 game-day tests, 5 Chromium E2E, last branch CI PASS |
-| 05 Governance | NOT STARTED | Policies/crises with costs and real consequences |
-| 06 Quality | NOT STARTED | Save/load determinism, profiling, UX/balance |
+| 05 Governance | DONE, merged to `main` (PR #6) | Finite food aid, elected leader, poor harvest and illness, 74 unit/8 Chromium E2E; post-merge CI PASS |
+| 06 Quality | IN PROGRESS (unmerged) | Versioned save/load, replay, Chromium error tests, 10-seed stress, Node and browser profile; final gate pending |
 | 07 MVP release | NOT STARTED | CI green, deployed playable build |
 | 08 Expansion | DEFERRED | Only after MVP validation and new go/no-go |
+
+## Phase 06 — Quality & Safe Persistence (2026-10-15; verification in progress)
+
+- Branch: `feat/phase-06-quality` starts exactly from Phase 05 merge `4c03cd8596eb75d436b6df8159c1b9ccca7d65e6`; main CI run `38662711100` succeeded. **No merge to main**.
+- Implemented on branch: `src/persistence/save.ts` versioned `sim-v5-phase06` format, 8 MiB import cap, structural/domain validation for entities, positions, ownership, currency, households, relationships, governance, shocks, timers, trade history and events. Coordinator preserves pending policy commands/request IDs; world is swapped only after successful parse/validation, and loading pauses without any synthetic tick or RNG draw.
+- UI: localStorage save/load, downloadable JSON and file import, errors for corruption, schema/version mismatch and full/quota-denied storage. Save is synchronous between browser event-loop ticks; storage-write failure never mutates the live world. Observer onboarding, legible HUD summary, NPC route reason, keyboard focus and mobile save controls.
+- Replay regression: `src/persistence/save.test.ts` runs 1000 continuous ticks versus 500 + JSON save/load + queued policy + 500 ticks at populations 20/50/100, seeds 210/613, compares the **entire world**, RNG, governance and currency. Forged IDs, negative cash, invalid terrain, truncated JSON, unsupported engine and oversized file are rejected.
+- Measured Node 22 / GitHub Ubuntu sample from [Actions #38670368237](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38670368237) (run fails *only* at a time-sensitive browser hidden-tab assertion, not at the Node benchmark): 1000 ticks seed 543 => 20 NPC p50 **0.212** ms, p95 **1.582** ms, save **110,834** bytes; 50 NPC p50 **0.637** ms, p95 **3.243** ms, save **282,573** bytes; 100 NPC p50 **0.889** ms, p95 **5.191** ms, save **443,278** bytes. These samples meet provisional p95 <25 ms in Node only, **not** proof of physical-device FPS.
+- First 10 seeds 100 NPC × 720 ticks normal: all 100 alive and 0 stockout days at daily sampling; p95 across seeds 2.626–4.852 ms. Simply emptying the initial market stock recovered rapidly because farming replenished supply, revealing that this was **not an adequately severe crisis**. Added a separately named famine scenario with initial food and active farm stock/regeneration reduced to zero; results **pending final run**. This is adversarial test setup, not a balance patch or infinite supply shortcut.
+- Browser tests include save-refresh-load, JSON roundtrip, broken and incompatible imports, quota failure, 390px viewport and hidden-tab discard; 100 NPC × 20× with inspector/timeline/save and sampled Chromium frame times was added subsequently. Initial hidden-tab assertion had an invalid fixed 100 ms wall-clock assumption and was corrected to check the actual **absence of synchronous catch-up**, without relaxing the underlying hidden-tab zero-tick test.
+- **Pending:** final green CI at PR head, screenshots and Chromium numeric frame report, severe-famine 10-seed output, human novice playtest and physical-device FPS. No human playtest was performed; no FPS was invented. The absence of those must not be mislabeled DONE.
 
 ## Phase 04 Social implementation (2026-10-14)
 
