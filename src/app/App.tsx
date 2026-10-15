@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { GameCanvas } from '../game/GameCanvas';
+import type { CameraSnapshot, WorldCameraControls } from '../game/camera/types';
 import { ENGINE_VERSION, LOCAL_SAVE_KEY, MAX_SAVE_BYTES } from '../persistence/save';
 import { dayOf, hourOf, stateDigest } from '../sim/engine';
 import { foodAidRejection } from '../sim/governance';
@@ -79,6 +80,8 @@ export function App() {
   }, []);
   const snapshot = useSyncExternalStore(coordinator.subscribe, coordinator.getUiSnapshot);
   const [canvasVersion, setCanvasVersion] = useState(0);
+  const [cameraControls, setCameraControls] = useState<WorldCameraControls | null>(null);
+  const [cameraView, setCameraView] = useState<CameraSnapshot | null>(null);
   const [timelineCategory, setTimelineCategory] = useState<TimelineCategory>('all');
   const [inspectedEventId, setInspectedEventId] = useState<number | null>(null);
   const [seedInput, setSeedInput] = useState('12345');
@@ -118,6 +121,17 @@ export function App() {
   const averageHealth = living.length ? Math.round(living.reduce((sum, c) => sum + c.health, 0) / living.length) : 0;
 
   useEffect(() => coordinator.start(), [coordinator]);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (!cameraControls || event.altKey || event.ctrlKey || event.metaKey ||
+        (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, [contenteditable]'))) return;
+      if (event.key.toLowerCase() === 'f') { event.preventDefault(); cameraControls.fit(); }
+      if (event.key.toLowerCase() === 'r') { event.preventDefault(); cameraControls.reset(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [cameraControls]);
 
   const setSeed = () => {
     const value = Number(seedInput);
@@ -227,11 +241,34 @@ export function App() {
                 key={canvasVersion}
                 snapshot={snapshot}
                 onCitizenSelected={(id) => coordinator.dispatch({ type: 'select-citizen', id })}
+                onCameraReady={setCameraControls}
+                onCameraChange={setCameraView}
               />
             </div>
             <div className="map-toolbar">
-              <span>Cuộn để phóng to · Kéo để di chuyển · Nhấn vào cư dân</span>
-              <button type="button" className="ghost-button" onClick={() => setCanvasVersion((v) => v + 1)}>Khởi tạo lại canvas</button>
+              <span>Cuộn để zoom tại con trỏ · Kéo để di chuyển · F: toàn bản đồ · R: đặt lại</span>
+              <div className="camera-buttons" role="group" aria-label="Điều khiển camera">
+                <button type="button" className="ghost-button" data-testid="camera-fit" disabled={!cameraControls}
+                  aria-pressed={cameraView?.mode === 'fit'} onClick={() => cameraControls?.fit()}>Toàn bản đồ</button>
+                <button type="button" className="ghost-button" data-testid="camera-reset" disabled={!cameraControls}
+                  aria-pressed={cameraView?.mode === 'reset'} onClick={() => cameraControls?.reset()}>Đặt lại góc nhìn</button>
+                <button type="button" className="ghost-button" aria-label="Phóng to bản đồ" disabled={!cameraControls}
+                  onClick={() => cameraControls?.zoomBy(1.2)}>Zoom +</button>
+                <button type="button" className="ghost-button" aria-label="Thu nhỏ bản đồ" disabled={!cameraControls}
+                  onClick={() => cameraControls?.zoomBy(1 / 1.2)}>Zoom −</button>
+                <button type="button" className="ghost-button" onClick={() => setCanvasVersion((v) => v + 1)}>Khởi tạo lại canvas</button>
+              </div>
+              <span className="camera-readout" data-testid="camera-status"
+                data-mode={cameraView?.mode ?? 'loading'}
+                data-zoom={cameraView?.zoom ?? ''}
+                data-scroll-x={cameraView?.scrollX ?? ''}
+                data-scroll-y={cameraView?.scrollY ?? ''}
+                data-viewport-width={cameraView?.viewportWidth ?? ''}
+                data-viewport-height={cameraView?.viewportHeight ?? ''}
+                role="status" aria-live="off">
+                Camera: {cameraView ? cameraView.mode + ' · ' + cameraView.zoom.toFixed(2) + '× · ' +
+                  cameraView.viewportWidth + '×' + cameraView.viewportHeight : 'đang tải'}
+              </span>
             </div>
             <div className="legend-row" aria-label="Chú giải bản đồ">
               <span><i className="legend-tile grass" />Đồng cỏ</span>
