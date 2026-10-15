@@ -232,9 +232,9 @@ export function validateWorld(value: unknown): asserts value is WorldState {
   nonnegative(social, ['encounters', 'disputes', 'partnerships', 'births'], 'world.social');
   const leader = nullableId(g.leaderId, 'world.governance.leaderId');
   if (leader !== null && !citizenIds.has(leader)) fail('world.governance.leaderId', 'trưởng làng không tồn tại');
-  nonnegative(g, ['termStartedTick', 'nextElectionTick', 'leaderSupport', 'reputation', 'elections',
+  nonnegative(g, ['termStartedTick', 'nextElectionTick', 'reputation', 'elections',
     'leadershipChanges', 'harvestCount', 'illnessCount', 'illnessAffected', 'illnessRecovered'], 'world.governance');
-  counters(g, ['lastHarvestEnd', 'lastIllnessEnd'], 'world.governance');
+  counters(g, ['leaderSupport', 'lastHarvestEnd', 'lastIllnessEnd'], 'world.governance');
   string(g.selectionReason, 'world.governance.selectionReason', 1200);
   array(g.history, 'world.governance.history', 20).forEach((v, i) => {
     const p = 'world.governance.history[' + i + ']', h = object(v, p);
