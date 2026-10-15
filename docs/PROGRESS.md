@@ -13,13 +13,13 @@
 | 03 Economy | DONE, merged to `main` (PR #4) | All 20/50/100 ten-seed 30-day runs and GitHub Actions PASS |
 | 04 Social | DONE, merged to `main` (PR #5) | Directed relationships, causal stories, households/birth/death, 30–180 game-day tests, 5 Chromium E2E, last branch CI PASS |
 | 05 Governance | DONE, merged to `main` (PR #6) | Finite food aid, elected leader, poor harvest and illness, 74 unit/8 Chromium E2E; post-merge CI PASS |
-| 06 Quality | PARTIAL, [PR #7](https://github.com/giabao2605/Tiny-Civilization/pull/7) open, unmerged | Versioned save/load, replay, Chromium error tests, 10-seed stress, Node and browser profile; final gate pending |
-| 07 MVP release | NOT STARTED | CI green, deployed playable build |
+| 06 Quality | Code merged to main ([PR #7](https://github.com/giabao2605/Tiny-Civilization/pull/7)), quality gate PARTIAL | Save/load and replay verified, 84 unit/11 Chromium E2E; novice playtest and physical device profile still open |
+| 07 MVP release | IN PROGRESS, [PR #8](https://github.com/giabao2605/Tiny-Civilization/pull/8) draft | Release-candidate source/CI/CD prepared; production smoke and public Pages URL not yet verified |
 | 08 Expansion | DEFERRED | Only after MVP validation and new go/no-go |
 
-## Phase 06 — Quality & Safe Persistence (2026-10-15; PR #7 open, PARTIAL)
+## Phase 06 — Quality & Safe Persistence (2026-10-15; code merged, acceptance PARTIAL)
 
-- Branch: `feat/phase-06-quality` starts exactly from Phase 05 merge `4c03cd8596eb75d436b6df8159c1b9ccca7d65e6`; main CI run `38662711100` succeeded. **No merge to main**.
+- Historical implementation baseline: `feat/phase-06-quality` branched from Phase 05 merge `4c03cd8596eb75d436b6df8159c1b9ccca7d65e6`, then merged via PR #7 at `efa9fa23`. Post-merge main CI run `38673629622` succeeded.
 - Implemented on branch: `src/persistence/save.ts` versioned `sim-v5-phase06` format, 8 MiB import cap, structural/domain validation for entities, positions, ownership, currency, households, relationships, governance, shocks, timers, trade history and events. Coordinator preserves pending policy commands/request IDs; world is swapped only after successful parse/validation, and loading pauses without any synthetic tick or RNG draw.
 - UI: localStorage save/load, downloadable JSON and file import, errors for corruption, schema/version mismatch and full/quota-denied storage. Save is synchronous between browser event-loop ticks; storage-write failure never mutates the live world. Observer onboarding, legible HUD summary, NPC route reason, keyboard focus and mobile save controls.
 - Replay regression: `src/persistence/save.test.ts` runs 1000 continuous ticks versus 500 + JSON save/load + queued policy + 500 ticks at populations 20/50/100, seeds 210/613, compares the **entire world**, RNG, governance and currency. Forged IDs, negative cash, invalid terrain, truncated JSON, unsupported engine and oversized file are rejected.
@@ -218,3 +218,10 @@ Phase 00 was merged and verified. Next task may implement Phase 01 only after re
 - CI on branch/PR/main: production dependency audit, TypeScript, ESLint, Vitest, Vite build, Chromium dev-browser regression, separate GitHub Pages `/Tiny-Civilization/` build and production-preview smoke (20/100 NPC, 1920×1080, 1366×768, 390×844, save/reload/JSON). CI artifacts include screenshots and dist; Pages deploy workflow gates deploy behind clean production tests.
 - Browser-facing test coverage now includes reset confirmation/cancel and preservation of previously saved localStorage slot. Readable Vietnamese onboarding, seed/hour explanation, local-only save disclosure, GitHub Issues link and release-candidate boundaries.
 - **As of authoring:** final-HEAD CI and public URL checks have not yet been confirmed. Host settings through GitHub App do not expose Pages administration. Physical Android test, independent novice playtest and long-duration physical device FPS remain NOT TESTED. Release decision **PARTIAL**, pending required gates. Branch remains unmerged; no release tag.
+
+### Phase 07 CI diagnostics and remediation log
+
+- Earlier candidate `fba695e5`: 84/84 Vitest passed; 11/12 Chromium E2E passed, but newly added reset acceptance test failed due over-escaped tick matching. Fixed test regex on subsequent commit, without relaxing the assertion.
+- Candidate `aa5ae0f8`: dev Chromium 12 passed and 1 production-only test skipped as intended; production smoke could not start due missing `preview` npm script. Fixed in `d45205d8`.
+- Candidate `d45205d8`: Pages CI reached production-preview smoke, but the canvas was absent because preview Vite base was `/` while build base was `/Tiny-Civilization/`. Fixed preview base env in `cab7ad65`. No release claim until the corrected smoke passes.
+- Browser performance samples on concurrent CI runners were volatile (8–12 FPS at 100 NPC, 20×). Those are not evidence of a stable improvement over Phase 06 baseline (~25 FPS / 83.3 ms p95). Node tick p95 from the early candidate: 100 NPC 5.887 ms (GitHub Actions Linux). Later, representative final-head metrics are required before asserting an improvement. Renderer/React batching does not change engine ordering or RNG state.
