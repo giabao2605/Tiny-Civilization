@@ -140,3 +140,27 @@ h3 { letter-spacing: -.025em; font-size: 19px; margin-bottom: 0; }
 
 .event-feed li.event-warning { border-left-color: #dfb269; }
 .event-feed li.event-critical { border-left-color: #e67b70; background: #402d2b88; border-radius: 0 6px 6px 0; }
+
+/* Phase 06: a compact observer overview and durable save controls. */
+.quick-start { max-width: 710px; font-size: 12px; line-height: 1.7; color: #d4e6c8; margin-top: 10px; }
+.hud-summary { display: grid; gap: 6px; border: 1px solid #66896d; border-radius: 10px; background: #244735; padding: 12px; margin: 15px 0; font-size: 12px; color: #e1e8cb; }
+.hud-summary span:last-child { font-weight: 700; }
+.save-panel { border-top: 1px solid #59725c; padding-top: 15px; margin-top: 18px; min-width: 0; }
+.save-panel h4 { margin: 0 0 6px; font-size: 15px; }
+.save-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.save-actions .ghost-button { min-height: 37px; font-size: 12px; }
+.save-actions input[type=file] { max-width: 100%; min-width: 0; font-size: 12px; color: #e5e9d7; }
+.save-actions input[type=file]::file-selector-button { border: 1px solid #769076; border-radius: 8px; background: #34543f; color: #fff; padding: 8px; cursor: pointer; }
+.import-button { font-size: 12px; color: #d4e6c8; }
+.save-status { overflow-wrap: anywhere; font-size: 12px; line-height: 1.6; color: #e2e7c4; }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
+  outline: 3px solid #f4ce6b; outline-offset: 3px;
+}
+@media (max-width: 620px) {
+  .save-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .save-actions .ghost-button { width: 100%; }
+  .save-actions input[type=file] { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
