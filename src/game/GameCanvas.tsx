@@ -28,7 +28,7 @@ export function GameCanvas({ snapshot, onCitizenSelected, onCameraReady, onCamer
     if (!host) return;
     let disposed = false;
     let observer: ResizeObserver | null = null;
-    let removeSceneReady: (() => void) | null = null;
+    let readyFrame = 0;
     const frame = requestAnimationFrame(() => {
       void import('./createGame').then(({ createGame }) => {
         if (disposed || !host.isConnected) return;
@@ -42,21 +42,19 @@ export function GameCanvas({ snapshot, onCitizenSelected, onCameraReady, onCamer
           zoomBy: (factor, point) => { if (liveRef.current === live) live.scene.zoomBy(factor, point); },
           getCameraSnapshot: () => live.scene.getCameraSnapshot(),
         };
-        const announceReady = () => {
-          if (!disposed && liveRef.current === live && live.scene.sys.isActive()) {
+        // Scene Systems and Scene event emitters are injected *during* Phaser boot.
+        // Never subscribe to them from the synchronous Phaser.Game constructor path.
+        const announceWhenActive = () => {
+          if (disposed || liveRef.current !== live) return;
+          if (live.scene.sys.isActive()) {
             readyRef.current?.(controls);
             changeRef.current?.(controls.getCameraSnapshot());
+          } else {
+            readyFrame = requestAnimationFrame(announceWhenActive);
           }
         };
-        // Phaser may emit CREATE before RUNNING; READY covers that transition.
-        live.scene.sys.events.on('create', announceReady);
-        live.scene.sys.events.on('ready', announceReady);
-        removeSceneReady = () => {
-          live.scene.sys.events.off('create', announceReady);
-          live.scene.sys.events.off('ready', announceReady);
-        };
         live.scene.setSnapshot(current);
-        announceReady();
+        readyFrame = requestAnimationFrame(announceWhenActive);
 
         let lastWidth = Math.round(host.clientWidth);
         let lastHeight = Math.round(host.clientHeight);
@@ -80,7 +78,7 @@ export function GameCanvas({ snapshot, onCitizenSelected, onCameraReady, onCamer
       disposed = true;
       cancelAnimationFrame(frame);
       observer?.disconnect();
-      removeSceneReady?.();
+      cancelAnimationFrame(readyFrame);
       readyRef.current?.(null);
       const live = liveRef.current;
       liveRef.current = null;
