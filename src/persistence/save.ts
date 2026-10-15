@@ -220,7 +220,7 @@ export function validateWorld(value: unknown): asserts value is WorldState {
   if (!siteIds.has(marketId) || !sites.some(s => { const x = object(s, 'site'); return x.id === marketId && x.kind === 'market'; })) fail('world.market.siteId', 'chợ không tồn tại');
   nonnegative(market, ['cash', 'initialSupply', 'completedTrades', 'volumeToday', 'volumeYesterday',
     'boughtFromCitizens', 'soldToCitizens'], 'world.market');
-  const conservedMoney = (market.cash as number) + citizens.reduce((sum, v) =>
+  const conservedMoney = (market.cash as number) + citizens.reduce<number>((sum, v) =>
     sum + (object(v, 'citizen').wallet as number), 0);
   if (conservedMoney !== market.initialSupply) fail('world.market.initialSupply', 'tiền bị thiếu hoặc nhân đôi');
   goods(w.inventory, 'world.inventory');
