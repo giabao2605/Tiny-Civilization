@@ -20,6 +20,8 @@ function worldAt(c: Awaited<ReturnType<typeof camera>>, x: number, y: number) {
 const worldFootprint = 576;
 
 test('V01-B: responsive, Fit/Reset, zoom anchor, drag, select and stable save', async ({ page }, testInfo) => {
+  // Multiple 4k-high screenshots and three viewport changes exceed Playwright's 30s default on CI.
+  test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.setViewportSize({ width: 1366, height: 768 });

@@ -78,11 +78,14 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   /** Clamp the visible *center*, including letterboxed worlds. */
   private clampCamera(): void {
     const camera = this.cameras.main;
-    const center = camera.getWorldPoint(camera.width / 2, camera.height / 2);
+    // Phaser updates Camera.matrix on preRender, not when setZoom/centerOn runs.
+    // Use the canonical unzoomed midpoint math to clamp immediately after zoom.
+    const centerX = camera.scrollX + camera.width / 2;
+    const centerY = camera.scrollY + camera.height / 2;
     const [minX, maxX] = cameraCenterBounds(this.worldWidth, camera.width, camera.zoom);
     const [minY, maxY] = cameraCenterBounds(this.worldHeight, camera.height, camera.zoom);
-    camera.scrollX += Phaser.Math.Clamp(center.x, minX, maxX) - center.x;
-    camera.scrollY += Phaser.Math.Clamp(center.y, minY, maxY) - center.y;
+    camera.scrollX += Phaser.Math.Clamp(centerX, minX, maxX) - centerX;
+    camera.scrollY += Phaser.Math.Clamp(centerY, minY, maxY) - centerY;
   }
 
   fit(): void {
@@ -111,13 +114,17 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     if (!this.sys.isActive() || !Number.isFinite(factor) || factor <= 0) return;
     const camera = this.cameras.main;
     const point = screenPoint ?? { x: camera.width / 2, y: camera.height / 2 };
-    const before = camera.getWorldPoint(point.x, point.y);
+    const centerX = camera.scrollX + camera.width / 2;
+    const centerY = camera.scrollY + camera.height / 2;
+    const beforeX = centerX + (point.x - camera.width / 2) / camera.zoom;
+    const beforeY = centerY + (point.y - camera.height / 2) / camera.zoom;
     const next = Phaser.Math.Clamp(camera.zoom * factor, 0.1, 3);
     if (Math.abs(next - camera.zoom) < 0.00001) return;
-    const center = camera.getWorldPoint(camera.width / 2, camera.height / 2);
     camera.setZoom(next);
-    camera.scrollX += zoomAnchorCenter(before.x, point.x, camera.width, next) - center.x;
-    camera.scrollY += zoomAnchorCenter(before.y, point.y, camera.height, next) - center.y;
+    camera.centerOn(
+      zoomAnchorCenter(beforeX, point.x, camera.width, next),
+      zoomAnchorCenter(beforeY, point.y, camera.height, next),
+    );
     this.clampCamera();
     this.cameraMode = 'manual';
     this.announceCamera();
@@ -131,8 +138,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
 
   getViewportCenter(): { x: number; y: number } {
     const camera = this.cameras.main;
-    const point = camera.getWorldPoint(camera.width / 2, camera.height / 2);
-    return { x: point.x, y: point.y };
+    return { x: camera.scrollX + camera.width / 2, y: camera.scrollY + camera.height / 2 };
   }
 
   resizeViewport(width: number, height: number, focus = this.getViewportCenter()): void {
