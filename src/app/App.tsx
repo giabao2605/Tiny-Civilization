@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { GameCanvas } from '../game/GameCanvas';
 import { dayOf, hourOf, stateDigest } from '../sim/engine';
+import { foodAidRejection } from '../sim/governance';
 import { GRID_HEIGHT, GRID_WIDTH } from '../sim/grid';
 import { getSite, housing, totalCurrency, type Activity, type WorldEvent, type EventType } from '../sim/world';
 import { createLivingCoordinator } from './livingCoordinator';
@@ -29,6 +30,8 @@ const EVENT_LEVEL: Record<WorldEvent['type'], 'info' | 'warning' | 'critical'> =
   constructionShortage: 'warning', unemployed: 'warning', homeless: 'warning',
   encounter: 'info', friendship: 'info', dispute: 'warning', rivalry: 'warning',
   householdFormed: 'info', birth: 'info', socialAvoid: 'info',
+  leaderChosen: 'info', leaderVacant: 'warning', foodAid: 'info', foodAidDenied: 'warning',
+  shockStarted: 'warning', shockImpact: 'warning', shockEnded: 'info', illnessRecovered: 'info',
 };
 const EVENTS: Record<WorldEvent['type'], string> = {
   founded: 'Thành lập làng',
@@ -51,30 +54,48 @@ const EVENTS: Record<WorldEvent['type'], string> = {
   constructionShortage: 'Thiếu vật tư', unemployed: 'Đổi việc', homeless: 'Vô gia cư',
   encounter: 'Gặp gỡ', friendship: 'Tình bạn', dispute: 'Mâu thuẫn',
   rivalry: 'Đối địch', householdFormed: 'Lập hộ gia đình', birth: 'Em bé chào đời', socialAvoid: 'Tránh mặt',
+  leaderChosen: 'Chọn trưởng làng', leaderVacant: 'Trống chức', foodAid: 'Cứu trợ',
+  foodAidDenied: 'Từ chối cứu trợ', shockStarted: 'Biến cố bắt đầu', shockImpact: 'Tác động thực tế',
+  shockEnded: 'Biến cố kết thúc', illnessRecovered: 'Khỏi bệnh',
 };
 
-type TimelineCategory = 'all' | 'social' | 'economy' | 'survival';
+type TimelineCategory = 'all' | 'social' | 'economy' | 'survival' | 'governance';
 const SOCIAL_TYPES = new Set<EventType>(['encounter', 'friendship', 'dispute', 'rivalry', 'householdFormed', 'birth', 'socialAvoid']);
 const ECONOMY_TYPES = new Set<EventType>(['sold', 'bought', 'bankrupt', 'marketEmpty', 'marketInsolvent',
   'constructionStarted', 'constructionDone', 'constructionShortage', 'unemployed', 'homeless']);
+const GOVERNANCE_TYPES = new Set<EventType>(['leaderChosen', 'leaderVacant', 'foodAid', 'foodAidDenied',
+  'shockStarted', 'shockImpact', 'shockEnded', 'illnessRecovered']);
 function categoryOf(type: EventType): Exclude<TimelineCategory, 'all'> {
-  return SOCIAL_TYPES.has(type) ? 'social' : ECONOMY_TYPES.has(type) ? 'economy' : 'survival';
+  return SOCIAL_TYPES.has(type) ? 'social' : ECONOMY_TYPES.has(type) ? 'economy' :
+    GOVERNANCE_TYPES.has(type) ? 'governance' : 'survival';
 }
 
 export function App() {
-  const coordinator = useMemo(() => createLivingCoordinator(12345), []);
+  const coordinator = useMemo(() => {
+    const fixture = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('fixture') : null;
+    return createLivingCoordinator(12345, 20, fixture === 'governance-food-shortage' ||
+      fixture === 'governance-empty-reserve' ? fixture : undefined);
+  }, []);
   const snapshot = useSyncExternalStore(coordinator.subscribe, coordinator.getSnapshot);
   const [canvasVersion, setCanvasVersion] = useState(0);
   const [timelineCategory, setTimelineCategory] = useState<TimelineCategory>('all');
+  const [inspectedEventId, setInspectedEventId] = useState<number | null>(null);
   const [seedInput, setSeedInput] = useState('12345');
   const [populationInput, setPopulationInput] = useState<20 | 50 | 100>(20);
   const { world, selectedCitizenId, paused, speed } = snapshot;
+  const governance = world.governance;
+  const leader = world.citizens.find(c => c.id === governance.leaderId);
+  const aidReason = foodAidRejection({ ...world, tick: world.tick + 1 }, governance.leaderId ?? -1, world.tick + 1);
+  const sick = world.citizens.filter(c => c.alive && c.illnessUntil > world.tick).length;
   const citizen = world.citizens.find((item) => item.id === selectedCitizenId);
   const selectedHousehold = world.households.find((house) => house.id === citizen?.householdId);
   const ties = citizen ? Object.entries(citizen.relations)
     .map(([id, tie]) => ({ other: world.citizens.find((c) => c.id === Number(id)), tie }))
     .filter((x) => x.other && x.other.alive).sort((a, b) => Math.abs(b.tie.affinity) - Math.abs(a.tie.affinity) ||
       a.other!.id - b.other!.id).slice(0, 8) : [];
+  const inspectedEvent = world.events.find(event => event.id === inspectedEventId);
+  const inspectedNode = inspectedEvent?.nodeId === undefined ? undefined :
+    world.resourceNodes.find(node => node.id === inspectedEvent.nodeId);
   const visibleEvents = world.events.filter((event) => timelineCategory === 'all' ||
     categoryOf(event.type) === timelineCategory).slice(-10).reverse();
   const day = dayOf(world.tick);
@@ -97,7 +118,7 @@ export function App() {
 
   const setSeed = () => {
     const value = Number(seedInput);
-    if (Number.isSafeInteger(value)) coordinator.dispatch({ type: 'reset-seed', seed: value, population: populationInput });
+    if (Number.isSafeInteger(value)) { setInspectedEventId(null); coordinator.dispatch({ type: 'reset-seed', seed: value, population: populationInput }); }
   };
 
   return (
@@ -110,7 +131,7 @@ export function App() {
             <h1>Tiny Civilization<span className="title-dot">.</span></h1>
           </div>
         </div>
-        <span className="version-tag">PHASE 04 <span aria-hidden="true">●</span> SOCIAL</span>
+        <span className="version-tag">PHASE 05 <span aria-hidden="true">●</span> GOVERNANCE</span>
       </header>
 
       <main>
@@ -118,7 +139,7 @@ export function App() {
           <div>
             <p className="section-kicker">LIFE BEGINS IN THE VALLEY</p>
             <h2>Một ngôi làng nhỏ.<br /><em>{world.citizens.length} cuộc đời.</em></h2>
-            <p className="intro-copy">Cư dân tự kiếm sống, xây nhà, hình thành tình bạn hoặc mâu thuẫn từ những cuộc gặp thật. Gia đình và trẻ em cũng phụ thuộc vào thức ăn hữu hạn.</p>
+            <p className="intro-copy">Cư dân tự kiếm sống, kết bạn và xây dựng gia đình; trưởng làng đưa ra quyết định hữu hạn khi mất mùa hay bệnh tật đe dọa.</p>
           </div>
           <div className="phase-note">
             <span className="note-pulse" aria-hidden="true" />
@@ -212,6 +233,39 @@ export function App() {
               <p className="debug-line" data-testid="world-tick">Tick {world.tick} · Seed {world.seed}{import.meta.env.DEV ? ' · #' + stateDigest(world) : ''}</p>
             </section>
 
+            <section className="side-card" data-testid="governance-panel" aria-label="Village Governance">
+              <p className="section-kicker">VILLAGE GOVERNANCE · QUẢN TRỊ LÀNG</p>
+              <h3>Trưởng làng & khủng hoảng</h3>
+              <dl className="info-list">
+                <dt>Trưởng làng</dt><dd data-testid="governance-leader">{leader ? <button type="button" className="text-button" onClick={() => coordinator.dispatch({ type: 'select-citizen', id: leader.id })}>{leader.name} · NPC #{leader.id}</button> : 'Khuyết chức'}</dd>
+                <dt>Nhiệm kỳ</dt><dd>Tick {governance.termStartedTick} đến {governance.nextElectionTick}</dd>
+                <dt>Điểm ủng hộ</dt><dd>{governance.leaderSupport} · Uy tín {governance.reputation}/100</dd>
+                <dt>Vì sao được chọn?</dt><dd>{governance.selectionReason}</dd>
+                <dt>Lượt chọn lãnh đạo</dt><dd data-testid="governance-elections">{governance.elections}</dd>
+                <dt>Tình trạng cứu trợ</dt><dd data-testid="food-aid-status">{governance.policy.activeUntil > world.tick
+                  ? 'Đang áp dụng đến tick ' + governance.policy.activeUntil
+                  : governance.policy.cooldownUntil > world.tick ? 'Cooldown đến tick ' + governance.policy.cooldownUntil
+                  : 'Sẵn sàng khi đủ điều kiện'}</dd>
+                <dt>Food đã chuyển</dt><dd data-testid="food-aid-transferred">{governance.policy.transferred} đơn vị từ kho chợ · {governance.policy.successes} lần thành công</dd>
+                <dt>Giới hạn</dt><dd>Tối đa 6 người/lượt · 1 food/người · hiệu lực 24 giờ · cooldown 72 giờ</dd>
+                <dt>Người đang bị bệnh</dt><dd data-testid="illness-count">{sick}</dd>
+                <dt>Mất mùa / bệnh đã xảy ra</dt><dd>{governance.harvestCount} / {governance.illnessCount}</dd>
+              </dl>
+              <button type="button" className="ghost-button" data-testid="activate-food-aid"
+                onClick={() => coordinator.dispatch({ type: 'trigger-food-aid' })}>Kích hoạt cứu trợ food</button>
+              <p className="dashboard-note" data-testid="aid-feedback">{snapshot.lastPolicyMessage || (aidReason
+                ? 'Điều kiện hiện tại: ' + aidReason : 'Có thể chuyển food từ kho chợ tới cư dân thiếu ăn trong tick tới.')}</p>
+              <p className="dashboard-note" data-testid="aid-eligibility">{aidReason ? 'Chưa thể cứu trợ: ' + aidReason : 'Cứu trợ khả dụng vào tick kế tiếp nếu không có lệnh khác.'}</p>
+              <h4>Biến cố đang diễn ra</h4>
+              <ul className="recent-list" data-testid="active-shocks">{governance.shocks.length ? governance.shocks.map(shock =>
+                <li key={shock.id}>#{shock.id} · {shock.kind === 'poorHarvest' ? 'Mất mùa' : 'Bệnh cục bộ'} ·
+                  mức {shock.severity} · còn {Math.max(0, shock.endTick - world.tick)} giờ ·
+                  {shock.kind === 'poorHarvest' ? ' Giảm sản lượng: ' + shock.lostProduction + ' food tiềm năng'
+                    : ' ' + shock.affectedIds.length + ' người, HP giảm ' + shock.impactedHealth}
+                </li>) : <li>Chưa có biến cố đang diễn ra.</li>}</ul>
+              <p className="dashboard-note">Kho cứu trợ dùng trực tiếp kho food thuộc chợ; không có quỹ hoặc kho nhà nước thứ hai. Sản lượng mất và HP giảm là số đo từ engine.</p>
+            </section>
+
             <section className="side-card inspector">
               <p className="section-kicker">CITIZEN INSPECTOR</p>
               <h3>Thông tin cư dân</h3>
@@ -224,6 +278,8 @@ export function App() {
                     </div>
                     <dl className="info-list">
                       <dt>Trạng thái</dt><dd data-testid="citizen-life">{citizen.alive ? 'Còn sống' : 'Đã chết'}</dd>
+                      <dt>Bệnh cục bộ</dt><dd data-testid="citizen-illness">{citizen.alive && citizen.illnessUntil > world.tick ? 'Đang bệnh mức ' + citizen.illnessSeverity + ' đến tick ' + citizen.illnessUntil + '; năng suất giảm' : 'Không mắc bệnh'}</dd>
+                      <dt>Cứu trợ gần nhất</dt><dd>{governance.policy.lastRecipients.includes(citizen.id) ? 'Đã được nhận 1 food từ kho chợ trong đợt #' + governance.policy.lastId : 'Chưa nhận trong đợt gần nhất'}</dd>
                       <dt>Nhân khẩu</dt><dd>{citizen.age < 18 ? 'Trẻ phụ thuộc' : citizen.age >= 68 ? 'Nghỉ lao động' : 'Trưởng thành'}</dd>
                       <dt>Nghề</dt><dd data-testid="citizen-job">{jobNames[citizen.job]}</dd>
                       <dt>Đang làm</dt><dd>{ACTIVITY[citizen.activity]}</dd>
@@ -312,14 +368,31 @@ export function App() {
               <h3>10 sự kiện gần nhất</h3>
               <label htmlFor="timeline-filter">Lọc dòng sự kiện</label>
               <select id="timeline-filter" data-testid="timeline-filter" value={timelineCategory} onChange={(e) => setTimelineCategory(e.target.value as TimelineCategory)}>
-                <option value="all">Tất cả</option><option value="social">Social</option><option value="economy">Economy</option><option value="survival">Survival</option>
+                <option value="all">Tất cả</option><option value="social">Social</option><option value="economy">Economy</option><option value="survival">Survival</option><option value="governance">Governance</option>
               </select>
+              {inspectedEvent && <div className="social-panel" data-testid="crisis-event-details">
+                <p className="recent-title">Hồ sơ sự kiện #{inspectedEvent.id} · Tick {inspectedEvent.tick}</p>
+                <p>{inspectedEvent.reason}</p>
+                <p>Nguyên nhân: {inspectedEvent.cause ?? 'Diễn biến trực tiếp trong mô phỏng.'}
+                  {inspectedEvent.shockId !== undefined && ' · Shock #' + inspectedEvent.shockId}
+                  {inspectedEvent.policyId !== undefined && ' · Policy #' + inspectedEvent.policyId}</p>
+                {inspectedNode && <p>Vị trí ruộng/nguồn #{inspectedNode.id}: ({inspectedNode.tile.x}, {inspectedNode.tile.y})</p>}
+                {inspectedEvent.before !== undefined && inspectedEvent.after !== undefined &&
+                  <p>Trước / sau: {inspectedEvent.before} → {inspectedEvent.after}</p>}
+                {inspectedEvent.citizenId !== null && <button type="button" className="text-button" onClick={() =>
+                  coordinator.dispatch({ type: 'select-citizen', id: inspectedEvent.citizenId })}>Xem NPC #{inspectedEvent.citizenId}</button>}
+              </div>}
               <ol className="event-feed" data-testid="event-feed">
                 {visibleEvents.map((event) => (
                   <li key={event.id} className={'event-' + EVENT_LEVEL[event.type]}>
                     <span>Ngày {dayOf(event.tick)} · {String(hourOf(event.tick)).padStart(2, '0')}:00 · {EVENTS[event.type]}</span>
                     <p>{event.reason}</p>
+                    {GOVERNANCE_TYPES.has(event.type) && <button type="button" className="text-button" onClick={() => setInspectedEventId(event.id)}>Xem nguyên nhân #{event.id}</button>}
                     {event.citizenId !== null && <button type="button" className="text-button" onClick={() => coordinator.dispatch({ type: 'select-citizen', id: event.citizenId })}>NPC #{event.citizenId}</button>}
+                    {event.nodeId !== undefined && <span> Ruộng/nguồn #{event.nodeId}</span>}
+                    {event.shockId !== undefined && <span> · Shock #{event.shockId}</span>}
+                    {event.policyId !== undefined && <span> · Policy #{event.policyId}</span>}
+                    {event.before !== undefined && event.after !== undefined && <span> · {event.before} → {event.after}</span>}
                     {event.targetCitizenId !== undefined && <button type="button" className="text-button" onClick={() => coordinator.dispatch({ type: 'select-citizen', id: event.targetCitizenId! })}>NPC #{event.targetCitizenId}</button>}
                   </li>
                 ))}
@@ -329,7 +402,7 @@ export function App() {
         </div>
       </main>
 
-      <footer className="site-footer"><span>TINY CIVILIZATION / PHASE 04</span><span>20/50/100 NPC · Quan hệ · Hộ gia đình · Kinh tế thật</span></footer>
+      <footer className="site-footer"><span>TINY CIVILIZATION / PHASE 05</span><span>20/50/100 NPC · Lãnh đạo · Mất mùa · Bệnh cục bộ</span></footer>
     </div>
   );
 }

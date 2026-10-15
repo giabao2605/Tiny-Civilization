@@ -2,7 +2,7 @@
 
 **Tiny Civilization** là game web pixel-art mô phỏng một ngôi làng tự vận hành. Người chơi là người quan sát: dân làng có nghề, nhu cầu, tiền, quan hệ và chịu hậu quả từ quyết định của chính họ. Câu chuyện xuất hiện từ quy luật mô phỏng, không phải các dòng sự kiện bịa sẵn.
 
-**Trạng thái: Phase 00–04 DONE, đã merge vào `main`. Phase 04 [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5) merge tại commit `1a5933b7`, CI trước merge PASS. Phase 05 — Governance là bước tiếp theo, chưa triển khai.** Xem `docs/PROGRESS.md` để biết bằng chứng thực tế.
+**Trạng thái: Phase 00–04 DONE, đã merge vào `main`. Phase 05 đã hoàn thành trên feature branch tại [PR #6](https://github.com/giabao2605/Tiny-Civilization/pull/6), chưa merge. Phase 04 [PR #5](https://github.com/giabao2605/Tiny-Civilization/pull/5) merge tại commit `1a5933b7`, CI trước merge PASS. Phase 05 — Governance đã PASS CI, đang chờ merge theo yêu cầu.** Xem `docs/PROGRESS.md` để biết bằng chứng thực tế.
 
 ## Đọc tài liệu theo thứ tự
 
@@ -94,3 +94,11 @@ Cấu hình lúc này không chứa backend, database, đăng nhập, lưu game 
 - Sinh con có thời gian chờ, cooldown, yêu cầu nhà/food/tuổi/sức khỏe và soft cap 100 / hard cap 120. Người chết được dọn liên kết household/partner; tiền/hàng vẫn thuộc túi người chết để bảo toàn nguồn lực.
 - Inspector có liên kết quan hệ, hộ, partner, memorial; timeline lọc Social/Economy/Survival. [CI 38520465893](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38520465893) xác nhận typecheck, lint, unit/stress/build, Chromium E2E 5/5 PASS; Node benchmark 20/100 NPC cùng hệ thống bảo toàn tiền/food/wood. Xem docs/PROGRESS.md để biết benchmark, seed và các giới hạn. Đã merge vào `main` qua PR #5 ngày 2026-10-14; Phase 05 chưa khởi động.
 
+
+## Phase 05 Governance (DONE on branch, PR #6 unmerged)
+
+- Branch `feat/phase-05-governance` thêm `WorldState` schema v5; chọn trưởng làng bằng điểm ủng hộ từ quan hệ xã hội, sức khỏe, tài sản/việc làm và tie-break ID ổn định. Nhiệm kỳ 30 ngày game, xử lý chết/khuyết chức.
+- Chính sách **cứu trợ food khẩn cấp** chuyển tối đa 6 food thực có từ kho thuộc chợ sang túi của tối đa 6 người thiếu ăn; không cấp thêm tiền/hàng. Có xác thực trưởng làng, thời điểm lệnh, thời gian hiệu lực/cooldown và lý do từ chối.
+- Hai biến cố theo cùng tick: **mất mùa** giảm yield/regen trên tối đa ba ruộng thật; **bệnh cục bộ** giảm giờ lao động/HP của tối đa sáu người thật, hết bệnh không tự đầy máu.
+- UI **Village Governance** hiển thị trưởng làng có thể nhấn để inspect, luật cứu trợ, số lượng thực đã chuyển, biến cố hiện hành, số đo sản xuất/HP, các bản ghi timeline có nguyên nhân. Phần mô phỏng không có clock riêng, AI API hay kho ngân sách thứ hai.
+- Kiểm chứng: `npm run typecheck && npm run lint && npm run test && npm run build && npm run test:e2e`. Bằng chứng chính thức: [CI PASS 74/74 unit, 8/8 Chromium E2E](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38533542563), [ảnh kiểm thử](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38533542563/artifacts/11879336547) và [PROGRESS](docs/PROGRESS.md).

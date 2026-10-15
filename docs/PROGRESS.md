@@ -157,3 +157,39 @@ All reported stocks satisfy conservation: `food = 30 initial + produced - consum
 
 ### Next exact action
 Phase 00 was merged and verified. Next task may implement Phase 01 only after reading the master plan, simulation contract and `docs/phases/PHASE_01_LIVING_WORLD.md`; do not implement Phase 02.
+
+## Phase 05 — Governance, Shocks & Collective Consequences (work in progress, 2026-10-14)
+
+- Base `main` HEAD `b25007a7f19921b9431a98253abdf994eddd0885`; post-Phase04 main Actions run [38525078595](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38525078595) succeeded. Branch `feat/phase-05-governance`; draft [PR #6](https://github.com/giabao2605/Tiny-Civilization/pull/6). **Not merged.**
+- New source: `src/sim/governance.ts` and `src/sim/governance.test.ts`; updated `world.ts`, `balance.ts`, `engine.ts`, `social.ts`, coordinator, UI, E2E and CI evidence artifact name.
+- Mechanics present in source: deterministic term election / empty vacancy / leader replacement, sparse social support, governed finite food-in-kind transfers, crop reduction of real harvest and regeneration, worker illness affecting health and work, bounded event IDs and visible UI. `WorldState` schema v5; market stock and money remain single owners.
+- Initial CI [38527129221](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38527129221) failed **TypeScript**: `Array.findLast` unavailable in the configured target. Resolved by using reverse-copy + find; later CI is required to prove this fix.
+- Regression risks under active review: adversarial competition for final food, sickness recovery while starving, deterministic state digest, leader death across a social household, fixed-seed replay, long-run conservation and real Chromium E2E. Do not mark Phase 05 DONE before the latest green workflow with benchmark output and screenshots.
+
+
+### Phase 05 measured evidence and self-review (on PR #6; final head verification pending)
+
+- **Verified** [CI 38528856617](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38528856617): clean npm, production audit, typecheck, lint, **74/74 Vitest cases**, Vite production build and **6/6 Chromium E2E** PASS. Browser screenshot/trace artifact: [phase-05-browser-evidence](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38528856617/artifacts/11877097396). This is an intermediate passing commit `dd6bffa2`; subsequent commits require their own CI PASS.
+- Test fixtures explicitly verify ranked leader/social support, vacancy, leader death during crisis, same-tick competing aid requests, stock zero, cooldown, invalid/stale policy, actual harvest yield/regen loss then recovery, illness HP/work-hour loss then recovery, 75-day cooldown cycles, exact amount of guardian-owned food transferred and consumed by dependent children, and a seed-612 crisis sequence with policy activation and termination. Engine still executes existing Phase00–04 regression suites.
+- **Performance** from above Actions run (Node 22 Ubuntu, 720 ticks each; units milliseconds/tick; independent of UI FPS):
+
+  | Residents | Seed | Alive | Harvest / illness incidents | Ill / recovered | Average ms/tick | p95 ms/tick |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | 20 | 543 | 20 | 1 / 1 | 3 / 3 | 0.482 | 1.934 |
+  | 20 | 613 | 20 | 1 / 1 | 3 / 3 | 0.528 | 2.012 |
+  | 50 | 543 | 50 | 1 / 1 | 6 / 6 | 1.054 | 2.922 |
+  | 50 | 613 | 50 | 1 / 1 | 6 / 6 | 1.390 | 4.853 |
+  | 100 | 543 | 100 | 1 / 1 | 6 / 6 | 2.408 | 8.981 |
+  | 100 | 613 | 100 | 1 / 1 | 6 / 6 | 2.350 | 8.658 |
+
+- Currency remains conserved at 2,440/6,100/12,200 for 20/50/100 initial residents across these seeds. Food/wood sources/sinks reconcile exactly against market + all citizen inventories and construction wood consumption. No 720-tick baseline deaths; that is an observed scenario, not proof all shocks are harmless. Phase 04 long-run tests still simulate 20 NPC × 180 game-days and 100 NPC × 30 days.
+- **Fixed faults discovered by actual tests:** (1) unsupported ES `findLast` in TypeScript target, (2) E2E incorrectly escaped leader-ID regex, (3) hungry child aid stranded because children do not eat from own bags, (4) after targeting the adult guardian correctly, they resold the donated food before feeding the child. Correct fix is to prioritize the real household meal over market resale, not weaken the assertion. Current fixture confirms the child actually eats and food conservation holds.
+- **Remaining limitation:** a special shortage fixture is gated to Vite development to allow Playwright to exercise successful UI aid; this does not expose production god-mode controls. Browser screenshot evidence does not measure 60 FPS or prove behavior on physical mobile hardware. The 30–180-day simulation tests do not prove indefinite economic stability. Avoid release/save-load work until Phase 06.
+
+### Phase 05 final verification on feature branch (2026-10-14)
+
+- **Acceptance:** PASS on head `3c68cea0d9355fcaa36bdb574293ea368afd2180`, [GitHub Actions #38533542563](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38533542563). Verified `npm ci`, production-only high audit, typecheck, lint, **74/74 Vitest** across 11 suites, Vite production build and **8/8 Playwright Chromium E2E**. Browser artifact: [phase-05-browser-evidence #11879336547](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38533542563/artifacts/11879336547).
+- Last E2E addition verifies **zero market reserve** through real mobile UI, with no relief and stable overall currency; companion mobile test verifies successful in-kind release with real stock decrease and cooldown. Fixtures are gated to Vite development at world construction, never to production intervention controls.
+- Node 22 / Ubuntu benchmark on final verified head, population 100 × 720 ticks: seed 543 = 100 living, 1 harvest + 1 illness, 6 sick/6 recovered, 12,200 conserved currency, mean 1.515 ms/tick and p95 5.383 ms/tick; seed 613 = 100 living, 1 harvest + 1 illness, 6 sick/6 recovered, 12,200 conserved currency, mean 1.424 ms/tick and p95 5.102 ms/tick. These numbers describe simulated CPU cost, not renderer FPS.
+- Real defects addressed through CI/self-review: unsupported ES array method, E2E regex, dependent child food stranded, guardian reselling child's ration. Additional adversarial governance tests cover leader death, zero candidate, same-tick double aid and depleted reserve; scheduled shock recovery; physically reduced field output and sick-worker productivity; long-seed conservation.
+- Release boundary: **Phase 05 DONE on branch, [PR #6](https://github.com/giabao2605/Tiny-Civilization/pull/6) remains unmerged** until explicitly requested. Phase 06 persistence and final release remain out of scope. CI still emits third-party Node deprecation and Vite bundle-size warnings; no physical Android hardware FPS certification is claimed.

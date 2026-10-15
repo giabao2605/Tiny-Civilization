@@ -13,7 +13,8 @@ export type EventType = 'founded' | 'departure' | 'work' | 'gather' | 'home' | '
   | 'danger' | 'death' | 'sold' | 'bought' | 'bankrupt' | 'marketEmpty'
   | 'marketInsolvent' | 'constructionStarted' | 'constructionDone' | 'constructionShortage'
   | 'unemployed' | 'homeless' | 'encounter' | 'friendship' | 'dispute' | 'rivalry'
-  | 'householdFormed' | 'birth' | 'socialAvoid';
+  | 'householdFormed' | 'birth' | 'socialAvoid' | 'leaderChosen' | 'leaderVacant'
+  | 'foodAid' | 'foodAidDenied' | 'shockStarted' | 'shockImpact' | 'shockEnded' | 'illnessRecovered';
 export type Site = { id: number; name: string; kind: SiteKind; tile: TilePosition; capacity?: number };
 export type ActivityEntry = { tick: number; activity: Activity; reason: string };
 export type Job = 'farmer' | 'woodcutter' | 'builder' | 'other';
@@ -51,6 +52,7 @@ export type Citizen = {
   relations: Record<number, Relationship>; householdId: number | null; partnerId: number | null;
   partneredTick: number | null;
   hunger: number; energy: number; health: number; starvationHours: number;
+  illnessUntil: number; illnessSeverity: number;
   needMode: 'food' | 'rest' | null; workNodeId: number | null; workHours: number; actionDuration: number;
   tile: TilePosition; homeId: number | null; workId: number;
   goal: Goal; destination: TilePosition; reason: string; activity: Activity;
@@ -59,15 +61,29 @@ export type Citizen = {
   wallet: number; inventory: Goods; lastTradeTick: number; jobChangedTick: number;
 };
 export type WorldEvent = { id: number; tick: number; type: EventType; citizenId: number | null; reason: string;
-  targetCitizenId?: number; cause?: string; relationBefore?: number; relationAfter?: number };
+  targetCitizenId?: number; cause?: string; relationBefore?: number; relationAfter?: number;
+  shockId?: number; policyId?: number; nodeId?: number; before?: number; after?: number; success?: boolean };
+export type VillageShock = {
+  id: number; kind: 'poorHarvest' | 'localIllness'; startTick: number; endTick: number;
+  severity: number; affectedIds: number[]; lostProduction: number; impactedHealth: number;
+};
+export type GovernanceState = {
+  leaderId: number | null; termStartedTick: number; nextElectionTick: number;
+  leaderSupport: number; selectionReason: string; reputation: number;
+  elections: number; leadershipChanges: number; history: { tick: number; leaderId: number | null; reason: string }[];
+  policy: { activeUntil: number; cooldownUntil: number; lastTick: number; lastId: number | null;
+    successes: number; failures: number; transferred: number; lastRecipients: number[]; };
+  shocks: VillageShock[]; lastHarvestEnd: number; lastIllnessEnd: number;
+  harvestCount: number; illnessCount: number; illnessAffected: number; illnessRecovered: number;
+};
 export type WorldState = {
-  schemaVersion: 4; seed: number; rngState: number; tick: number;
+  schemaVersion: 5; seed: number; rngState: number; tick: number;
   nextEntityId: number; nextEventId: number; tiles: Terrain[]; sites: Site[];
   citizens: Citizen[]; resourceNodes: ResourceNode[];
   /** Market-owned physical stock, NOT an additional town copy. */
   inventory: VillageStock; market: Market; constructions: Construction[];
   stats: VillageStats; events: WorldEvent[];
-  households: Household[]; memorials: Memorial[]; social: SocialStats;
+  households: Household[]; memorials: Memorial[]; social: SocialStats; governance: GovernanceState;
 };
 
 const FORENAMES = ['An', 'Bình', 'Chi', 'Dũng', 'Giang', 'Hà', 'Hải', 'Hương', 'Khánh', 'Lan', 'Linh', 'Mai', 'Minh', 'Nam', 'Ngọc', 'Phúc', 'Quân', 'Thảo', 'Trang', 'Vân'];
@@ -154,7 +170,7 @@ export function createWorld(seed = 12345, population: 20 | 50 | 100 = 20): World
       id: nextEntityId++, name, age: 18 + draw(45), ageHours: 0, appearance: draw(8), alive: true, job,
       relations: {}, householdId: null, partnerId: null, partneredTick: null,
       hunger: 73 + draw(18), energy: 68 + draw(20), health: 90 + draw(11),
-      starvationHours: 0, needMode: null, workNodeId: null, workHours: 0, actionDuration: 0,
+      starvationHours: 0, illnessUntil: 0, illnessSeverity: 0, needMode: null, workNodeId: null, workHours: 0, actionDuration: 0,
       tile: { ...spawn }, homeId: home?.id ?? null, workId: work.id,
       goal: 'home', destination: { ...spawn }, reason: 'Đang nghỉ trước giờ làm việc.', activity: 'rest',
       route: [], lastMove: [{ ...spawn }], blockedGoal: null, retryAfterTick: 0,
@@ -193,7 +209,7 @@ export function createWorld(seed = 12345, population: 20 | 50 | 100 = 20): World
     households.push(household);
   }
   return {
-    schemaVersion: 4, seed, rngState, tick: 0, nextEntityId, nextEventId: 2, tiles, sites,
+    schemaVersion: 5, seed, rngState, tick: 0, nextEntityId, nextEventId: 2, tiles, sites,
     citizens, resourceNodes, inventory: { food, wood },
     market: { siteId: marketId, cash, initialSupply: cash + population * BALANCE.initialWallet,
       prices: { foodBuy: BALANCE.foodBuyPrice, foodSell: BALANCE.foodSellPrice,
@@ -202,6 +218,13 @@ export function createWorld(seed = 12345, population: 20 | 50 | 100 = 20): World
       boughtFromCitizens: 0, soldToCitizens: 0 },
     constructions: [], households, memorials: [],
     social: { encounters: 0, disputes: 0, partnerships: 0, births: 0 },
+    governance: { leaderId: null, termStartedTick: 0, nextElectionTick: 1,
+      leaderSupport: 0, selectionReason: 'Chưa lựa chọn trưởng làng.', reputation: 50,
+      elections: 0, leadershipChanges: 0, history: [],
+      policy: { activeUntil: 0, cooldownUntil: 0, lastTick: -1, lastId: null,
+        successes: 0, failures: 0, transferred: 0, lastRecipients: [] },
+      shocks: [], lastHarvestEnd: -10000, lastIllnessEnd: -10000,
+      harvestCount: 0, illnessCount: 0, illnessAffected: 0, illnessRecovered: 0 },
     stats: { day: 1, foodProducedToday: 0, foodConsumedToday: 0,
       foodProducedYesterday: 0, foodConsumedYesterday: 0, totalFoodProduced: 0, totalFoodConsumed: 0,
       woodProducedToday: 0, totalWoodProduced: 0, deaths: 0, failedActions: 0 },

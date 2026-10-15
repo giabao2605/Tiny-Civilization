@@ -181,3 +181,80 @@ test('Phase 04: social relationships, household navigation and timeline filters 
   expect(widths.page).toBeLessThanOrEqual(widths.viewport + 1);
   expect(failures).toEqual([]);
 });
+
+
+test('governance leader, bounded policy rejection, visible crop shock and crisis timeline', async ({ page }, testInfo) => {
+  const failures = collectErrors(page);
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto('/');
+  const panel = page.getByTestId('governance-panel');
+  await expect(panel).toBeVisible();
+  await expect(page.getByTestId('governance-leader').getByRole('button')).toBeVisible();
+  const button = page.getByTestId('governance-leader').getByRole('button');
+  const label = await button.innerText();
+  const id = label.match(/#(\d+)/)?.[1];
+  expect(id).toBeTruthy();
+  await button.click();
+  await expect(page.getByTestId('selected-citizen')).toContainText('ID #' + id);
+  await expect(page.getByTestId('citizen-illness')).toBeVisible();
+  await page.getByTestId('activate-food-aid').click();
+  await expect(page.getByTestId('aid-feedback')).toContainText(/chưa có|Chưa có|khủng hoảng|cooldown|không có/i);
+  await page.getByRole('button', { name: '20×' }).click();
+  await expect.poll(async () => {
+    const label = await page.getByTestId('world-tick').innerText();
+    return Number(label.match(/Tick (\d+)/)?.[1] ?? 0);
+  }, { timeout: 15000 }).toBeGreaterThanOrEqual(100);
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  await expect(page.getByTestId('active-shocks')).toContainText('Mất mùa');
+  await page.getByTestId('timeline-filter').selectOption('governance');
+  await expect(page.getByTestId('event-feed')).toContainText(/Biến cố|Tác động|trưởng làng/i);
+  await page.getByTestId('event-feed').getByRole('button', { name: /Xem nguyên nhân/ }).first().click();
+  await expect(page.getByTestId('crisis-event-details')).toContainText('Nguyên nhân');
+  await page.screenshot({ path: testInfo.outputPath('phase-05-governance-desktop.png'), fullPage: true });
+  expect(failures).toEqual([]);
+});
+
+test('valid UI emergency aid transfers owned food and enforces cooldown in dev crisis fixture', async ({ page }, testInfo) => {
+  const failures = collectErrors(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/?fixture=governance-food-shortage');
+  await expect(page.getByTestId('governance-leader').getByRole('button')).toBeVisible({ timeout: 5000 });
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  const before = Number(await page.getByTestId('food-stock').innerText());
+  await page.getByTestId('activate-food-aid').click();
+  await expect(page.getByTestId('aid-feedback')).toContainText('Đã xếp lệnh');
+  await page.getByRole('button', { name: 'Tiếp tục' }).click();
+  await expect.poll(async () => {
+    const value = await page.getByTestId('food-aid-transferred').innerText();
+    return Number(value.match(/^(\d+)/)?.[1] ?? 0);
+  }, { timeout: 8000 }).toBeGreaterThan(0);
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  const transferred = Number((await page.getByTestId('food-aid-transferred').innerText()).match(/^(\d+)/)?.[1]);
+  const after = Number(await page.getByTestId('food-stock').innerText());
+  expect(transferred).toBeGreaterThan(0);
+  expect(after).toBeLessThanOrEqual(before - transferred);
+  await expect(page.getByTestId('food-aid-status')).toContainText(/áp dụng|Cooldown/);
+  await page.getByTestId('activate-food-aid').click();
+  await expect(page.getByTestId('aid-feedback')).toContainText(/Đang|cooldown|Đã dùng/i);
+  await page.getByTestId('timeline-filter').selectOption('governance');
+  await expect(page.getByTestId('event-feed')).toContainText('Cứu trợ');
+  await page.screenshot({ path: testInfo.outputPath('phase-05-valid-food-aid-mobile.png'), fullPage: true });
+  expect(failures).toEqual([]);
+});
+
+test('zero market reserve rejects policy via the real UI without minting food or coins', async ({ page }, testInfo) => {
+  const errors = collectErrors(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/?fixture=governance-empty-reserve');
+  await expect(page.getByTestId('governance-leader').getByRole('button')).toBeVisible({ timeout: 5000 });
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  await expect(page.getByTestId('food-stock')).toHaveText('0');
+  const coinsBefore = await page.getByTestId('total-currency').innerText();
+  await page.getByTestId('activate-food-aid').click();
+  await expect(page.getByTestId('aid-feedback')).toContainText('Kho chợ không còn food');
+  await expect(page.getByTestId('food-aid-transferred')).toContainText('0 đơn vị');
+  await expect(page.getByTestId('food-stock')).toHaveText('0');
+  await expect(page.getByTestId('total-currency')).toHaveText(coinsBefore);
+  await page.screenshot({ path: testInfo.outputPath('phase-05-zero-reserve-mobile.png'), fullPage: true });
+  expect(errors).toEqual([]);
+});
