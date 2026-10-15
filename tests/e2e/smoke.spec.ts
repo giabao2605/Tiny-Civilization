@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
 
 function collectErrors(page: Page) {
@@ -257,4 +258,98 @@ test('zero market reserve rejects policy via the real UI without minting food or
   await expect(page.getByTestId('total-currency')).toHaveText(coinsBefore);
   await page.screenshot({ path: testInfo.outputPath('phase-05-zero-reserve-mobile.png'), fullPage: true });
   expect(errors).toEqual([]);
+});
+
+
+test('Phase 06: save/refresh/load, JSON roundtrip, hostile imports and mobile layout', async ({ page }, testInfo) => {
+  const errors = collectErrors(page);
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto('/');
+  await expect(page.getByTestId('onboarding')).toBeVisible();
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  const savedTick = await page.getByTestId('world-tick').innerText();
+  const savedFood = await page.getByTestId('food-stock').innerText();
+  await page.getByTestId('save-world').click();
+  await expect(page.getByTestId('save-status')).toContainText('Đã lưu tick');
+  expect(await page.evaluate(() => localStorage.getItem('tiny-civilization:world:v1'))).not.toBeNull();
+
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByTestId('export-world').click(),
+  ]);
+  expect(download.suggestedFilename()).toContain('tiny-civilization-seed');
+  const bytes = await readFile(await download.path());
+
+  await page.getByRole('button', { name: '20×' }).click();
+  await page.getByRole('button', { name: 'Tiếp tục' }).click();
+  const previousTick = Number(savedTick.match(/Tick (\d+)/)?.[1] ?? 0);
+  await expect.poll(async () => Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\d+)/)?.[1] ?? 0),
+    { timeout: 15000 }).toBeGreaterThan(previousTick + 3);
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+
+  await page.reload();
+  await page.getByTestId('load-world').click();
+  await expect(page.getByTestId('world-tick')).toHaveText(savedTick);
+  await expect(page.getByTestId('food-stock')).toHaveText(savedFood);
+  await expect(page.getByTestId('play-status')).toHaveText('Tạm dừng');
+  await page.waitForTimeout(350);
+  await expect(page.getByTestId('world-tick')).toHaveText(savedTick);
+
+  // Imported JSON is independently validated and restores the same deterministic snapshot.
+  await page.getByRole('button', { name: 'Tiếp tục' }).click();
+  await expect.poll(async () => Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\d+)/)?.[1] ?? 0),
+    { timeout: 15000 }).toBeGreaterThan(previousTick + 2);
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  await page.getByTestId('import-world').setInputFiles({ name: 'backed-up.json',
+    mimeType: 'application/json', buffer: bytes });
+  await expect(page.getByTestId('save-status')).toContainText('Đã tải file JSON');
+  await expect(page.getByTestId('world-tick')).toHaveText(savedTick);
+
+  const bad = Buffer.from('{"saveFormat":1,"world":');
+  await page.getByTestId('import-world').setInputFiles({ name: 'truncated.json',
+    mimeType: 'application/json', buffer: bad });
+  await expect(page.getByTestId('save-status')).toContainText('Import thất bại');
+  await expect(page.getByTestId('world-tick')).toHaveText(savedTick);
+  const unsupported = JSON.parse(bytes.toString('utf8'));
+  unsupported.engineVersion = 'sim-v99-incompatible';
+  await page.getByTestId('import-world').setInputFiles({ name: 'unsupported.json',
+    mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(unsupported)) });
+  await expect(page.getByTestId('save-status')).toContainText('không tương thích');
+  await expect(page.getByTestId('world-tick')).toHaveText(savedTick);
+
+  // Quota failures must not damage the running world or silently claim a successful save.
+  await page.evaluate(() => {
+    Storage.prototype.setItem = () => { throw new DOMException('Quota exceeded', 'QuotaExceededError'); };
+  });
+  await page.getByTestId('save-world').click();
+  await expect(page.getByTestId('save-status')).toContainText('Lưu thất bại');
+  await expect(page.getByTestId('save-status')).toContainText('Xuất JSON');
+  await expect(page.getByTestId('world-tick')).toHaveText(savedTick);
+  await page.screenshot({ path: testInfo.outputPath('phase-06-save-desktop.png'), fullPage: true });
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByTestId('save-world')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath('phase-06-save-mobile.png'), fullPage: true });
+  expect(errors).toEqual([]);
+});
+
+test('Phase 06: hidden browser tab drops elapsed time without catch-up', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: '20×' }).click();
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  const start = Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\d+)/)?.[1] ?? 0);
+  await page.waitForTimeout(550);
+  const hidden = Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\d+)/)?.[1] ?? 0);
+  expect(hidden).toBe(start);
+  await page.evaluate(() => {
+    delete (document as Document & { visibilityState?: string }).visibilityState;
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await page.waitForTimeout(100);
+  const resumed = Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\d+)/)?.[1] ?? 0);
+  expect(resumed - hidden).toBeLessThanOrEqual(8);
 });
