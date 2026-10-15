@@ -23,6 +23,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private resourceMarkers = new Map<number, Phaser.GameObjects.Graphics>();
   private constructionMarkers = new Map<number, Phaser.GameObjects.Graphics>();
   private paintedSites = new Set<number>();
+  private siteCells = new Set<number>();
   private resourceStocks = new Map<number, number>();
   private wasPaused = false;
   private highlighter?: Phaser.GameObjects.Graphics;
@@ -64,6 +65,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.resourceStocks.clear();
       this.constructionMarkers.clear();
       this.paintedSites.clear();
+      this.siteCells.clear();
       this.sprites.clear();
       this.movementTweens.clear();
       this.highlighter = undefined;
@@ -201,7 +203,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
           this.movementTweens.get(citizen.id)?.stop();
           this.movementTweens.delete(citizen.id);
           sprite.setPosition(xPixel(citizen.tile.x), yPixel(citizen.tile.y));
-          sprite.setDepth(100 + sprite.y);
+          sprite.setDepth(this.citizenDepth(sprite.x, sprite.y));
           continue;
         }
         if (citizen.lastMove.length < 2) continue;
@@ -218,11 +220,11 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
             const a = path[start]!;
             const b = path[start + 1]!;
             sprite.setPosition(xPixel(a.x + (b.x - a.x) * fraction), yPixel(a.y + (b.y - a.y) * fraction));
-            sprite.setDepth(100 + sprite.y);
+            sprite.setDepth(this.citizenDepth(sprite.x, sprite.y));
           },
           onComplete: () => {
             sprite.setPosition(xPixel(citizen.tile.x), yPixel(citizen.tile.y));
-            sprite.setDepth(100 + sprite.y);
+            sprite.setDepth(this.citizenDepth(sprite.x, sprite.y));
             this.movementTweens.delete(citizen.id);
           },
         });
@@ -299,6 +301,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   }
 
   private paintSite(site: Site): void {
+    this.siteCells.add(site.tile.y * GRID_WIDTH + site.tile.x);
     const cx = xPixel(site.tile.x);
     const footY = (site.tile.y + 1) * TILE_PIXELS;
     if (site.kind === 'commons') {
@@ -328,6 +331,14 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     }
   }
 
+  /** Citizens standing at a site's door remain visible in the shared gameplay cell. */
+  private citizenDepth(x: number, y: number): number {
+    const tx = Math.floor(x / TILE_PIXELS);
+    const ty = Math.floor(y / TILE_PIXELS);
+    const atDoor = this.siteCells.has(ty * GRID_WIDTH + tx);
+    return 100 + y + (atDoor ? TILE_PIXELS : 0);
+  }
+
   private paintCitizen(citizen: Citizen): Phaser.GameObjects.Container {
     const outfit = PALETTE[citizen.appearance % PALETTE.length]!;
     const body = this.add.graphics();
@@ -337,7 +348,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     body.fillStyle(citizen.appearance % 2 ? 0x403329 : 0x6c4d2f).fillRect(-3, -8, 6, 2);
     body.fillStyle(0x1b2922).fillRect(-2, -5, 1, 1).fillRect(1, -5, 1, 1);
     const label = this.add.text(0, -12, String(citizen.id - 26), { fontFamily: 'monospace', fontSize: '6px', color: '#fff6db', backgroundColor: '#152b23aa' }).setOrigin(0.5, 1);
-    const sprite = this.add.container(xPixel(citizen.tile.x), yPixel(citizen.tile.y), [body, label]).setDepth(100 + yPixel(citizen.tile.y));
+    const sprite = this.add.container(xPixel(citizen.tile.x), yPixel(citizen.tile.y), [body, label]).setDepth(this.citizenDepth(xPixel(citizen.tile.x), yPixel(citizen.tile.y)));
     sprite.setData('citizenId', citizen.id);
     return sprite;
   }
