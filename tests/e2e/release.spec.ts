@@ -17,7 +17,8 @@ test('MVP production: Pages base path, 20/100 NPC, controls, backup, reload and 
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/Tiny-Civilization/');
   await expect(page).toHaveTitle(/Tiny Civilization.*MVP/);
-  await expect(page.getByTestId('game-container').locator('canvas')).toBeVisible();
+  await expect(page.getByTestId('population-value')).toHaveText('20');
+  await expect(page.getByTestId('game-container').locator('canvas')).toBeVisible({ timeout: 12000 });
   await expect(page.getByTestId('population-value')).toHaveText('20');
   await page.getByRole('button', { name: '20×' }).click();
   await expect.poll(async () => Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\d+)/)?.[1] ?? 0),

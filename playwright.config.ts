@@ -18,7 +18,7 @@ export default defineConfig({
   },
   webServer: {
     command: production
-      ? 'npm run preview -- --host 127.0.0.1 --port 4173 --strictPort'
+      ? 'GITHUB_PAGES=true npm run preview -- --host 127.0.0.1 --port 4173 --strictPort'
       : 'npm run dev -- --host 127.0.0.1 --port 4173 --strictPort',
     url: production ? address + '/Tiny-Civilization/' : address,
     reuseExistingServer: !process.env.CI,
