@@ -21,8 +21,11 @@ test('20 visible citizens, inspector, play/pause, speed, canvas click and remoun
   const canvas = page.getByTestId('game-container').locator('canvas');
   await expect(canvas).toHaveCount(1);
   await expect(canvas).toBeVisible();
-  await expect(canvas).toHaveAttribute('width', '576');
-  await expect(canvas).toHaveAttribute('height', '576');
+  await expect.poll(async () => Number(await page.getByTestId('camera-status').getAttribute('data-viewport-width'))).toBeGreaterThan(576);
+  const backing = await canvas.evaluate(element => ({ width: (element as HTMLCanvasElement).width,
+    height: (element as HTMLCanvasElement).height }));
+  expect(backing.width).toBeGreaterThan(576);
+  expect(backing.height).toBeGreaterThan(400);
   await expect(page.getByTestId('game-container')).toHaveAttribute('data-npc-count', '20');
   await expect(page.getByTestId('population-value')).toHaveText('20');
 
@@ -31,7 +34,14 @@ test('20 visible citizens, inspector, play/pause, speed, canvas click and remoun
   await page.waitForTimeout(600);
   expect(await page.getByTestId('world-tick').innerText()).toBe(pausedTick);
 
-  await canvas.click({ position: { x: 13 * 12 + 6, y: 14 * 12 + 6 } });
+  await page.getByTestId('camera-fit').click();
+  const zoom = Number(await page.getByTestId('camera-status').getAttribute('data-zoom'));
+  const initialBox = await canvas.boundingBox();
+  expect(initialBox).not.toBeNull();
+  await canvas.click({ position: {
+    x: initialBox!.width / 2 + (13 * 12 + 6 - 288) * zoom,
+    y: initialBox!.height / 2 + (14 * 12 + 6 - 288) * zoom,
+  } });
   await expect(page.getByTestId('selected-citizen')).toContainText('An');
   await page.getByRole('button', { name: 'Bỏ chọn' }).click();
   await expect(page.getByTestId('selected-citizen')).toContainText('Chưa chọn cư dân');
