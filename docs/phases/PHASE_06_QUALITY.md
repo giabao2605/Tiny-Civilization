@@ -2,7 +2,7 @@
 
 **Tóm tắt tiếng Việt:** Kiểm tra và nâng chất lượng: save/load đúng kết quả mô phỏng, test nhiều seed, cân bằng, đo hiệu năng và làm UI dễ theo dõi.
 
-**Status:** NOT STARTED · **Requires:** phase 05 feature-complete vertical slice.
+**Status:** IN PROGRESS on `feat/phase-06-quality` (2026-10-15); **not merged and not DONE** · **Requires:** Phase 05 DONE / merged as `4c03cd85`.
 **Intent:** Make the simulation reliable and comfortable to *play*, not just technically possible to run.
 
 ## Outcome
@@ -69,3 +69,13 @@ All high-severity correctness bugs fixed; save/restore deterministic; export/imp
 ## Explicit deferral
 
 Cloud save, PWA install support, multi-browser compatibility matrix, full screen reader audit, complex replay scrubber, automated translation and proprietary analytics. Basic accessibility/security still required.
+
+
+## Phase 06 verification ledger (in progress)
+
+- Versioned `sim-v5-phase06` serialization/validation, browser localStorage, JSON import/export, frozen-tick coordinator restore, pending governance command/ID restoration: implemented in branch; regression and Chromium tests exist.
+- Headless six-case 20/50/100 NPC × two-seed, 1,000-tick continuous vs 500+save/load+500 replay: tests passed on preliminary CI, but must rerun at final head.
+- Preliminary GitHub Ubuntu Node measured p95 at 1,000 ticks: 20 NPC 1.582 ms, 50 NPC 3.243 ms, 100 NPC 5.191 ms. Snapshot JSON 110,834 / 282,573 / 443,278 bytes respectively. Node benchmark is not browser FPS.
+- 10-seed 30-day baseline passed preliminary tests. Low-initial-reserve scenario recovered quickly, so an adversarial no-regeneration famine scenario was added; final measurements still required.
+- Chromium suite initially exposed a test-specific wall-clock threshold failure after resuming from hidden tab. The app's hidden-tab discard check succeeded, and the assertion now verifies no immediate catch-up instead of assuming Playwright runs exactly 100 ms later.
+- **Open acceptance gates:** final head CI, 100-NPC Chromium profiling and responsive screenshots, severe famine report, real novice playtest, and mobile physical-device measurements. Mark DONE only when acceptance evidence warrants it; document absent human/device measurements honestly.
