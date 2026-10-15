@@ -48,8 +48,13 @@ export function GameCanvas({ snapshot, onCitizenSelected, onCameraReady, onCamer
             changeRef.current?.(controls.getCameraSnapshot());
           }
         };
+        // Phaser may emit CREATE before RUNNING; READY covers that transition.
         live.scene.sys.events.on('create', announceReady);
-        removeSceneReady = () => { live.scene.sys.events.off('create', announceReady); };
+        live.scene.sys.events.on('ready', announceReady);
+        removeSceneReady = () => {
+          live.scene.sys.events.off('create', announceReady);
+          live.scene.sys.events.off('ready', announceReady);
+        };
         live.scene.setSnapshot(current);
         announceReady();
 
