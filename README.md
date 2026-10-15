@@ -104,8 +104,9 @@ Bản Phase 06 trên feature branch có **lưu/tải bằng localStorage và imp
 - Kiểm chứng: `npm run typecheck && npm run lint && npm run test && npm run build && npm run test:e2e`. Bằng chứng chính thức: [CI PASS 74/74 unit, 8/8 Chromium E2E](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38533542563), [ảnh kiểm thử](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38533542563/artifacts/11879336547) và [PROGRESS](docs/PROGRESS.md).
 
 
-## Phase 06 Quality (đang xác minh trên feature branch)
+## Phase 06 Quality (PARTIAL, PR #7 chưa merge)
 
+- Pull Request triển khai: [PR #7](https://github.com/giabao2605/Tiny-Civilization/pull/7) (mở để review; **không merge**). Trạng thái **PARTIAL** vì chưa playtest người mới và FPS trên thiết bị thật, dù CI nhánh đã xanh.
 - Mô phỏng vẫn dùng **một** `WorldState` schema v5. Snapshot versioned `sim-v5-phase06` lưu cả RNG state, ID counters, giao dịch, quan hệ/hộ, governance, biến cố, event history và lệnh chính sách đang xếp hàng. Không lưu Phaser/React hoặc real timers.
 - **Lưu thế giới** ghi snapshot vào localStorage của trình duyệt hiện tại; **Tải bản lưu** xác thực toàn bộ dữ liệu trước khi đổi world và tự pause; **Xuất JSON / Nhập JSON** dùng để sao lưu, chuyển thiết bị. Lỗi quota, JSON hỏng, phiên bản lạ hay ID vô hiệu được hiển thị mà không xóa thế giới đang chạy.
 - Mỗi file JSON tối đa **8 MiB**, chỉ hỗ trợ engine/schema hiện hành; không có migration cho bản save phiên bản trước. localStorage có thể bị xóa bởi trình duyệt, hãy giữ file JSON nếu thế giới quan trọng.
