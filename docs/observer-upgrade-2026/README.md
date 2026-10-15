@@ -69,3 +69,14 @@ Task branch → PR nhỏ → CI và test evidence → review invariants/ADR → 
 ## Nguồn gốc và giới hạn
 
 [RESEARCH_SOURCE.md](RESEARCH_SOURCE.md) giữ nội dung báo cáo Markdown Deep Research đã có. Các file DOCX gốc từng được Deep Research liệt kê nhưng không tải/truy xuất được, nên **không có tuyên bố 1:1 với DOCX**. MASTER_PLAN v2 và bảy plan con là **tài liệu kỹ thuật mới do trợ lý biên soạn**, bổ sung từ audit codebase thực tế; các số đo/ADR mới được ghi là quyết định hoặc mục tiêu, không mạo nhận là kết quả nghiên cứu đã kiểm chứng. Link sandbox và trích dẫn cũ trong Research Source chỉ để lưu nguồn lịch sử, có thể không còn hoạt động.
+
+## V01-A — Baseline & Visual Audit (2026-10-15)
+
+Implementation/status artifacts are kept separately from legacy Phase 00–08 documents:
+
+- [V01-A source audit and evidence protocol](V01_A_AUDIT.md)
+- [Visual Direction / Art Bible](ART_BIBLE.md)
+- [V01-A status, test attribution and open gates](V01_A_STATUS.md)
+- [V01-B camera implementation handoff](V01_B_HANDOFF.md)
+
+**V01-A is PARTIAL until the PR CI screenshot artifact is verified and visually reviewed.** Documentation and a baseline Playwright capture test do not implement or certify any camera/art features. See status file before starting V01-B.
