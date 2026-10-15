@@ -36,7 +36,7 @@ test('V01-B: sample 20/100 NPC at 1x/20x and canvas instance lifecycle', async (
         const total = intervals.reduce((sum, duration) => sum + duration, 0);
         return {
           frameCount: intervals.length,
-          frameP95Ms: intervals.length ? intervals[Math.ceil(0.95 * intervals.length) - 1] : null,
+          frameP95Ms: intervals.length ? (intervals[Math.ceil(0.95 * intervals.length) - 1] ?? null) : null,
           meanFps: total > 0 ? 1000 * intervals.length / total : null,
           instances: document.querySelectorAll('[data-testid="game-container"] canvas').length,
         };
