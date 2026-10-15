@@ -74,3 +74,16 @@ Outputs are under Playwright `test-results/` and included in CI's `phase-07-rele
 ## 7. Rollback
 
 Revert this V01-A branch's observer-doc files and `tests/e2e/observer-v01-a.spec.ts`. No production game behavior, WorldState, save format or legacy phase documents are modified.
+
+## 8. Actual browser artifact review (limited; not the complete V01-A matrix)
+
+On 2026-10-15, downloaded and visually inspected **actual Chromium production smoke screenshots** from [PR CI run 38691591882](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38691591882), artifact [11952801229](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38691591882/artifacts/11952801229), files `phase-07-production-1366.png` and `phase-07-production-1920.png`. These are **real rendered images**, distinct from source-only hypotheses. Important: production smoke changes population/tick between captures; the two images are **NOT** a controlled same-tick/same-population before/after comparison, and neither is a V01-A zoom-extreme screenshot.
+
+Observed:
+1. At 1366px width, the usable settlement render is visually a centered ~576px square within a much wider map panel. The map extends below the initial 768px-high first fold because the top hero/header and panel consume substantial vertical space. **Confirms VIS-01 from actual screenshot.**
+2. At 1920px width, the overall site is centered with large side margins due to `max-width:1480px`, while the Phaser game area does not fill the available map panel; world size still reads as a small island, not a broad observation surface. **Confirms the UI composition problem**, not merely an assumption about CSS.
+3. At both resolutions, homes are near-identical little peaked-roof marks, tightly constrained to one tile. Roads appear as broad straight tan strips and right-angle junctions. Forests repeat small square clusters on almost every dark-green tile. This **confirms low silhouette and texture variety** in the existing renderer.
+4. At the 100-NPC 1920 capture, a dense group near the commons/roads exhibits compact number tags and almost identical vertical character silhouettes; several tags visually crowd the same area. Identity and activity are difficult to distinguish without the inspector. **Confirms ART-04 in the observed 100-NPC case**.
+5. The screenshots do **not** prove dynamic occlusion defects, precise input anchoring, frame times, or zoom behavior. Those remain code-level findings or pending browser captures.
+
+**Evidence pipeline issue identified and fixed in this PR:** GitHub CI runs all E2E first but then runs the production Playwright smoke test, which cleans `test-results/` before upload. The initially downloaded artifact contained only 3 production screenshots and no `v01-a-*` files despite successful first-run E2E. The CI workflow now stages `v01-a-*` files to `observer-v01-a-evidence/` **before** production smoke and includes that directory in the artifact. This fix must pass a new CI run and its images must be inspected; do not count the original smoke screenshots as all three controlled baseline captures.
