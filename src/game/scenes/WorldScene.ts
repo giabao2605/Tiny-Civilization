@@ -17,6 +17,8 @@ export class WorldScene extends Phaser.Scene {
   private resourceMarkers = new Map<number, Phaser.GameObjects.Graphics>();
   private constructionMarkers = new Map<number, Phaser.GameObjects.Graphics>();
   private paintedSites = new Set<number>();
+  private resourceStocks = new Map<number, number>();
+  private wasPaused = false;
   private highlighter?: Phaser.GameObjects.Graphics;
   private dragStart?: { x: number; y: number };
   private lastDrag?: { x: number; y: number };
@@ -36,6 +38,7 @@ export class WorldScene extends Phaser.Scene {
     for (const node of this.world.resourceNodes) {
       const marker = this.add.graphics().setDepth(6);
       this.resourceMarkers.set(node.id, marker);
+      this.resourceStocks.set(node.id, node.stock);
       this.paintResource(marker, node.kind, node.tile.x, node.tile.y, node.stock, node.capacity);
     }
     for (const citizen of this.world.citizens) this.sprites.set(citizen.id, this.paintCitizen(citizen));
@@ -50,6 +53,7 @@ export class WorldScene extends Phaser.Scene {
       this.input.off(Phaser.Input.Events.POINTER_UP, this.onUp);
       this.input.off(Phaser.Input.Events.POINTER_WHEEL, this.onWheel);
       this.resourceMarkers.clear();
+      this.resourceStocks.clear();
       this.constructionMarkers.clear();
       this.paintedSites.clear();
       this.sprites.clear();
@@ -61,9 +65,13 @@ export class WorldScene extends Phaser.Scene {
   setSnapshot(snapshot: LivingSnapshot): void {
     this.selectedId = snapshot.selectedCitizenId;
     this.speed = snapshot.speed;
-    for (const tween of this.movementTweens.values()) {
-      if (snapshot.paused) tween.pause();
-      else tween.resume();
+    // Pause changes are rare; iterating every tween on every simulation tick is unnecessary.
+    if (snapshot.paused !== this.wasPaused) {
+      for (const tween of this.movementTweens.values()) {
+        if (snapshot.paused) tween.pause();
+        else tween.resume();
+      }
+      this.wasPaused = snapshot.paused;
     }
     const before = this.world;
     this.world = snapshot.world;
@@ -73,13 +81,19 @@ export class WorldScene extends Phaser.Scene {
       return;
     }
     if (before.tick !== snapshot.world.tick) {
+      // Fast-forward UI batching may skip intermediate snapshots. Never animate
+      // only the last step while leaving an NPC at an obsolete coordinate.
+      const skippedTicks = snapshot.world.tick > before.tick + 1;
       for (const site of snapshot.world.sites) {
         if (!this.paintedSites.has(site.id)) { this.paintSite(site); this.paintedSites.add(site.id); }
       }
       this.paintConstructions();
       for (const node of snapshot.world.resourceNodes) {
         const marker = this.resourceMarkers.get(node.id);
-        if (marker) this.paintResource(marker, node.kind, node.tile.x, node.tile.y, node.stock, node.capacity);
+        if (marker && this.resourceStocks.get(node.id) !== node.stock) {
+          this.paintResource(marker, node.kind, node.tile.x, node.tile.y, node.stock, node.capacity);
+          this.resourceStocks.set(node.id, node.stock);
+        }
       }
       for (const citizen of snapshot.world.citizens) {
         const sprite = this.sprites.get(citizen.id);
@@ -88,6 +102,12 @@ export class WorldScene extends Phaser.Scene {
           this.movementTweens.get(citizen.id)?.stop();
           this.movementTweens.delete(citizen.id);
           sprite.setVisible(false);
+          continue;
+        }
+        if (skippedTicks) {
+          this.movementTweens.get(citizen.id)?.stop();
+          this.movementTweens.delete(citizen.id);
+          sprite.setPosition(xPixel(citizen.tile.x), yPixel(citizen.tile.y));
           continue;
         }
         if (citizen.lastMove.length < 2) continue;
@@ -117,7 +137,10 @@ export class WorldScene extends Phaser.Scene {
     this.redrawHighlight();
   }
 
-  update(): void { this.redrawHighlight(); }
+  update(): void {
+    // The unselected map needs no graphics clear/redraw on every animation frame.
+    if (this.selectedId !== null) this.redrawHighlight();
+  }
 
   private paintTerrain(): void {
     const g = this.add.graphics().setDepth(0);

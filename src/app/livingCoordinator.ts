@@ -33,12 +33,18 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
   }
   let snapshot: LivingSnapshot = { world: initialWorld, selectedCitizenId: null, speed: 1,
     paused: false, lastPolicyMessage: '' };
+  // The engine always advances each hour. The expensive observer UI can present
+  // coherent snapshots less often at 5×/20× without altering the world or RNG.
+  let uiSnapshot = snapshot;
   let pending: GovernanceCommand[] = [];
   let nextRequestId = 1;
   const listeners = new Set<() => void>();
   let timer: ReturnType<typeof setInterval> | null = null;
   let lastMs = 0;
-  const notify = () => { for (const listener of listeners) listener(); };
+  const notify = () => {
+    uiSnapshot = snapshot;
+    for (const listener of listeners) listener();
+  };
   const clock = createClock(() => {
     const world = advanceOneTick(snapshot.world, pending);
     pending = [];
@@ -46,13 +52,15 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
       (event.type === 'foodAid' || event.type === 'foodAidDenied'));
     snapshot = { ...snapshot, world,
       lastPolicyMessage: policyEvent ? policyEvent.reason : snapshot.lastPolicyMessage };
-    notify();
+    const ticksPerPaint = snapshot.speed === 20 ? 4 : snapshot.speed === 5 ? 2 : 1;
+    if (world.tick % ticksPerPaint === 0) notify();
   });
   const resetElapsed = () => { lastMs = performance.now(); clock.reset(); };
   const onVisibility = () => { resetElapsed(); };
 
   return {
     getSnapshot: (): LivingSnapshot => snapshot,
+    getUiSnapshot: (): LivingSnapshot => uiSnapshot,
     subscribe: (listener: () => void) => {
       listeners.add(listener);
       return () => { listeners.delete(listener); };

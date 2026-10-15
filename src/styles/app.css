@@ -152,6 +152,9 @@ h3 { letter-spacing: -.025em; font-size: 19px; margin-bottom: 0; }
 .save-actions input[type=file] { max-width: 100%; min-width: 0; font-size: 12px; color: #e5e9d7; }
 .save-actions input[type=file]::file-selector-button { border: 1px solid #769076; border-radius: 8px; background: #34543f; color: #fff; padding: 8px; cursor: pointer; }
 .import-button { font-size: 12px; color: #d4e6c8; }
+.save-panel a { color: #f0d39a; }
+.quick-start strong { color: #fff1bb; }
+@media (max-width: 620px) { .seed-controls > div { flex-wrap: wrap; } .seed-controls .ghost-button { min-height: 39px; } }
 .save-status { overflow-wrap: anywhere; font-size: 12px; line-height: 1.6; color: #e2e7c4; }
 button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
   outline: 3px solid #f4ce6b; outline-offset: 3px;

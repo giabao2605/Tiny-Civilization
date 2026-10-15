@@ -2,7 +2,7 @@
 
 **Tóm tắt tiếng Việt:** Kiểm tra và nâng chất lượng: save/load đúng kết quả mô phỏng, test nhiều seed, cân bằng, đo hiệu năng và làm UI dễ theo dõi.
 
-**Status:** PARTIAL on [PR #7](https://github.com/giabao2605/Tiny-Civilization/pull/7) / `feat/phase-06-quality` (2026-10-15); **not merged and not DONE** · **Requires:** Phase 05 DONE / merged as `4c03cd85`.
+**Status:** PARTIAL quality gates (2026-10-15) · [PR #7](https://github.com/giabao2605/Tiny-Civilization/pull/7) **merged** to `main` at `efa9fa23`, [post-merge CI PASS](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38673629622). Missing novice playtest and physical-device performance; merge is not full sign-off.
 **Intent:** Make the simulation reliable and comfortable to *play*, not just technically possible to run.
 
 ## Outcome
@@ -83,3 +83,5 @@ Cloud save, PWA install support, multi-browser compatibility matrix, full screen
 - **Severe famine verified:** 10 seeds × 720 ticks, all 10 retained no food stock for all 30 daily samples, all 100 initial NPCs died by day 30; finite goods/money invariants and dead-action cleanup passed. Default and low-reserve samples remained 100 alive in each seed, with real farming replenishment.
 - **Current PR:** [#7](https://github.com/giabao2605/Tiny-Civilization/pull/7), not merged. Marked 22 verified/implemented checklist items above; original pixel sprites, more sustained browser/real-device profiling, 30-day browser smoke, event batching and novice UX playtest remain open.
 - **Remaining quality gates:** real novice playtest **not performed**, physical phone/browser performance **not measured**; PR commit and CI still need final confirmation. Phase remains **PARTIAL / IN PROGRESS** until all material exit gates are satisfied.
+
+**Post-merge update (2026-10-15):** Phase 06 merged via PR #7; main CI PASS. The checklist boxes still open above remain unresolved unless Phase 07 verifies them explicitly. Historical statements in the initial verification ledger refer to the earlier pre-merge point in time.

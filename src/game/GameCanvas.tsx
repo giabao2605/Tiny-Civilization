@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { LivingSnapshot } from '../app/livingCoordinator';
-import { createGame } from './createGame';
+import type { createGame } from './createGame';
 
 type Props = {
   snapshot: LivingSnapshot;
@@ -19,14 +19,20 @@ export function GameCanvas({ snapshot, onCitizenSelected }: Props) {
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
+    let disposed = false;
     const frame = requestAnimationFrame(() => {
-      if (!host.isConnected) return;
-      const current = snapshotRef.current;
-      const live = createGame(host, current.world, (id) => callbackRef.current(id));
-      liveRef.current = live;
-      live.scene.setSnapshot(current);
+      // Phaser is larger than the React shell. Load it separately after the
+      // initial DOM paint; cleanup guards StrictMode and reset races.
+      void import('./createGame').then(({ createGame }) => {
+        if (disposed || !host.isConnected) return;
+        const current = snapshotRef.current;
+        const live = createGame(host, current.world, (id) => callbackRef.current(id));
+        liveRef.current = live;
+        live.scene.setSnapshot(current);
+      }).catch(error => { if (!disposed) console.error('Không tải được bản đồ Phaser:', error); });
     });
     return () => {
+      disposed = true;
       cancelAnimationFrame(frame);
       const live = liveRef.current;
       liveRef.current = null;

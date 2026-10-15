@@ -2,7 +2,7 @@
 
 **Tiny Civilization** là game web pixel-art mô phỏng một ngôi làng tự vận hành. Người chơi là người quan sát: dân làng có nghề, nhu cầu, tiền, quan hệ và chịu hậu quả từ quyết định của chính họ. Câu chuyện xuất hiện từ quy luật mô phỏng, không phải các dòng sự kiện bịa sẵn.
 
-**Trạng thái: Phase 00–05 DONE và đã merge vào `main` (Phase 05 [PR #6](https://github.com/giabao2605/Tiny-Civilization/pull/6), merge commit `4c03cd8596eb75d436b6df8159c1b9ccca7d65e6`, [CI main PASS](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38662711100)). Phase 06 đang triển khai trên `feat/phase-06-quality`, chưa merge hoặc phát hành MVP.** Xem `docs/PROGRESS.md` để biết bằng chứng thực tế.
+**Trạng thái (15/10/2026):** Phase 00–05 đã merge. Phase 06 merge qua [PR #7](https://github.com/giabao2605/Tiny-Civilization/pull/7), [CI main PASS](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38673629622); một số gate về người chơi mới và hiệu năng thiết bị vật lý vẫn mở. Phase 07 đang chuẩn bị phát hành trên `feat/phase-07-release`, **chưa merge/chưa xác nhận URL public**. Xem [PROGRESS](docs/PROGRESS.md) cho trạng thái thật.
 
 ## Đọc tài liệu theo thứ tự
 
@@ -42,7 +42,7 @@ Tài liệu chi tiết dùng thuật ngữ tiếng Anh để người viết cod
 
 [Repository GitHub](https://github.com/giabao2605/Tiny-Civilization)
 
-## Chạy bản mô phỏng hiện tại (Phase 06 development)
+## Chạy Tiny Civilization MVP release candidate 0.9.0
 
 Yêu cầu Node.js **22.12+ (major 22)** và npm **10**; dùng phiên bản trong `.nvmrc`. Sau khi checkout branch triển khai và khi đã có `package-lock.json` được commit:
 
@@ -74,7 +74,36 @@ Playwright tự khởi động Vite tại port 4173 và kiểm tra Chromium desk
 - `tests/e2e`: Chromium desktop/mobile, sự kiện, chọn NPC, tốc độ, pause và lifecycle.
 - `.github/workflows/ci.yml`: xác minh từ checkout sạch và lưu screenshot artifact.
 
-Bản Phase 06 trên feature branch có **lưu/tải bằng localStorage và import/export JSON cục bộ**; không chứa backend, tài khoản, đồng bộ đám mây hoặc AI API. MVP/public release vẫn chưa có.
+**Lưu/tải hiện hoạt động bằng localStorage và import/export JSON cục bộ**, snapshot engine `sim-v5-phase06`. Không có backend, tài khoản, đồng bộ đám mây hoặc AI API. Save trên trình duyệt có thể mất khi người chơi xóa dữ liệu trang; file JSON là phương án backup. Bấm **Tạo lại** sẽ yêu cầu xác nhận, nhưng không tự xóa bản lưu cũ. Lưu tiếp sẽ ghi đè slot localStorage hiện tại.
+
+## Phase 07 · Phát hành website (đang thực hiện)
+
+**Phiên bản ứng dụng:** `0.9.0`, release candidate, chưa tạo tag chính thức. **Engine/save schema:** `sim-v5-phase06` / format 1. **Trình duyệt ưu tiên:** Chromium desktop; mobile responsive ở mức kiểm thử viewport, **chưa chứng nhận trên thiết bị thật**.
+
+**URL GitHub Pages dự kiến:** `https://giabao2605.github.io/Tiny-Civilization/`. Đây chỉ là địa chỉ quy ước, **không được coi là URL đang hoạt động trước khi có xác minh public**. Workflow triển khai `.github/workflows/pages.yml` chạy sau khi test từ `main` hoặc branch Phase 07; bật Settings → Pages → Build and deployment → Source: **GitHub Actions** nếu chưa bật. Nếu Pages chưa cấu hình, deploy có thể bị chặn, dù code và CI hợp lệ. Xem [hướng dẫn bàn giao](docs/RELEASE_NOTES_0.9.0.md).
+
+**Cách chơi:** Mở trang, quan sát làng 48×48, chọn một NPC trên bản đồ/danh sách để xem lý do hành động; 1 tick = 1 giờ game; 1× = 2 tick/giây thực, 5× = 10 và 20× = 40 tick/giây mục tiêu trước giới hạn máy. Pause dừng thời gian mô phỏng; Seed + số dân 20/50/100 tạo thế giới tái lập được theo cùng engine và trình tự lệnh. Các sự kiện về đói, giao dịch, quan hệ và khủng hoảng có nguyên nhân trong mô phỏng. Ở 100 NPC và 20× có thể giật trong Chromium CI; đừng mặc định mọi máy đạt 60 FPS.
+
+**Lệnh kiểm thử:**
+
+```bash
+npm ci
+npm audit --omit=dev --audit-level=high
+npm run typecheck
+npm run lint
+npm run test
+npm run build
+npx playwright install chromium
+npm run test:e2e
+
+# Linux/macOS CI: build và smoke chính xác base path của project GitHub Pages
+GITHUB_PAGES=true npm run build
+PLAYWRIGHT_PRODUCTION=true npm run test:e2e -- tests/e2e/release.spec.ts
+```
+
+Thay `npm run dev` bằng `npm run preview` để xem bản build (nếu đã build với `GITHUB_PAGES=true`, truy cập `/Tiny-Civilization/`). `PLAYWRIGHT_PRODUCTION` sử dụng Vite preview ở cổng 4173, không dùng dev server. **CI sau commit cuối, benchmark và website public phải kiểm chứng thực tế** trước khi thay trạng thái phát hành sang DONE.
+
+**Giới hạn MVP:** một làng, không có trồng/chăn nuôi nâng cao, mở rộng nhiều làng hay chiến tranh; không cloud save, không multiplayer, không account, không AI API. Công trình, mua bán, hộ gia đình, dịch bệnh và lãnh đạo tuân theo cơ chế mô phỏng hữu hạn. Phản hồi lỗi tại [GitHub Issues](https://github.com/giabao2605/Tiny-Civilization/issues) (kèm seed, tick, trình duyệt, bước tái hiện).
 
 ## Phase 03 Economy (merged)
 
@@ -104,9 +133,9 @@ Bản Phase 06 trên feature branch có **lưu/tải bằng localStorage và imp
 - Kiểm chứng: `npm run typecheck && npm run lint && npm run test && npm run build && npm run test:e2e`. Bằng chứng chính thức: [CI PASS 74/74 unit, 8/8 Chromium E2E](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38533542563), [ảnh kiểm thử](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38533542563/artifacts/11879336547) và [PROGRESS](docs/PROGRESS.md).
 
 
-## Phase 06 Quality (PARTIAL, PR #7 chưa merge)
+## Phase 06 Quality (đã merge, quality gate còn PARTIAL)
 
-- Pull Request triển khai: [PR #7](https://github.com/giabao2605/Tiny-Civilization/pull/7) (mở để review; **không merge**). Trạng thái **PARTIAL** vì chưa playtest người mới và FPS trên thiết bị thật, dù CI nhánh đã xanh.
+- [PR #7](https://github.com/giabao2605/Tiny-Civilization/pull/7) đã merge vào `main` tại `efa9fa23f44f22b63c4531c2c0df96d9a5a0c37c`; [CI sau merge PASS](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38673629622). Trạng thái **PARTIAL về nghiệm thu chất lượng**, vì chưa playtest người mới hoặc kiểm chứng FPS trên thiết bị vật lý. Merge không đồng nghĩa hoàn thành mọi gate.
 - Mô phỏng vẫn dùng **một** `WorldState` schema v5. Snapshot versioned `sim-v5-phase06` lưu cả RNG state, ID counters, giao dịch, quan hệ/hộ, governance, biến cố, event history và lệnh chính sách đang xếp hàng. Không lưu Phaser/React hoặc real timers.
 - **Lưu thế giới** ghi snapshot vào localStorage của trình duyệt hiện tại; **Tải bản lưu** xác thực toàn bộ dữ liệu trước khi đổi world và tự pause; **Xuất JSON / Nhập JSON** dùng để sao lưu, chuyển thiết bị. Lỗi quota, JSON hỏng, phiên bản lạ hay ID vô hiệu được hiển thị mà không xóa thế giới đang chạy.
 - Mỗi file JSON tối đa **8 MiB**, chỉ hỗ trợ engine/schema hiện hành; không có migration cho bản save phiên bản trước. localStorage có thể bị xóa bởi trình duyệt, hãy giữ file JSON nếu thế giới quan trọng.
