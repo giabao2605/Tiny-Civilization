@@ -1,6 +1,6 @@
 # Tiny Civilization · 0.9.0 MVP Release Candidate
 
-**Status:** Source prepared on `feat/phase-07-release` (2026-10-15). Not yet a tagged v1.0.0 release. A public URL is not a verified fact until tested externally after a Pages deploy.
+**Status (2026-10-15):** Phase 07 source merged into `main` via [PR #8](https://github.com/giabao2605/Tiny-Civilization/pull/8) at `1d56f019`; [post-merge CI PASS](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38676668747), but [post-merge Pages FAILED](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38676669541) at configure-pages and deploy was skipped. No verified public URL or official v1.0.0 tag. Phase 08A remains NO-GO pending real playtest and hardware evidence.
 
 ## Game content
 
@@ -12,12 +12,12 @@ Local browser slot and manual JSON export/import. Save format 1, engine schema `
 
 ## Deployment instructions for repository owner
 
-1. Review the Phase 07 PR and complete CI checks on its final commit.
+1. Phase 07 PR #8 has already been merged. Confirm the post-merge CI run above at the exact main commit before touching Pages Settings.
 2. Open repository **Settings → Pages → Build and deployment**. Set **Source** to **GitHub Actions**. The GitHub App connection does not expose this admin setting.
-3. Review [Pages workflow](../.github/workflows/pages.yml). Pushes to the Phase 07 branch or main invoke it; deployment runs only after audit, code/test/build and both dev and production browser smoke pass.
-4. Check the workflow **Tiny Civilization Pages**: successful `verify-build` and `deploy` jobs, then independently visit `https://giabao2605.github.io/Tiny-Civilization/` with hard refresh and fresh storage.
+3. Review [Pages workflow](../.github/workflows/pages.yml). Pushes to main invoke it; deployment runs only after audit, code/test/build and both dev and production-preview browser smoke pass. A separate readiness PR adds real live-site Chromium verification following a successful deploy.
+4. Check the workflow **Tiny Civilization Pages**: successful `verify-build`, `deploy` and, once the readiness PR is merged, `verify-live` jobs; then independently visit `https://giabao2605.github.io/Tiny-Civilization/` with hard refresh and fresh storage.
 5. Verify canvas/assets, 20/100 NPC at 1×/20×, selected inspector, save/reload/import, console/network, and mobile viewport. Record URL, run, screenshot, commit, date in PROGRESS. If URL is inaccessible or deploy blocked, remain PARTIAL.
-6. Do **not** merge PR or create a v1.0.0 tag unless separately approved.
+6. Do **not** auto-merge the Phase 08 readiness PR, start multi-settlement architecture, or create a v1.0.0 tag without separate approval and relevant evidence.
 
 ## Quality evidence and known limitations
 
