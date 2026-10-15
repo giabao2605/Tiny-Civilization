@@ -225,3 +225,13 @@ Phase 00 was merged and verified. Next task may implement Phase 01 only after re
 - Candidate `aa5ae0f8`: dev Chromium 12 passed and 1 production-only test skipped as intended; production smoke could not start due missing `preview` npm script. Fixed in `d45205d8`.
 - Candidate `d45205d8`: Pages CI reached production-preview smoke, but the canvas was absent because preview Vite base was `/` while build base was `/Tiny-Civilization/`. Fixed preview base env in `cab7ad65`. No release claim until the corrected smoke passes.
 - Browser performance samples on concurrent CI runners were volatile (8–12 FPS at 100 NPC, 20×). Those are not evidence of a stable improvement over Phase 06 baseline (~25 FPS / 83.3 ms p95). Node tick p95 from the early candidate: 100 NPC 5.887 ms (GitHub Actions Linux). Later, representative final-head metrics are required before asserting an improvement. Renderer/React batching does not change engine ordering or RNG state.
+
+## Phase 08 readiness gate audit (2026-10-15, no-go)
+
+- **Source main verified:** Phase 07 PR #8 merged at `1d56f01924f160f45dfb6a7319850ee41a311935`; post-merge CI [#38676668747](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38676668747) completed **SUCCESS**. Phase 00–07 source is merged; that is not a public release acceptance.
+- **Post-merge Pages failure:** [#38676669541](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38676669541) completed **FAILURE** at `actions/configure-pages@v5` during verify-build; deploy **SKIPPED**. Owner must enable Settings → Pages → Source: GitHub Actions. No public URL, cloud setting or live-save verification is claimed here.
+- **Existing automated evidence:** single-settlement 84 Vitest and 12 dev Chromium + 1 production preview Chromium at Phase 07 branch head [#38675621606](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38675621606). 100 NPC p95 Node ~4.738 ms/tick and short Chromium sample 30 mean FPS / 66.8ms frame p95 (Ubuntu runner). No extrapolation to two settlements or physical Android.
+- **Unverified acceptance:** novice playtest over 30–180 in-game days, real-device FPS and memory soak, demonstrated need for inter-settlement trade, and explicit Phase 08 scope approval: **NOT TESTED / NO-GO**.
+- **This branch (`chore/phase-08-readiness-gates`) prepares** actual post-deploy Chromium verification and captures a reproducible playtest/performance/08A migration plan. The new live test is SKIPPED without a real Pages URL; it cannot turn this gate green merely by existing. No `WorldState`, simulation, save format or gameplay changes.
+- **Decision:** **NO-GO / BLOCKED for Phase 08A**, not DONE. See [PHASE_08_READINESS.md](PHASE_08_READINESS.md). The unverified items remain open pending real evidence.
+

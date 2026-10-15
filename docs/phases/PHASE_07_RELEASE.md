@@ -66,3 +66,11 @@ A GitHub Pages (or other free static host) URL opens a playable Tiny Civilizatio
 - [ ] Physical Android device browser performance (NOT TESTED).
 
 **Decision:** PARTIAL until verified live website and all blocking gates pass. The items marked implemented do not imply their remote CI/browser execution has succeeded; that evidence belongs in `docs/PROGRESS.md`.
+
+## Post-merge verification update (2026-10-15)
+
+- Phase 07 PR #8 was merged into main at `1d56f01924f160f45dfb6a7319850ee41a311935`.
+- [CI main #38676668747](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38676668747) **SUCCESS**.
+- [Pages main #38676669541](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38676669541) **FAILURE** at configure-pages; deploy skipped, live URL not verified.
+- Source release status stays **PARTIAL**; novice playtest and real Android hardware benchmarks are not performed. The Phase 08 gate stays **NO-GO**.
+- A subsequent readiness PR prepares `verify-live` after Pages deployment but does not assert it has passed. See [readiness audit](../PHASE_08_READINESS.md).

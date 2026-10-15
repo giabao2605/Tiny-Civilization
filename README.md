@@ -2,7 +2,7 @@
 
 **Tiny Civilization** là game web pixel-art mô phỏng một ngôi làng tự vận hành. Người chơi là người quan sát: dân làng có nghề, nhu cầu, tiền, quan hệ và chịu hậu quả từ quyết định của chính họ. Câu chuyện xuất hiện từ quy luật mô phỏng, không phải các dòng sự kiện bịa sẵn.
 
-**Trạng thái (15/10/2026):** Phase 00–05 đã merge. Phase 06 merge qua [PR #7](https://github.com/giabao2605/Tiny-Civilization/pull/7), [CI main PASS](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38673629622); một số gate về người chơi mới và hiệu năng thiết bị vật lý vẫn mở. Phase 07 đang chuẩn bị phát hành trên `feat/phase-07-release`, **chưa merge/chưa xác nhận URL public**. Xem [PROGRESS](docs/PROGRESS.md) cho trạng thái thật.
+**Trạng thái (15/10/2026):** Phase 00–07 đã merge vào `main` (Phase 07 qua [PR #8](https://github.com/giabao2605/Tiny-Civilization/pull/8)); [CI sau merge PASS](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38676668747). [Pages sau merge FAILED](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38676669541) tại `actions/configure-pages`: URL public chưa được kiểm chứng. Playtest người mới và hiệu năng thiết bị thật chưa hoàn tất. **Phase 08A NO-GO**, xem [readiness audit](docs/PHASE_08_READINESS.md) và [PROGRESS](docs/PROGRESS.md).
 
 ## Đọc tài liệu theo thứ tự
 
@@ -76,7 +76,7 @@ Playwright tự khởi động Vite tại port 4173 và kiểm tra Chromium desk
 
 **Lưu/tải hiện hoạt động bằng localStorage và import/export JSON cục bộ**, snapshot engine `sim-v5-phase06`. Không có backend, tài khoản, đồng bộ đám mây hoặc AI API. Save trên trình duyệt có thể mất khi người chơi xóa dữ liệu trang; file JSON là phương án backup. Bấm **Tạo lại** sẽ yêu cầu xác nhận, nhưng không tự xóa bản lưu cũ. Lưu tiếp sẽ ghi đè slot localStorage hiện tại.
 
-## Phase 07 · Phát hành website (đang thực hiện)
+## Phase 07 · Release candidate đã merge, website public chưa xác minh
 
 **Phiên bản ứng dụng:** `0.9.0`, release candidate, chưa tạo tag chính thức. **Engine/save schema:** `sim-v5-phase06` / format 1. **Trình duyệt ưu tiên:** Chromium desktop; mobile responsive ở mức kiểm thử viewport, **chưa chứng nhận trên thiết bị thật**.
 

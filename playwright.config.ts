@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const production = process.env.PLAYWRIGHT_PRODUCTION === 'true';
+const livePagesUrl = process.env.LIVE_PAGES_URL?.trim();
 const address = 'http://127.0.0.1:4173';
 
 export default defineConfig({
@@ -13,10 +14,11 @@ export default defineConfig({
   reporter: process.env.CI ? 'github' : 'list',
   use: {
     ...devices['Desktop Chrome'],
-    baseURL: production ? address + '/Tiny-Civilization/' : address,
+    baseURL: livePagesUrl || (production ? address + '/Tiny-Civilization/' : address),
     trace: 'retain-on-failure',
   },
-  webServer: {
+  // A real Pages deploy needs a remote smoke test, not a local Vite server.
+  webServer: livePagesUrl ? undefined : {
     command: production
       ? 'GITHUB_PAGES=true npm run preview -- --host 127.0.0.1 --port 4173 --strictPort'
       : 'npm run dev -- --host 127.0.0.1 --port 4173 --strictPort',

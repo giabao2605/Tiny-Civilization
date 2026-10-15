@@ -49,3 +49,7 @@ If any is false, prioritize stronger individual NPC stories, better economic tun
 ## Gate for each subphase
 
 A second settlement only counts when actual trade conserves goods and both economies still run; diplomacy only when relationships change decisions; conflict only when actual resources, health, morale or political outcomes change. Each subphase should have independent seed fixtures, screenshots, browser smoke and a go/no-go review before the next.
+
+## Actual gate audit (2026-10-15)
+
+**NO-GO / BLOCKED for 08A** after Phase 07 merge. Main CI PASS, but Pages failed before deployment, and no independent novice playtest, real-device headroom or evidence that two-village trade improves the observation loop exists. Phase 08 remains deferred. The testable conditions, GitHub owner setup and non-implementation 08A design notes are tracked in [docs/PHASE_08_READINESS.md](../PHASE_08_READINESS.md). No 08A/08B/08C implementation is authorized by this audit.
