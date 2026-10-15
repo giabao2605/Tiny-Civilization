@@ -2,12 +2,12 @@
 
 **Tóm tắt tiếng Việt:** Đóng gói và phát hành bản web chơi được; CI xanh, mở URL thật, xác minh save/reload, liệt kê giới hạn còn tồn tại.
 
-**Status:** IN PROGRESS / PARTIAL on `feat/phase-07-release` (2026-10-15) · Phase 06 code merged, but novice playtest and physical-device benchmark gates remain open. No verified public URL or official v1 tag yet.
+**Status (2026-10-15):** Phase 07 source merged to main (PR #8) and main CI PASS. Owner now accepts desktop-local play; website publication and Android are optional. Independent novice PC playtest and sustained PC performance still open.
 **Intent:** Ship a real playable browser game, not a zip of hopeful source code.
 
 ## Release definition
 
-A GitHub Pages (or other free static host) URL opens a playable Tiny Civilization. A new player can start a world, observe 100-agent scenarios, pause/change speed, inspect causes, and save/restore. Source, test results and known limitations are discoverable from GitHub.
+A localhost Chrome/Edge PC session against the production build or development server opens a playable Tiny Civilization. Public hosting is optional by owner decision. A new player can start a world, observe 100-agent scenarios, pause/change speed, inspect causes, and save/restore. Source, test results and known limitations are discoverable from GitHub.
 
 ## 07.1 Freeze and release checklist
 - [ ] Confirm every prior phase acceptance gate with actual evidence in `docs/PROGRESS.md`; re-open phase if any critical regression exists.
@@ -18,7 +18,7 @@ A GitHub Pages (or other free static host) URL opens a playable Tiny Civilizatio
 - [ ] Validate no hardcoded credentials, secrets, debug backdoors or needless network API calls.
 - [ ] README: install/run/test/play instructions, screenshots, limitations, explanation of seed/controls and asset credits.
 
-## 07.2 GitHub Actions / deployment
+## 07.2 GitHub Actions / optional website deployment
 - [ ] Run CI on pull requests to `main` and on pushes to `main`: npm ci, strict typecheck, lint, unit test, build; E2E Chromium at least on release branches or each PR if runtime permits.
 - [ ] Prefer GitHub Pages for this public repo, generated static build from Vite. Set appropriate base path for project Pages (`/Tiny-Civilization/`) or use verified deployment host config.
 - [ ] Ensure GitHub Actions deployment permissions/workflow match repo settings; do not declare "deployed" if Pages is disabled or requires owner settings.
@@ -52,7 +52,7 @@ A GitHub Pages (or other free static host) URL opens a playable Tiny Civilizatio
 
 ## Exit gate
 
-**DONE** requires verified **public playable URL**, reproducible clean build, all MVP acceptance tests and updated progress/evidence. Source pushed but site unverified means **PARTIAL**, not done.
+**Desktop-local DONE** requires a reproducible clean build, playable local Chrome/Edge session, reliable saves, automated and actual desktop-playtest evidence, and updated progress. Public URL and Android performance are not required as of owner override. Source pushed without actual player validation remains **PARTIAL**, not done.
 
 ## Phase 07 implementation ledger (2026-10-15, pre-final CI)
 
@@ -63,14 +63,19 @@ A GitHub Pages (or other free static host) URL opens a playable Tiny Civilizatio
 - [ ] Re-verify full CI at final PR head, collect browser FPS/p95 before/after and inspect screenshots.
 - [ ] Verify actual Pages deployment, public URL hard refresh and browser console/network.
 - [ ] Independent first-time player usability session (NOT TESTED).
-- [ ] Physical Android device browser performance (NOT TESTED).
+- [ ] Desktop PC Chrome/Edge sustained-session performance (NOT TESTED outside CI); Android not required.
 
-**Decision:** PARTIAL until verified live website and all blocking gates pass. The items marked implemented do not imply their remote CI/browser execution has succeeded; that evidence belongs in `docs/PROGRESS.md`.
+**Decision:** PARTIAL until the desktop-local and real-player gates pass. Website deployment is optional. The items marked implemented do not imply their remote CI/browser execution has succeeded; that evidence belongs in `docs/PROGRESS.md`.
 
 ## Post-merge verification update (2026-10-15)
 
 - Phase 07 PR #8 was merged into main at `1d56f01924f160f45dfb6a7319850ee41a311935`.
 - [CI main #38676668747](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38676668747) **SUCCESS**.
 - [Pages main #38676669541](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38676669541) **FAILURE** at configure-pages; deploy skipped, live URL not verified.
-- Source release status stays **PARTIAL**; novice playtest and real Android hardware benchmarks are not performed. The Phase 08 gate stays **NO-GO**.
-- A subsequent readiness PR prepares `verify-live` after Pages deployment but does not assert it has passed. See [readiness audit](../PHASE_08_READINESS.md).
+- Historical public deployment remains unverified; owner later decided that this is **not** a prerequisite for local PC play.
+- Desktop Chrome/Edge playtest and longer in-session performance remain unverified. See [desktop-local readiness audit](../PHASE_08_READINESS.md).
+
+
+## Owner override (2026-10-15): PC localhost only
+
+Public website deployment, Pages Settings and Android/phone FPS are not required for Phase 07 desktop acceptance or Phase 08 prerequisites. Keep the GitHub Pages workflow available as a non-blocking option. Run `npm ci && npm run build && npm run preview` and open the local URL in Chrome/Edge; use automated desktop production smoke and record independent user playtest before marking desktop release DONE. This section supersedes public-deploy/Android requirements and unchecked items above where they conflict.

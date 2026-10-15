@@ -1,65 +1,72 @@
-# Phase 08 readiness audit and verification plan
+# Phase 08A — desktop-local readiness audit
 
-**Decision (2026-10-15): NO-GO / BLOCKED for 08A.** This is an audit and preparation record, not acceptance of multi-settlement work. It does not certify a public release or simulate player feedback.
+**Owner scope update (2026-10-15):** PC Chrome/Edge on localhost is sufficient. **No GitHub Pages / deployment required. Android/mobile is out of acceptance scope.**
 
-## Reproducible evidence at the Phase 07 merge
+**Current decision: NO-GO / pending real player feedback and desktop scale evidence.** This document is an audit and preparation plan only, not a simulated playtest or authorization to change WorldState.
 
-- Branch: main at 1d56f01924f160f45dfb6a7319850ee41a311935 (PR #8 merged).
-- Post-merge CI: https://github.com/giabao2605/Tiny-Civilization/actions/runs/38676668747 concluded SUCCESS (Node checks, tests and local production-preview smoke).
-- Post-merge Pages: https://github.com/giabao2605/Tiny-Civilization/actions/runs/38676669541 concluded FAILURE: verify-build failed at actions/configure-pages@v5; deploy skipped. The earlier Phase 07 feature Pages run #38675616000 had the same configuration block. The public URL was not independently verified.
-- Historical Phase 07 branch evidence: https://github.com/giabao2605/Tiny-Civilization/actions/runs/38675621606 PASS with 84/84 Vitest; Chromium dev 12 PASS, one production-only test skipped; preview smoke 1 PASS. Node 100-NPC/1,000-tick p95 reported 4.738 ms/tick. A short 100-NPC/20x Chromium sample reported about 30 average FPS and p95 frame 66.8 ms on a GitHub-hosted runner. These are NOT physical-device results or an 08A headroom estimate.
-- Engine save compatibility baseline: JSON save format 1; engine version sim-v5-phase06. The 08A implementation must not mutate this format or its stored states before a migration design and fixtures are approved.
+## Verified evidence
 
-## Gate matrix
+- Phase 07 merged at main commit `1d56f01924f160f45dfb6a7319850ee41a311935` via PR #8.
+- [Main CI #38676668747](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38676668747): PASS with automated unit, E2E Chromium and Pages-path preview smoke. [PR #9 interim CI #38677585292](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38677585292) PASS before this scope revision; the final revised commit needs fresh CI.
+- Historical Phase 07 benchmark on GitHub runner: 100 NPC / 1,000 simulation ticks Node p95 ~4.738 ms/tick; 100 NPC 20x short Chromium sample ~30 mean FPS, p95 frame ~66.8ms. **Not** proof of extended desktop gameplay, not a two-village scaling guarantee.
+- Save format 1, engine `sim-v5-phase06`; preserve old saves. Deterministic single-village replay tested in Phase 06/07.
+- Github Pages was previously blocked ([main run #38676669541](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38676669541)). Owner enabled Actions as Pages source, but **deployment is no longer a dependency**. Any web deployment result is historical/optional.
 
-| Gate | Evidence | Result / blocking action |
+## Desktop-local gate matrix
+
+| Gate | Current verification | Decision |
 | --- | --- | --- |
-| Main CI after Phase 07 merge | Run #38676668747 SUCCESS | PASS |
-| Public playable Pages deployment | Run #38676669541 failed configure-pages; deploy skipped | BLOCKED: repository owner enables GitHub Actions as Pages source, reruns deploy, checks public URL |
-| Production browser code paths | Historical Chromium preview smoke on build | PASS for preview only; live site NOT VERIFIED |
-| Real public save, reload, JSON import/export | Preview-only test evidence | NOT VERIFIED; run post-deploy public Chromium smoke |
-| Deterministic save/replay, inventory and money | Phase 06/07 automated unit and stress suites | PASS at single-settlement engine scope; no claim for multi-settlement |
-| 100-NPC headroom for additional settlement | CI Node/Chromium samples, only one settlement | UNKNOWN, measure sustained memory/FPS and 20/50/100 profiles on real hardware |
-| Independent novice player observation for 30–180 in-game days | No independent sessions submitted | NO-GO |
-| Trade adds a meaningful new observation loop | No player evidence/hypothesis test | NO-GO |
-| Acceptance of 08A scope/balance cost | Optional expansion has no explicit owner approval | NO-GO |
+| CI on merged Phase 07 main | Run #38676668747 success | PASS |
+| Desktop local app, controls and JSON saves on built production files | Chromium preview evidence exists, final local-root-path E2E added to PR #9 | Verify final CI; manual PC session unverified |
+| Seed determinism, 1000 ticks vs 500+restore+500 | Phase 06 automated regression evidence | PASS for one village only |
+| 100 NPC PC responsiveness/headroom for two settlements | Short Ubuntu CI measurements only | NEED measured sustained Chrome/Edge PC session; smaller total NPC budget permitted |
+| Independent novice observation for 30–180 game-days | No playtest records | NO-GO |
+| Trade has meaningful extra observable consequences | Hypothesis only, no measured player feedback | NO-GO |
+| Owner accepts 08A scope/balance/migration risk | No explicit GO for 08A code | NO-GO |
+| GitHub Pages and Android | Owner says local PC is enough | **NOT REQUIRED** |
 
-**Decision rule:** Do not start feat/phase-08a-settlements, do not modify WorldState for 08A, and do not create a false "Phase 08 complete" PR while any prerequisite remains unverified. The readiness changes belong in a separate release-readiness PR.
+No 08A simulation/schema work is permitted while the remaining substantive gates are unverified or absent an explicit informed owner override.
 
-## First release blocker: enable and verify Pages
+## Run the playable game on Windows desktop
 
-1. Repo owner opens https://github.com/giabao2605/Tiny-Civilization/settings/pages.
-2. Under **Build and deployment**, set **Source: GitHub Actions** (not Deploy from a branch). This one-time setting is not writable through the current GitHub connector. Do not store a Personal Access Token or weaken the workflow to bypass the permission.
-3. After the readiness PR is reviewed and merged, trigger **Tiny Civilization Pages** on main using Actions > workflow > Run workflow, or push a verified change to main.
-4. Require successful verify-build, deploy and verify-live jobs on the same intended head. The verify-live job executes a Chromium check against the *actual* page URL emitted by the deployment, not Vite preview, and captures desktop/mobile viewport screenshots. No verified deploy = no live claim.
-5. Independently open https://giabao2605.github.io/Tiny-Civilization/ in a fresh Chromium session and hard-refresh. Verify canvas/NPC, 20/100 NPC, 1x/5x/20x/pause, selection, timeline, local save, reload and JSON import/export. Inspect Console and Network for exceptions and 404s. Record timestamp, commit, workflow run, screenshot and result here. Never upload private player saves into a public issue without inspection.
+Open PowerShell in the repository root with Node.js 22 and npm 10 installed:
 
-## Independent novice playtest protocol (NOT PERFORMED)
+```powershell
+npm ci
+npm run dev
+```
 
-Recruit at least two people who have not designed the game. Do not coach them except for the public onboarding copy. For each person, record date, device/browser, whether starting fresh or from a save, and which build/commit they played.
+Open `http://localhost:5173/` on Chrome or Edge. For an actual release-build trial:
 
-- First 60 seconds: Can they identify the objective, start/observe, pause, change speed and select a citizen unaided?
-- After 10 minutes of real interaction: Can they recount a causal chain from production/food/market/social/leader event and locate the related NPC or stock change?
-- Observe at least 30 in-game days for each tested scenario (check tick >= 720); aim for at least one longer 180-day observation (tick >= 4320) if performance and interest permit. Record the actual completed tick, wall time and any interruption; do not fabricate sustained sessions.
-- Collect their top three confusions, one interesting emergent story (with seed and tick), frustration points, whether they voluntarily wanted to continue, and whether a second settlement/trade explanation would address a concrete gap.
-- Archive anonymized quotes, dates, test version, real screenshots and defects. A passing automation is not a substitute for this.
+```powershell
+npm run build
+npm run preview
+```
 
-Do not assert the game is "fun" merely because testers can click it. Explicitly record both positive and negative evidence, including early quitting.
+Open `http://localhost:4173/` (or the exact URL printed by Vite). **Do not open** `dist/index.html` with a `file://` URL. `localStorage` on 5173 and 4173 are separate origins, so use JSON export/import when switching ports.
 
-## Physical browser and scale test protocol (NOT PERFORMED)
+Smoke-check: canvas and NPC visibility; 20 and 100 initial NPCs; pause/1x/5x/20x; click an NPC and an event; inspect market and policy; save, hard-refresh, reload; export JSON and re-import; invalid JSON must leave the current world unchanged. Record browser console exceptions/assets failures. Automated desktop *local production* test: `tests/e2e/local-desktop.spec.ts` (enabled in CI by `PLAYWRIGHT_LOCAL_PRODUCTION=true`). The historical mobile viewport tests can remain as regressions but are not a sign-off gate.
 
-On a physical Android phone and a desktop Chromium machine, note model/CPU/RAM, OS/browser version, page URL/commit, power mode, seed, NPC count, and viewport. Test 20, 50 and 100 NPC at 1x/5x/20x, including at least 30 game-days at each selected stress configuration when practical. Measure tick p50/p95 in Node separately from browser FPS, p95 frame time, heap/memory trend, long-frame spikes and whether the UI freezes. Record thermal throttling, reload/save and exact test length. Never compare CI short-run FPS with on-device FPS as if they were the same hardware.
+## Independent novice PC playtest (NOT PERFORMED)
 
-Before 08A engineering, estimate additional settlements with a representative *measured* total NPC budget (do not silently double 100 NPC), event-frequency and shipment concurrency; write expected performance limits and rollback criteria.
+Get at least two independent observers unfamiliar with the design. Note actual local build SHA, browser version, PC CPU/RAM, viewport, seed, dates and game ticks reached, and whether they required intervention.
 
-## 08A architecture sketch, documentation only
+1. First minute: Can they start watching, pause/change speed and inspect an NPC without help?
+2. At 10 real minutes: Can they explain a true event's causes and effects via the timeline and inventory, without interpretation being fed to them?
+3. Run one or more scenarios across at least 30 in-game days (tick >= 720), and sample 180 in-game days (tick >= 4320) if feasible. Capture actual elapsed time and all interruptions; never invent feedback.
+4. Collect the top three confusion points, event/seed/tick worth following, willingness to continue, and specific story opportunities a second settlement plus finite trade could add.
+5. Keep the feedback, screenshot and reproducible bug notes. Do not infer game is engaging solely from scripted successful clicks.
 
-**No new schema, migration or code is implemented here.** Once the gates are approved, write an ADR choosing a world container with stable settlement IDs, shared single-settlement engine rules and a deterministic stable-order settlement tick. Preserve single-village behavior as the regression reference.
+## Sustained PC performance test (NOT PERFORMED)
 
-Save work first: identify every format-1 sim-v5-phase06 field, capture old real JSON fixtures, define the new version only for an actual semantic schema change, migrate/validate before swapping the active world, and test 500 ticks + save/load + 500 ticks against a continuous 1,000 ticks for multiple seeds and ongoing shipments. Never overwrite a legacy save on failed migration.
+On desktop Chrome/Edge run 20, 50, 100 NPC at 1x/5x/20x. Record CPU, RAM, browser version, seed, wall duration, p50/p95 tick (in Node), measured frames p50/p95/FPS (in browser) and memory trend. A GPU-accelerated local desktop differs from headless CI. No 60 FPS claim without measurement. For 08A, plan an initial **fixed total NPC budget** split across two villages, avoiding accidental 200-NPC scaling; measure 30 in-game days and simultaneous shipments.
 
-For inter-settlement trades: identify the paying owner, selling owner and in-transit escrow owner; transfer finite goods into escrow *once* at dispatch, settle explicit finite currency according to the written contract, and close success/failure without duplication. Transport capacity, travel ticks, route disruption, seller/buyer demise, dead courier, canceled order and restart in transit must be deterministic and tested. Each village still simulates production/consumption/governance; Phaser reads state only. No diplomacy or combat before separate acceptance gates.
+## 08A architecture sketch (documentation only)
 
-## Re-check before changing NO-GO to GO
+Keep one deterministic engine rule set shared by two named settlements with stable ownership. First capture valid format-1 `sim-v5-phase06` save fixtures and write a validated migration strategy for a genuine WorldState change. Reject incompatible states non-destructively. Test 1000 continuous ticks vs 500+save/load+500 on multiple seeds with active shipments.
 
-Attach: production Pages deploy and live screenshot logs; real player observation records; on-device performance/memory measurements; trade hypothesis evidence; severity-ranked issues and owner sign-off on limited 08A scope. Repeat main CI and the save/seed/conservation suites at the latest commit. Update docs/PROGRESS.md with links and a signed GO decision. Until then: **NO-GO**.
+Shipment rules need finite source inventory and currency, a single identifiable escrow/transit ownership state, fixed capacity and travel time, deterministic stable-order resolution, recoverable save/load and explicit route blockage / failed destination / owner death outcomes. Never create food, wood, money or ghost NPCs in transit. Phaser renders; only simulation decides. Diplomacy (08B) and limited conflict (08C) remain separate optional phases.
+
+## Next GO review
+
+Require green final PR CI on the local built desktop smoke, at least some *actual* independent PC gameplay evidence, a measured reasonable desktop NPC performance envelope, demonstrable narrative value from trade and owner acceptance. Optional Pages/Android must not delay this review. Document which gates remain waived if the owner explicitly changes the scope again.

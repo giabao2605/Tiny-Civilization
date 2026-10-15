@@ -198,3 +198,7 @@ Suggested eventual code layout (create only as implementation needs):
 ## 10. Next action
 
 **Only planning documents exist after this planning commit.** Next code task: execute `PHASE_00_FOUNDATION.md`; verify its exit gate; update `PROGRESS.md`. Do not mark any implementation phase complete in advance.
+
+## Owner scope override — desktop-local target (2026-10-15)
+
+The owner now explicitly accepts a **PC-only local game**. Chrome/Edge on localhost and validated local production preview satisfy the deployment/distribution aspect of Phase 07 and the corresponding Phase 08 prerequisite. GitHub Pages, external hosting, Android/mobile quality gates and real-phone FPS are **optional**, not blockers. This supersedes earlier **public-deployed** wording where it conflicts; it does NOT waive deterministic simulation, resource conservation, valid saves, real desktop-browser validation, independent gameplay feedback or a separate 08A scope go/no-go. Source phase history remains unchanged. Do not mark those other gates PASS without evidence.

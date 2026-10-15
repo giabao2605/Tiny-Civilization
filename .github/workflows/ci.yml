@@ -24,6 +24,8 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - name: Smoke-test built desktop localhost site (PC target)
+        run: PLAYWRIGHT_LOCAL_PRODUCTION=true npm run test:e2e -- tests/e2e/local-desktop.spec.ts
       - name: Build for GitHub Pages project path
         run: GITHUB_PAGES=true npm run build
       - name: Smoke-test the actual production build

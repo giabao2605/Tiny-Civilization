@@ -85,3 +85,8 @@ Cloud save, PWA install support, multi-browser compatibility matrix, full screen
 - **Remaining quality gates:** real novice playtest **not performed**, physical phone/browser performance **not measured**; PR commit and CI still need final confirmation. Phase remains **PARTIAL / IN PROGRESS** until all material exit gates are satisfied.
 
 **Post-merge update (2026-10-15):** Phase 06 merged via PR #7; main CI PASS. The checklist boxes still open above remain unresolved unless Phase 07 verifies them explicitly. Historical statements in the initial verification ledger refer to the earlier pre-merge point in time.
+
+
+## Desktop-local target update (2026-10-15)
+
+Owner accepts running the game on a PC through localhost. Android/physical-phone performance and mobile responsiveness are **not acceptance blockers**. Maintain desktop Chrome/Edge smoke, local save/import/export, determinism, Node p50/p95 and desktop browser FPS/memory evidence. Historical phone measurements or missing checklist entries above document the earlier scope, not an active demand for Android support. Independent novice PC playtest remains an open quality gate.
