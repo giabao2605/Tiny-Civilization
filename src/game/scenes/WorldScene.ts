@@ -392,7 +392,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     camera.setZoom(newZoom);
     camera.centerOn(nextX, nextY);
     this.clampCamera();
-    if (now - this.lastCameraBroadcastMs >= 300) this.announceCamera();
+    if (now - this.lastCameraBroadcastMs >= 900) this.announceCamera();
   }
 
   private paintTerrain(): void {

@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 const status = (page: Page) => page.getByTestId('camera-status');
 const mode = (page: Page) => status(page).getAttribute('data-mode');
 async function select(page: Page, index: number) {
-  await page.locator('[data-testid^="citizen-"]').nth(index).click();
+  await page.locator('.citizen-list > button[data-testid^="citizen-"]').nth(index).click();
 }
 test('V01-D: follow A/B, live motion, bounds, override, pause and durable save', async ({ page }, info) => {
   test.setTimeout(120_000);
@@ -80,6 +80,7 @@ test('V01-D: AFK only after idle, leaves on input, stops when tab hidden, reduce
   await page.clock.fastForward(44_000);
   expect(await mode(page)).not.toBe('afk');
   await page.clock.fastForward(2_000);
+  await page.clock.runFor(120);
   await expect.poll(() => mode(page)).toBe('afk');
   await page.screenshot({ path: info.outputPath('v01-d-afk-commons.png'), fullPage: true });
   const firstShot = await status(page).getAttribute('data-afk-target');
@@ -106,6 +107,7 @@ test('V01-D: AFK only after idle, leaves on input, stops when tab hidden, reduce
   await page.clock.fastForward(44_000);
   expect(await mode(page)).not.toBe('afk');
   await page.clock.fastForward(2_000);
+  await page.clock.runFor(120);
   await expect.poll(() => mode(page)).toBe('afk');
   await page.mouse.move(100, 100);
   await expect.poll(() => mode(page)).toBe('manual');
