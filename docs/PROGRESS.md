@@ -2,7 +2,7 @@
 
 - Branch: `feat/v01-d-follow-afk` from V01-C merge `a0cddcc2`; [PR #14](https://github.com/giabao2605/Tiny-Civilization/pull/14) created as draft; first CI typecheck failed on E2E spec (unused import + tuple typing), follow-up fix submitted. V01-C main post-merge run 38834221427 PASS.
 - Scope: Follow render-space NPC sprite, deterministic real-interest AFK camera with configurable 45/60/90s idle, manual override, visibility and reduced-motion handling. Camera preferences remain runtime only; `WorldState`, seed/RNG, tick and save v5 unchanged.
-- Tests: 96 Vitest tests, typecheck, lint and build PASS on runs 38835313869 and 38836186793; E2E 19 passed, 1 failed + 1 flaky on each. Root-cause: the NPC list test locator matched inspector metadata instead of citizen buttons; corrected and pending final CI verification. AFK fake clock reactivation similarly under review. **Acceptance PARTIAL until complete E2E CI, visual QA and PC performance gates are independently verified.**
+- Tests: 96 Vitest tests, typecheck, lint and build PASS on runs 38835313869 and 38836186793; E2E 19 passed, 1 failed + 1 flaky on each. Root-cause: the NPC list test locator matched inspector metadata instead of citizen buttons; corrected and pending final CI verification. AFK fake-clock E2E exposed frame-dependent idle activation (20 E2E passed, 1 failed on run 38836951648); activation now uses a cancellable real-time timer, pending final CI. **Acceptance PARTIAL until complete E2E CI, visual QA and PC performance gates are independently verified.**
 - See [V01_D_IMPLEMENTATION](observer-upgrade-2026/V01_D_IMPLEMENTATION.md) and [V01_D_HANDOFF](observer-upgrade-2026/V01_D_HANDOFF.md).
 
 # Tiny Civilization — Progress / handoff log

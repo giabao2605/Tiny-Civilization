@@ -27,6 +27,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private shot: CameraInterest | null = null;
   private motionQuery?: MediaQueryList;
   private lastCameraBroadcastMs = 0;
+  private idleTimer: ReturnType<typeof setTimeout> | null = null;
   private world: WorldState;
   private selectedId: number | null = null;
   private speed = 1;
@@ -77,6 +78,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.input.on(Phaser.Input.Events.POINTER_UP, this.onUp);
     this.input.on(Phaser.Input.Events.POINTER_WHEEL, this.onWheel);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.clearAfkTimer();
       document.removeEventListener('visibilitychange', this.onVisibilityChanged);
       this.motionQuery?.removeEventListener('change', this.onMotionChanged);
       this.motionQuery = undefined;
@@ -108,25 +110,51 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.onCameraChanged?.(this.getCameraSnapshot());
     }
   }
+  /** One cancellable real-time idle deadline, independent of scene FPS and world ticks. */
+  private clearAfkTimer(): void {
+    if (this.idleTimer !== null) window.clearTimeout(this.idleTimer);
+    this.idleTimer = null;
+  }
+  private armAfkTimer(): void {
+    this.clearAfkTimer();
+    if (!this.sys.isActive() || !this.afkEnabled || document.hidden || this.isReducedMotion()) return;
+    this.idleTimer = window.setTimeout(() => {
+      this.idleTimer = null;
+      if (!this.sys.isActive() || !this.afkEnabled || document.hidden || this.isReducedMotion() ||
+        this.cameraMode === 'follow' || this.cameraMode === 'afk') return;
+      this.cameraMode = 'afk';
+      this.shot = null;
+      this.shotRotation = 0;
+      this.lastShotMs = 0;
+      this.announceCamera();
+    }, this.afkTimeoutMs);
+  }
   private readonly onMotionChanged = (): void => {
     if (!this.isReducedMotion()) return;
     this.noteActivity();
     this.afkEnabled = false;
+    this.clearAfkTimer();
     this.announceCamera();
   };
   private readonly onVisibilityChanged = (): void => {
     this.lastActivityMs = performance.now();
-    if (document.hidden && this.cameraMode === 'afk') {
-      this.cameraMode = 'manual';
-      this.shot = null;
-      this.announceCamera();
-    }
+    if (document.hidden) {
+      this.clearAfkTimer();
+      if (this.cameraMode === 'afk') {
+        this.cameraMode = 'manual';
+        this.shot = null;
+        this.announceCamera();
+      }
+    } else this.armAfkTimer();
   };
   private isReducedMotion(): boolean { return this.motionQuery?.matches ?? false; }
   private cancelAutomatic(disableAfk = true): void {
     this.followId = null;
     this.shot = null;
-    if (disableAfk) this.afkEnabled = false;
+    if (disableAfk) {
+      this.afkEnabled = false;
+      this.clearAfkTimer();
+    }
     this.lastActivityMs = performance.now();
   }
   noteActivity(): void {
@@ -136,6 +164,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.shot = null;
       this.announceCamera();
     }
+    this.armAfkTimer();
   }
   followNpc(id: number): boolean {
     if (!this.sys.isActive() || !followTargetIsAlive(this.world, id) || !this.sprites.get(id)?.visible) return false;
@@ -150,12 +179,14 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.cancelAutomatic();
     this.afkEnabled = enabled && !this.isReducedMotion();
     if (this.cameraMode === 'follow' || this.cameraMode === 'afk') this.cameraMode = 'manual';
+    this.armAfkTimer();
     this.announceCamera();
   }
   setAfkTimeoutMs(timeoutMs: number): void {
     if (!Number.isFinite(timeoutMs) || timeoutMs < AFK_MIN_TIMEOUT_MS || timeoutMs > AFK_MAX_TIMEOUT_MS) return;
     this.afkTimeoutMs = timeoutMs;
     this.lastActivityMs = performance.now();
+    this.armAfkTimer();
     this.announceCamera();
   }
 
@@ -352,6 +383,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     if (this.afkEnabled && this.cameraMode !== 'follow' &&
       idleReady(true, false, this.isReducedMotion(), now, this.lastActivityMs, this.afkTimeoutMs)) {
       if (this.cameraMode !== 'afk') {
+        this.clearAfkTimer();
         this.cameraMode = 'afk';
         this.lastShotMs = 0;
         this.shotRotation = 0;
