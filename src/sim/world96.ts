@@ -9,6 +9,9 @@ import { isValidTileAt, tileIndexAt, type TilePosition, type WorldDimensions } f
 import { findPath, getPathfindingDiagnostics } from './pathfinding';
 import { drawInt, normalizeSeed } from './prng';
 import {
+  buildWorld96Layout, validateWorld96Layout, ROAD_BACKUP_CASES, type World96Layout,
+} from './world96Layout';
+import {
   createWorld, walkable, type Citizen, type ResourceNode, type Site, type Terrain, type WorldState,
 } from './world';
 
@@ -16,6 +19,7 @@ export const WORLD96_DIMENSIONS: WorldDimensions = Object.freeze({ width: 96, he
 export type World96State = Omit<WorldState, 'schemaVersion'> & {
   schemaVersion: 6;
   map: WorldDimensions;
+  layout: World96Layout;
 };
 export const WORLD96_DISTRICTS = Object.freeze({
   residential: { minX: 10, maxX: 40, minY: 14, maxY: 76 },
@@ -171,8 +175,9 @@ export function createWorld96(seed: number, population: World96Population): Worl
       destination: { ...spawn }, lastMove: [{ ...spawn }], route: [] };
   });
 
+  const layout = buildWorld96Layout(seed, tiles, sites, resourceNodes);
   const world: World96State = {
-    ...initial, schemaVersion: 6, map: WORLD96_DIMENSIONS, rngState, nextEntityId,
+    ...initial, schemaVersion: 6, map: WORLD96_DIMENSIONS, layout, rngState, nextEntityId,
     tiles, sites, resourceNodes, households, citizens,
   };
   validateWorld96(world);
@@ -269,14 +274,28 @@ export function validateWorld96(world: World96State): void {
   for (const citizen of world.citizens) endpoints.set(key(citizen.tile), citizen.tile);
   for (const [point, destination] of endpoints)
     requireCondition(findPath(world, market.tile, destination) !== null, 'disconnected endpoint ' + point);
+  validateWorld96Layout(world);
+  // Check the real movement algorithm against road-segment obstruction fixtures.
+  // Road-only alternatives are independently verified in the layout validator.
+  for (const { from, to, obstruction } of ROAD_BACKUP_CASES) {
+    const index = tileIndexAt(obstruction, WORLD96_DIMENSIONS)!;
+    const blocked: World96State = { ...world, tiles: [...world.tiles] };
+    blocked.tiles[index] = 'water';
+    const path = findPath(blocked, from, to);
+    requireCondition(path !== null && path.every(tile => walkable(blocked, tile)),
+      'real pathfinding cannot recover from road obstruction');
+  }
 }
 
 export function describeWorld96(world: World96State): {
-  tiles: number; sites: number; nodes: number; npc: number; water: number; forest: number; pathfindingCalls: number;
+  tiles: number; sites: number; nodes: number; npc: number; water: number; forest: number;
+  roads: number; entrances: number; pois: number; metadataChars: number; pathfindingCalls: number;
 } {
   return { tiles: world.tiles.length, sites: world.sites.length,
     nodes: world.resourceNodes.length, npc: world.citizens.length,
     water: world.tiles.filter(tile => tile === 'water').length,
     forest: world.tiles.filter(tile => tile === 'forest').length,
+    roads: world.layout.roads.length, entrances: world.layout.entrances.length,
+    pois: world.layout.pois.length, metadataChars: JSON.stringify(world.layout).length,
     pathfindingCalls: getPathfindingDiagnostics() };
 }
