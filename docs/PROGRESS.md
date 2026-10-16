@@ -225,3 +225,11 @@ Phase 00 was merged and verified. Next task may implement Phase 01 only after re
 - Candidate `aa5ae0f8`: dev Chromium 12 passed and 1 production-only test skipped as intended; production smoke could not start due missing `preview` npm script. Fixed in `d45205d8`.
 - Candidate `d45205d8`: Pages CI reached production-preview smoke, but the canvas was absent because preview Vite base was `/` while build base was `/Tiny-Civilization/`. Fixed preview base env in `cab7ad65`. No release claim until the corrected smoke passes.
 - Browser performance samples on concurrent CI runners were volatile (8–12 FPS at 100 NPC, 20×). Those are not evidence of a stable improvement over Phase 06 baseline (~25 FPS / 83.3 ms p95). Node tick p95 from the early candidate: 100 NPC 5.887 ms (GitHub Actions Linux). Later, representative final-head metrics are required before asserting an improvement. Renderer/React batching does not change engine ordering or RNG state.
+
+
+## Observer Upgrade V01-C — Art Kit (2026-10-15)
+
+- Precondition: V01-B PR #12 merged as `bffe91e9` and post-merge CI [#38711895996](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38711895996) PASS.
+- Branch `feat/v01-c-art-kit`: added deterministic presentation-only terrain/art modules, six distinct building silhouettes, three foliage shapes, props, feet-based occlusion, and tests/documentation. `src/sim/` and save schema untouched.
+- Screenshot and CI Chromium measurement scripts are committed; representative results and physical PC performance must be verified on final PR HEAD. **V01-C PARTIAL until those gates and visual review pass. Do not merge yet.**
+- Source and acceptance report: [V01_C_IMPLEMENTATION](observer-upgrade-2026/V01_C_IMPLEMENTATION.md), [ASSET_MANIFEST](observer-upgrade-2026/V01_C_ASSET_MANIFEST.md), [V01_D_HANDOFF](observer-upgrade-2026/V01_C_HANDOFF.md).

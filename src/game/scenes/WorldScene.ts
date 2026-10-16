@@ -4,6 +4,9 @@ import { GRID_HEIGHT, GRID_WIDTH, TILE_PIXELS } from '../../sim/grid';
 import type { Citizen, Site, WorldState } from '../../sim/world';
 import { cameraCenterBounds, fitZoom, zoomAnchorCenter } from '../camera/cameraMath';
 import type { CameraMode, CameraSnapshot, WorldCameraControls } from '../camera/types';
+import { ensureArtKit, imageArt } from '../render/artKit';
+import { drawTerrain } from '../render/terrain';
+import { buildingStyle, visualHash } from '../render/visualHash';
 
 const PALETTE = [0xbc654f, 0xe2aa5d, 0x6d9bb3, 0x9c82b6, 0x8fad6b, 0xd2888d, 0x64afa0, 0xdbc17b];
 const CENTER = TILE_PIXELS / 2;
@@ -20,6 +23,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private resourceMarkers = new Map<number, Phaser.GameObjects.Graphics>();
   private constructionMarkers = new Map<number, Phaser.GameObjects.Graphics>();
   private paintedSites = new Set<number>();
+  private siteCells = new Set<number>();
   private resourceStocks = new Map<number, number>();
   private wasPaused = false;
   private highlighter?: Phaser.GameObjects.Graphics;
@@ -41,13 +45,13 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     for (const site of this.world.sites) { this.paintSite(site); this.paintedSites.add(site.id); }
     this.paintConstructions();
     for (const node of this.world.resourceNodes) {
-      const marker = this.add.graphics().setDepth(6);
+      const marker = this.add.graphics().setDepth(1200);
       this.resourceMarkers.set(node.id, marker);
       this.resourceStocks.set(node.id, node.stock);
       this.paintResource(marker, node.kind, node.tile.x, node.tile.y, node.stock, node.capacity);
     }
     for (const citizen of this.world.citizens) this.sprites.set(citizen.id, this.paintCitizen(citizen));
-    this.highlighter = this.add.graphics().setDepth(30);
+    this.highlighter = this.add.graphics().setDepth(4000);
     this.input.on(Phaser.Input.Events.POINTER_DOWN, this.onDown);
     this.input.on(Phaser.Input.Events.POINTER_MOVE, this.onMove);
     this.input.on(Phaser.Input.Events.POINTER_UP, this.onUp);
@@ -61,6 +65,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.resourceStocks.clear();
       this.constructionMarkers.clear();
       this.paintedSites.clear();
+      this.siteCells.clear();
       this.sprites.clear();
       this.movementTweens.clear();
       this.highlighter = undefined;
@@ -198,6 +203,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
           this.movementTweens.get(citizen.id)?.stop();
           this.movementTweens.delete(citizen.id);
           sprite.setPosition(xPixel(citizen.tile.x), yPixel(citizen.tile.y));
+          sprite.setDepth(this.citizenDepth(sprite.x, sprite.y));
           continue;
         }
         if (citizen.lastMove.length < 2) continue;
@@ -214,9 +220,11 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
             const a = path[start]!;
             const b = path[start + 1]!;
             sprite.setPosition(xPixel(a.x + (b.x - a.x) * fraction), yPixel(a.y + (b.y - a.y) * fraction));
+            sprite.setDepth(this.citizenDepth(sprite.x, sprite.y));
           },
           onComplete: () => {
             sprite.setPosition(xPixel(citizen.tile.x), yPixel(citizen.tile.y));
+            sprite.setDepth(this.citizenDepth(sprite.x, sprite.y));
             this.movementTweens.delete(citizen.id);
           },
         });
@@ -233,25 +241,29 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   }
 
   private paintTerrain(): void {
-    const g = this.add.graphics().setDepth(0);
+    ensureArtKit(this);
+    const ground = this.add.graphics();
+    drawTerrain(ground, this.world.tiles, this.world.seed);
+    // One generated texture per scene instead of thousands of persistent tile objects.
+    const key = 'tc-v01c-ground';
+    if (this.textures.exists(key)) this.textures.remove(key);
+    ground.generateTexture(key, this.worldWidth, this.worldHeight);
+    ground.destroy();
+    this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    this.add.image(0, 0, key).setOrigin(0, 0).setDepth(0);
+
+    const occupied = new Set([
+      ...this.world.sites.map(site => site.tile.y * GRID_WIDTH + site.tile.x),
+      ...this.world.resourceNodes.map(node => node.tile.y * GRID_WIDTH + node.tile.x),
+    ]);
     for (let y = 0; y < GRID_HEIGHT; y += 1) for (let x = 0; x < GRID_WIDTH; x += 1) {
-      const tile = this.world.tiles[y * GRID_WIDTH + x];
-      const shade = (x * 17 + y * 29) % 7;
-      let color = shade < 2 ? 0x487853 : 0x4e8059;
-      if (tile === 'water') color = shade < 3 ? 0x377c91 : 0x4293a0;
-      if (tile === 'forest') color = shade < 3 ? 0x2b6246 : 0x326d4c;
-      if (tile === 'road') color = shade < 3 ? 0x9e946e : 0xaaa17b;
-      g.fillStyle(color).fillRect(x * TILE_PIXELS, y * TILE_PIXELS, TILE_PIXELS, TILE_PIXELS);
-      if (tile === 'forest') {
-        g.fillStyle(0x225238).fillRect(xPixel(x) - 3, yPixel(y) - 4, 6, 7);
-        g.fillStyle(0x46815b).fillRect(xPixel(x) - 3, yPixel(y) - 5, 5, 4);
-      } else if (tile === 'water' && shade === 1) {
-        g.lineStyle(1, 0x8dc1b7, 0.65).lineBetween(x * TILE_PIXELS + 3, y * TILE_PIXELS + 6, x * TILE_PIXELS + 8, y * TILE_PIXELS + 6);
-      }
+      const index = y * GRID_WIDTH + x;
+      if (this.world.tiles[index] !== 'forest' || occupied.has(index)) continue;
+      const variation = visualHash(this.world.seed, x, y, 11);
+      if (variation % 7 !== 0) continue;
+      const kind = variation % 3 === 0 ? 'pine' : variation % 3 === 1 ? 'oak' : 'shrub';
+      imageArt(this, kind, xPixel(x), (y + 1) * TILE_PIXELS);
     }
-    g.lineStyle(1, 0x0d3021, 0.08);
-    for (let i = 0; i <= GRID_WIDTH; i += 1) g.lineBetween(i * TILE_PIXELS, 0, i * TILE_PIXELS, GRID_HEIGHT * TILE_PIXELS);
-    for (let i = 0; i <= GRID_HEIGHT; i += 1) g.lineBetween(0, i * TILE_PIXELS, GRID_WIDTH * TILE_PIXELS, i * TILE_PIXELS);
   }
 
   private paintResource(
@@ -278,7 +290,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     for (const construction of this.world.constructions) {
       if (construction.status !== 'active') continue;
       let marker = this.constructionMarkers.get(construction.id);
-      if (!marker) { marker = this.add.graphics().setDepth(8); this.constructionMarkers.set(construction.id, marker); }
+      if (!marker) { marker = this.add.graphics().setDepth(1200); this.constructionMarkers.set(construction.id, marker); }
       marker.clear();
       const x = construction.tile.x * TILE_PIXELS;
       const y = construction.tile.y * TILE_PIXELS;
@@ -289,25 +301,42 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   }
 
   private paintSite(site: Site): void {
-    const x = site.tile.x * TILE_PIXELS;
-    const y = site.tile.y * TILE_PIXELS;
-    const g = this.add.graphics().setDepth(3);
-    if (site.kind === 'home') {
-      g.fillStyle(0x523e32).fillRect(x + 2, y + 5, 8, 6);
-      g.fillStyle(0xcf765b).fillTriangle(x + 1, y + 5, x + 6, y + 1, x + 11, y + 5);
-      g.fillStyle(0xf2d9a0).fillRect(x + 5, y + 7, 2, 4);
-    } else if (site.kind === 'work') {
-      g.fillStyle(0x554c37).fillRect(x + 1, y + 4, 10, 7);
-      g.fillStyle(0xd5ba78).fillRect(x + 1, y + 2, 10, 3);
-      g.fillStyle(0x94bed0).fillRect(x + 4, y + 6, 4, 3);
-    } else if (site.kind === 'market') {
-      g.fillStyle(0x473d5e).fillRect(x + 1, y + 4, 10, 7);
-      g.fillStyle(0xf0b76d).fillTriangle(x, y + 4, x + 6, y, x + 12, y + 4);
-      g.fillStyle(0x9cdbc0).fillRect(x + 4, y + 7, 4, 3);
-    } else {
-      g.fillStyle(0xdfc89a).fillCircle(x + 6, y + 6, 5);
-      g.fillStyle(0xa56d4e).fillCircle(x + 6, y + 6, 2);
+    this.siteCells.add(site.tile.y * GRID_WIDTH + site.tile.x);
+    const cx = xPixel(site.tile.x);
+    const footY = (site.tile.y + 1) * TILE_PIXELS;
+    if (site.kind === 'commons') {
+      imageArt(this, 'well', cx, footY);
+      imageArt(this, 'bench', cx - 12, footY - 2);
+      imageArt(this, 'sign', cx + 12, footY - 2);
+      return;
     }
+    const homeOrdinal = site.kind === 'home'
+      ? this.world.sites.filter(candidate => candidate.kind === 'home')
+        .findIndex(candidate => candidate.id === site.id)
+      : 0;
+    const style = buildingStyle(this.world.seed, site, homeOrdinal);
+    if (style) imageArt(this, style, cx, footY);
+    // All set dressing is decorative; neither sites nor tile walkability change.
+    const variation = visualHash(this.world.seed, site.id, 0, 47);
+    if (site.kind === 'home') {
+      if (variation % 3 === 0) imageArt(this, 'barrel', cx + 9, footY - 1);
+      if (variation % 4 === 0) imageArt(this, 'fence', cx - 9, footY - 1);
+    } else if (site.kind === 'work') {
+      const farm = site.name.toLowerCase().includes('ruộng');
+      imageArt(this, farm ? 'crops' : 'woodpile', cx + 10, footY - 1);
+      if (variation % 2 === 0) imageArt(this, 'lantern', cx - 10, footY - 1);
+    } else if (site.kind === 'market') {
+      imageArt(this, 'crate', cx - 10, footY - 1);
+      imageArt(this, 'barrel', cx + 11, footY - 1);
+    }
+  }
+
+  /** Citizens standing at a site's door remain visible in the shared gameplay cell. */
+  private citizenDepth(x: number, y: number): number {
+    const tx = Math.floor(x / TILE_PIXELS);
+    const ty = Math.floor(y / TILE_PIXELS);
+    const atDoor = this.siteCells.has(ty * GRID_WIDTH + tx);
+    return 100 + y + (atDoor ? TILE_PIXELS : 0);
   }
 
   private paintCitizen(citizen: Citizen): Phaser.GameObjects.Container {
@@ -319,7 +348,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     body.fillStyle(citizen.appearance % 2 ? 0x403329 : 0x6c4d2f).fillRect(-3, -8, 6, 2);
     body.fillStyle(0x1b2922).fillRect(-2, -5, 1, 1).fillRect(1, -5, 1, 1);
     const label = this.add.text(0, -12, String(citizen.id - 26), { fontFamily: 'monospace', fontSize: '6px', color: '#fff6db', backgroundColor: '#152b23aa' }).setOrigin(0.5, 1);
-    const sprite = this.add.container(xPixel(citizen.tile.x), yPixel(citizen.tile.y), [body, label]).setDepth(15);
+    const sprite = this.add.container(xPixel(citizen.tile.x), yPixel(citizen.tile.y), [body, label]).setDepth(this.citizenDepth(xPixel(citizen.tile.x), yPixel(citizen.tile.y)));
     sprite.setData('citizenId', citizen.id);
     return sprite;
   }
