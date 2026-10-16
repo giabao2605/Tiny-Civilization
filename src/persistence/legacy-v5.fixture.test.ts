@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
-import { gunzipSync, gzipSync } from 'node:zlib';
+import { gunzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { advanceOneTick, advanceTicks } from '../sim/engine';
 import { GRID_HEIGHT, GRID_WIDTH, isValidTile, tileIndex } from '../sim/grid';
@@ -74,26 +74,18 @@ describe('W02-A: frozen v5 legacy save compatibility (no schema change)', () => 
   });
 
   it('freezes authentic v5 JSON, validates every reference, then replays deterministic continuation', () => {
-    if (!existsSync(fixturePath) || !existsSync(manifestPath)) {
-      const { world, pending, raw, manifest } = generateSourceBaseline();
-      validateWorld(world);
-      const restored = parseSave(raw);
-      expect(restored.world).toEqual(world);
-      expect(restored.pending).toEqual(pending);
-      expect(restored.nextRequestId).toBe(manifest.nextRequestId);
-      const encoded = gzipSync(Buffer.from(raw, 'utf8')).toString('base64');
-      console.log('W02A_BOOTSTRAP_MANIFEST=' + JSON.stringify(manifest));
-      for (let i = 0; i < encoded.length; i += 1800) {
-        console.log('W02A_BOOTSTRAP_CHUNK_' + String(i / 1800).padStart(3, '0') + '=' + encoded.slice(i, i + 1800));
-      }
-      console.log('W02A_BOOTSTRAP_END=' + Math.ceil(encoded.length / 1800));
-      return;
-    }
+    expect(existsSync(fixturePath), 'Frozen v5 JSON fixture must be checked in').toBe(true);
+    expect(existsSync(manifestPath), 'Frozen v5 digest manifest must be checked in').toBe(true);
 
-    const encoded = readFileSync(fixturePath, 'utf8').replace(/\\s/g, '');
+    const encoded = readFileSync(fixturePath, 'utf8').replace(/\s/g, '');
     const raw = gunzipSync(Buffer.from(encoded, 'base64')).toString('utf8');
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as ReturnType<typeof generateSourceBaseline>['manifest'];
     expect(manifest.sourceCommit).toBe(sourceCommit);
+    // Regenerate with the unmodified v5 engine before any W02-B schema refactor.
+    // If a world rule changes, this test must not silently replace the golden fixture.
+    const source = generateSourceBaseline();
+    expect(source.raw).toBe(raw);
+    expect(source.manifest).toEqual(manifest);
     expect(manifest.saveFormat).toBe(SAVE_FORMAT);
     expect(manifest.engineVersion).toBe(ENGINE_VERSION);
     expect(manifest.saveBytes).toBe(Buffer.byteLength(raw, 'utf8'));
@@ -111,6 +103,8 @@ describe('W02-A: frozen v5 legacy save compatibility (no schema change)', () => 
     expect(world.citizens).toHaveLength(manifest.citizenCount);
     expect(world.households).toHaveLength(manifest.householdCount);
     expect(world.governance.elections).toBe(manifest.governanceElections);
+    expect(manifest.governanceElections).toBeGreaterThan(0);
+    expect(manifest.relationshipEdges).toBeGreaterThan(0);
     expect(world.market.trades).toHaveLength(manifest.tradeCount);
     expect(world.citizens.reduce((n, c) => n + Object.keys(c.relations).length, 0))
       .toBe(manifest.relationshipEdges);
