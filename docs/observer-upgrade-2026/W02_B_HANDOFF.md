@@ -18,7 +18,7 @@
 - `src/persistence/save.ts` still only accepts v5, and v5 imports must stay 48×48. v6 parser, migration, envelope, validation belong **W02-E**.
 - `src/sim/economy.ts` construction plot candidates are legacy site coordinates; W02-C handles 96 layout rather than moving them in W02-B.
 - Existing `cameraMath.ts` is pixel-dimension-aware. Reuse it, do not replace Phaser camera architecture; validate real 96 scene once generated in W02-C and persisted in W02-E.
-- V01-E near-edge Follow flaky once on W02-A; no evidence yet of an intrinsic geometry bug. Keep regression test and investigate actual errors before changing timeout/threshold.
+- V01-E near-edge Follow flaked on W02-A and failed twice post-merge in Pages 38867210352. W02-B normalizes actual camera scroll on snapshot capture to guard the frame gap; validate by the unmodified near-edge test on final PR CI, no timeout/threshold waiver.
 - Physical Windows FPS/heap/GPU tests still **OPEN**; do not treat CI Chromium numbers as certification.
 
 ## Gate

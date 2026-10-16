@@ -283,6 +283,10 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   }
 
   getCameraSnapshot(): CameraSnapshot {
+    // Camera state can be sampled between Phaser's frame updates (e.g. on
+    // immediate Follow selection). Reconcile scroll *before* broadcasting so
+    // the user and E2E read the same bounded view; never hide an invalid center.
+    if (this.sys.isActive()) this.clampCamera();
     const camera = this.cameras.main;
     return { mode: this.cameraMode, zoom: camera.zoom, scrollX: camera.scrollX,
       scrollY: camera.scrollY, viewportWidth: camera.width, viewportHeight: camera.height,

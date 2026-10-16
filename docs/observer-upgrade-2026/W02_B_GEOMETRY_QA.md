@@ -26,7 +26,9 @@ Local container cannot clone github.com (DNS failure). Therefore `npm ci`, `npm 
 
 ## Known regression investigation: near-edge Follow
 
-W02-A reported `observer-v01-e-visual.spec.ts` near-edge Follow **one initial failure and one successful retry**, camera Y center 173.55 below allowed minimum 249.43. The W02-B geometry audit finds no hardcoded 576px in the new camera footprint path; it still preserves previous `cameraCenterBounds` and `clampCamera` formulas. Possible causes include renderer/camera frame timing and stale throttled status broadcasts, but **this is a hypothesis, not a proven fix**. Do not delete test, weaken bounds or extend timeouts merely to turn CI green. If final CI reproduces a wrong bound, reproduce and fix geometry within this scope. Device FPS/heap/GPU soak are V01-E/W02-F outstanding, not W02-B PASS gates.
+W02-A initially reported `observer-v01-e-visual.spec.ts` near-edge Follow **one initial failure and a successful retry**. After W02-A merged, [Pages CI 38867210352](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38867210352) **FAILED** the same edge test on the first attempt **and retry**: recorded Y center 173.55 under min 249.43, then X center 217.25 under min 287. This is a verified post-merge regression, not a clean PASS; other 26 E2E passed and all unit/typecheck/lint passed in that run.
+
+**W02-B fix to verify:** `getCameraSnapshot()` applies the existing `clampCamera()` before a status broadcast, including the immediate Follow click snapshot between Phaser frames, so emitted scroll/zoom/viewport are from a genuinely clamped camera. No fake/status-only clamping, no weakening/deleting `observer-v01-e-visual.spec.ts`, no timeout increases. The baseline camera math and render speed remain unchanged. The fix is **not VERIFIED** until the PR's final HEAD CI repeats full E2E successfully. Device FPS/heap/GPU soak are V01-E/W02-F outstanding, not W02-B PASS gates.
 
 ## Non-goals
 
