@@ -1,4 +1,4 @@
-import { isValidTile, type TilePosition } from '../sim/grid';
+import { LEGACY_DIMENSIONS, isValidTileAt, type TilePosition, type WorldDimensions } from '../sim/grid';
 
 // Foundation-only snapshot. Gameplay values are deliberately not simulated here.
 export type FoundationSnapshot = Readonly<{
@@ -12,7 +12,7 @@ export type UICommand =
   | Readonly<{ type: 'select-tile'; tile: TilePosition }>
   | Readonly<{ type: 'clear-selection' }>;
 
-export function createFoundationCoordinator() {
+export function createFoundationCoordinator(dimensions: WorldDimensions = LEGACY_DIMENSIONS) {
   let snapshot: FoundationSnapshot = {
     phase: 'foundation',
     tick: 0,
@@ -28,7 +28,7 @@ export function createFoundationCoordinator() {
       return () => { listeners.delete(listener); };
     },
     dispatch: (command: UICommand): boolean => {
-      if (command.type === 'select-tile' && !isValidTile(command.tile)) return false;
+      if (command.type === 'select-tile' && !isValidTileAt(command.tile, dimensions)) return false;
 
       const nextTile = command.type === 'clear-selection'
         ? null

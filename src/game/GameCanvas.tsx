@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { LivingSnapshot } from '../app/livingCoordinator';
+import { dimensionsOf } from '../sim/world';
 import type { CameraSnapshot, WorldCameraControls } from './camera/types';
 import type { createGame } from './createGame';
 
@@ -97,12 +98,15 @@ export function GameCanvas({ snapshot, onCitizenSelected, onCameraReady, onCamer
     liveRef.current?.scene.setSnapshot(snapshot);
   }, [snapshot]);
 
+  const dimensions = dimensionsOf(snapshot.world);
   return (
     <div
       ref={hostRef}
       className="canvas-host"
       data-testid="game-container"
       data-npc-count={snapshot.world.citizens.length}
+      data-map-width={dimensions.width}
+      data-map-height={dimensions.height}
       aria-label="Bản đồ làng. Cuộn để phóng to, kéo để di chuyển, nhấn cư dân để xem chi tiết."
     />
   );

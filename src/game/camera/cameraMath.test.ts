@@ -7,8 +7,15 @@ describe('observer camera geometry', () => {
     expect(fitZoom(1400, 720, 576, 576)).toBeCloseTo(720 / 576);
     expect(fitZoom(350, 320, 576, 576)).toBeCloseTo(320 / 576);
   });
-  it('allows future larger maps without requiring a tile schema change', () => {
-    expect(fitZoom(900, 540, 1152, 1152)).toBeCloseTo(540 / 1152);
+  it('fits 1152px synthetic maps for three desktop widths and one narrow viewport', () => {
+    for (const [width, height] of [[1366, 768], [1920, 1080], [2560, 1080], [390, 844]]) {
+      const zoom = fitZoom(width, height, 96 * 12, 96 * 12);
+      expect(zoom).toBeCloseTo(Math.min(3, width / 1152, height / 1152));
+      const [minX, maxX] = cameraCenterBounds(1152, width, zoom);
+      const [minY, maxY] = cameraCenterBounds(1152, height, zoom);
+      expect(minX).toBeLessThanOrEqual(maxX);
+      expect(minY).toBeLessThanOrEqual(maxY);
+    }
   });
   it('centers a map narrower than the visible world-space width', () => {
     expect(cameraCenterBounds(576, 1200, 1)).toEqual([288, 288]);

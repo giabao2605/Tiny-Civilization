@@ -26,3 +26,13 @@ describe('foundation coordinator', () => {
     expect(notify).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('W02-B foundation selection uses explicit geometry when requested', () => {
+  it('keeps legacy default and permits synthetic 96 sized selection', () => {
+    const legacy = createFoundationCoordinator();
+    expect(legacy.dispatch({ type: 'select-tile', tile: { x: 95, y: 95 } })).toBe(false);
+    const expanded = createFoundationCoordinator({ width: 96, height: 96 });
+    expect(expanded.dispatch({ type: 'select-tile', tile: { x: 95, y: 95 } })).toBe(true);
+    expect(expanded.getSnapshot().selectedTile).toEqual({ x: 95, y: 95 });
+  });
+});

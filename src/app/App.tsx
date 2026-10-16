@@ -4,8 +4,7 @@ import type { CameraSnapshot, WorldCameraControls } from '../game/camera/types';
 import { ENGINE_VERSION, LOCAL_SAVE_KEY, MAX_SAVE_BYTES } from '../persistence/save';
 import { dayOf, hourOf, stateDigest } from '../sim/engine';
 import { foodAidRejection } from '../sim/governance';
-import { GRID_HEIGHT, GRID_WIDTH } from '../sim/grid';
-import { getSite, housing, totalCurrency, type Activity, type WorldEvent, type EventType } from '../sim/world';
+import { dimensionsOf, getSite, housing, totalCurrency, type Activity, type WorldEvent, type EventType } from '../sim/world';
 import { createLivingCoordinator } from './livingCoordinator';
 
 const ACTIVITY: Record<Activity, string> = {
@@ -250,7 +249,7 @@ export function App() {
                 <p className="section-kicker">LIVING SETTLEMENT · {String(hour).padStart(2, '0')}:00</p>
                 <h3 id="world-title">Ngôi làng đang sống</h3>
               </div>
-              <span className="map-dimensions">{GRID_WIDTH} × {GRID_HEIGHT} Ô</span>
+              <span className="map-dimensions">{dimensionsOf(world).width} × {dimensionsOf(world).height} Ô</span>
             </div>
             <div className="map-frame">
               <GameCanvas

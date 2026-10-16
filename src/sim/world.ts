@@ -1,4 +1,4 @@
-import { GRID_HEIGHT, GRID_WIDTH, tileIndex, type TilePosition } from './grid';
+import { GRID_HEIGHT, GRID_WIDTH, LEGACY_DIMENSIONS, tileIndexAt, type TilePosition, type WorldDimensions } from './grid';
 import { drawInt, normalizeSeed } from './prng';
 import { BALANCE } from './balance';
 
@@ -86,6 +86,16 @@ export type WorldState = {
   households: Household[]; memorials: Memorial[]; social: SocialStats; governance: GovernanceState;
 };
 
+/** Geometry-only shape for W02-B synthetic tests; WorldState and v5 saves remain schema 5.
+ * A future v6 world will own its dimensions in `map`, never in a global variable.
+ */
+export type WorldGeometry = Readonly<{ schemaVersion: 5; tiles: readonly Terrain[] }> |
+  Readonly<{ schemaVersion: 6; map: WorldDimensions; tiles: readonly Terrain[] }>;
+
+export function dimensionsOf(world: WorldGeometry): WorldDimensions {
+  return world.schemaVersion === 5 ? LEGACY_DIMENSIONS : world.map;
+}
+
 const FORENAMES = ['An', 'Bình', 'Chi', 'Dũng', 'Giang', 'Hà', 'Hải', 'Hương', 'Khánh', 'Lan', 'Linh', 'Mai', 'Minh', 'Nam', 'Ngọc', 'Phúc', 'Quân', 'Thảo', 'Trang', 'Vân'];
 const SURNAMES = ['Nguyễn', 'Trần', 'Lê', 'Phạm', 'Hoàng', 'Vũ', 'Đặng', 'Bùi'];
 const CENTER = { x: 24, y: 24 };
@@ -108,9 +118,9 @@ export function getSite(world: WorldState, id: number | null): Site {
   if (!site) throw new Error('Missing site ' + id);
   return site;
 }
-export function walkable(world: Pick<WorldState, 'tiles'>, tile: TilePosition): boolean {
-  const index = tileIndex(tile);
-  return index !== null && world.tiles[index] !== 'water';
+export function walkable(world: WorldGeometry, tile: TilePosition): boolean {
+  const index = tileIndexAt(tile, dimensionsOf(world));
+  return index !== null && index < world.tiles.length && world.tiles[index] !== 'water';
 }
 export function marketTile(world: WorldState): TilePosition { return getSite(world, world.market.siteId).tile; }
 export function housing(world: WorldState) {
