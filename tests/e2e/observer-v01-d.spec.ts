@@ -79,8 +79,9 @@ test('V01-D: AFK only after idle, leaves on input, stops when tab hidden, reduce
   await expect(status(page)).toHaveAttribute('data-afk-enabled', 'true');
   await page.clock.fastForward(44_000);
   expect(await mode(page)).not.toBe('afk');
-  await page.clock.fastForward(2_000);
-  await page.clock.runFor(120);
+  // Cross the 45-second deadline while the mock clock executes each due timer.
+  // fastForward skips intermediate scheduling and caused intermittent false failures.
+  await page.clock.runFor(1_300);
   await expect.poll(() => mode(page)).toBe('afk');
   // Inspect the settled shot rather than only the first frame of the transition.
   await page.clock.runFor(1600);
@@ -110,8 +111,9 @@ test('V01-D: AFK only after idle, leaves on input, stops when tab hidden, reduce
   await expect(status(page)).toHaveAttribute('data-afk-enabled', 'true');
   await page.clock.fastForward(44_000);
   expect(await mode(page)).not.toBe('afk');
-  await page.clock.fastForward(2_000);
-  await page.clock.runFor(120);
+  // Cross the 45-second deadline while the mock clock executes each due timer.
+  // fastForward skips intermediate scheduling and caused intermittent false failures.
+  await page.clock.runFor(1_300);
   await expect.poll(() => mode(page)).toBe('afk');
   await page.mouse.move(100, 100);
   await expect.poll(() => mode(page)).toBe('manual');

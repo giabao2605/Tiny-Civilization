@@ -2,9 +2,9 @@
 
 **Task:** Follow NPC / Cinematic AFK, PC local-first observer.
 **PR:** [#14](https://github.com/giabao2605/Tiny-Civilization/pull/14), deliberately Draft. V01-C base commit `a0cddcc2`.
-**Latest verified baseline CI:** [38837917119](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38837917119) at commit `b9c9ecbb`.
+**Verified CI:** [38837917119](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38837917119) at `b9c9ecbb` and [38839814189](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38839814189) at `746c87a7`; second run had one Playwright flaky retry. Final HEAD needs fresh CI.
 **Artifact:** [phase-07-release-evidence #12019608904](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38837917119/artifacts/12019608904).
-**Status:** CI PASS; overall acceptance PARTIAL. Re-verify this PR's final commit before any merge.
+**Status:** CI PASS with one flaky E2E retry in run 38839814189; final no-flake CI pending. Overall acceptance PARTIAL. Re-verify this PR's final commit before any merge.
 
 ## Checks confirmed by run 38837917119
 
@@ -14,7 +14,7 @@
 | `npm run typecheck`, `npm run lint` | PASS |
 | `npm run test` | PASS: 96 Vitest, 16 files |
 | `npm run build` | PASS |
-| `npm run test:e2e` | PASS: 21 Chromium cases, 1 skipped |
+| `npm run test:e2e` | PASS on run 38839814189: 21 Chromium cases, 1 skipped, **1 flaky on first attempt**; timeout crossing test subsequently corrected |
 | Pages-path production build, release smoke | PASS: 1 Playwright case |
 | PC device FPS / memory over extended runtime | NOT RUN; physical PC required |
 | Full acceptance visual QA and extreme edge-of-map / long-run | PARTIAL |
@@ -27,7 +27,7 @@ Reviewed PNG images extracted from the GitHub Actions artifact, not just file pr
 - `v01-d-follow-a.png`: selection marker for NPC #27 is present, UI indicates Follow; initial frame is mid-easing, not settled.
 - `v01-d-follow-b-paused.png`: target changes to NPC #28; ring visible, camera is zoomed and the sim HUD says paused. No obvious canvas duplication/art tearing in this frame.
 - `v01-d-manual-override.png`: camera readout is `manual`, target highlight remains; viewport stays filled by terrain.
-- `v01-d-afk-commons.png` and `v01-d-afk-next-scene.png`: UI shows `afk` with real site anchors, but the images were captured at the *start* of an easing transition. Follow-up E2E now waits for a settled frame before capture.
+- `v01-d-afk-commons.png` and `v01-d-afk-next-scene.png`: first capture in run 38837917119 was at start of easing; screenshots from run 38839814189 were **actually viewed after 1600ms mock-clock render progression**. They show zoom 1.32× and 1.38×, no obvious screen tearing, and distinct real scene anchors `site:26` then `site:21`. This is evidence of a visible transition, not a guarantee of subjective motion quality on a physical monitor.
 - `v01-d-390x844-fit.png`: mobile fallback layout stacks correctly, buttons wrap without evident horizontal overflow. Mobile is ancillary: the goal is PC local.
 - 1366×768 and 1920×1080 desktop samples show readable controls and one Phaser map canvas.
 
@@ -57,3 +57,16 @@ Observed Follow is below Manual Fit in all four cases. A follow-up paired `manua
 ## Rollback and next gate
 
 Rollback PR #14 alone. Do not merge without independent acceptance. V01-E handles broader render/perf polish **after** V01-D gates are reviewed; never silently treat a CI PASS as acceptance of PC FPS.
+
+## Same-zoom refinement from CI run 38839814189
+
+Comparison at zoom 3× in both `manual-close` and Follow on the same GitHub Chromium runner:
+
+| NPC | Sim speed | Manual-close mean FPS | Follow mean FPS | Manual-close / Follow zoom |
+| --- | --- | --- | --- | --- |
+| 20 | 1× | 28.91 | 27.90 | 3× / 3× |
+| 20 | 20× | 21.10 | 21.06 | 3× / 3× |
+| 100 | 1× | 25.80 | 24.96 | 3× / 3× |
+| 100 | 20× | 16.70 | 17.16 | 3× / 3× |
+
+Matched zoom suggests much of the original Fit-vs-Follow FPS drop was due to differing zoom scales, **not exclusively camera motion**. Frame-time p95 and JS heap are recorded per mode in the artifact. Small-sample timing variation and headless environment prevent a physical-device FPS claim. The AFK test in this run was flaky on its first attempt after hidden/resume; `fastForward` deadline skipping has been replaced with clock `runFor` crossing the deadline. Its final-result status must be checked.
