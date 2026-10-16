@@ -8,10 +8,10 @@ import { AFK_DEFAULT_TIMEOUT_MS, AFK_MAX_TIMEOUT_MS, AFK_MIN_TIMEOUT_MS, AFK_SCE
   type CameraInterest } from '../camera/afkDirector';
 import type { CameraMode, CameraSnapshot, WorldCameraControls } from '../camera/types';
 import { ensureArtKit, imageArt } from '../render/artKit';
-import { citizenArtKey, ensureCitizenArt } from '../render/citizenArt';
 import { drawTerrain } from '../render/terrain';
 import { buildingStyle, visualHash } from '../render/visualHash';
 
+const PALETTE = [0xbc654f, 0xe2aa5d, 0x6d9bb3, 0x9c82b6, 0x8fad6b, 0xd2888d, 0x64afa0, 0xdbc17b];
 const CENTER = TILE_PIXELS / 2;
 function xPixel(x: number) { return x * TILE_PIXELS + CENTER; }
 function yPixel(y: number) { return y * TILE_PIXELS + CENTER; }
@@ -79,7 +79,6 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.resourceStocks.set(node.id, node.stock);
       this.paintResource(marker, node.kind, node.tile.x, node.tile.y, node.stock, node.capacity);
     }
-    ensureCitizenArt(this);
     for (const citizen of this.world.citizens) this.sprites.set(citizen.id, this.paintCitizen(citizen));
     this.updateLabelVisibility();
     // Local-space halo is drawn once; moving the object avoids Graphics tessellation every frame.
@@ -583,7 +582,14 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   }
 
   private paintCitizen(citizen: Citizen): Phaser.GameObjects.Container {
-    const body = this.add.image(0, 0, citizenArtKey(citizen.appearance));
+    // Keep vector Graphics per citizen: same-run CI showed texture-cache prototype regressed FPS.
+    const outfit = PALETTE[citizen.appearance % PALETTE.length]!;
+    const body = this.add.graphics();
+    body.fillStyle(0x132d20, 0.7).fillEllipse(0, 5, 9, 4);
+    body.fillStyle(outfit).fillRect(-3, -2, 6, 8);
+    body.fillStyle(0xf2ca9e).fillRect(-3, -7, 6, 5);
+    body.fillStyle(citizen.appearance % 2 ? 0x403329 : 0x6c4d2f).fillRect(-3, -8, 6, 2);
+    body.fillStyle(0x1b2922).fillRect(-2, -5, 1, 1).fillRect(1, -5, 1, 1);
     const label = this.add.text(0, -12, String(citizen.id - 26), { fontFamily: 'monospace', fontSize: '6px', color: '#fff6db', backgroundColor: '#152b23aa' }).setOrigin(0.5, 1);
     this.citizenLabels.set(citizen.id, label);
     const sprite = this.add.container(xPixel(citizen.tile.x), yPixel(citizen.tile.y), [body, label]).setDepth(this.citizenDepth(xPixel(citizen.tile.x), yPixel(citizen.tile.y)));
