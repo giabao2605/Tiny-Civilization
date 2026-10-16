@@ -19,5 +19,14 @@ export function createGame(
     render: { pixelArt: true, antialias: false },
     scene: [scene],
   });
+  // Opt-in diagnostics for matched CI/PC profiling. Never part of WorldState or save.
+  if (import.meta.env.DEV && new URLSearchParams(window.location.search).has('observerPerf')) {
+    const host = parent as HTMLElement & { __tcObserverMetrics?: () => object };
+    host.__tcObserverMetrics = () => ({
+      gameObjects: scene.sys.isActive() ? scene.children.list.length : 0,
+      textureCount: Object.keys(game.textures.list).length,
+      rendererType: game.renderer.type,
+    });
+  }
   return { game, scene };
 }
