@@ -34,6 +34,8 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private selectedId: number | null = null;
   private speed = 1;
   private sprites = new Map<number, Phaser.GameObjects.Container>();
+  private citizenLabels = new Map<number, Phaser.GameObjects.Text>();
+  private labelsShown: boolean | null = null;
   private movementTweens = new Map<number, Phaser.Tweens.Tween>();
   private resourceMarkers = new Map<number, Phaser.GameObjects.Graphics>();
   private constructionMarkers = new Map<number, Phaser.GameObjects.Graphics>();
@@ -79,6 +81,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     }
     ensureCitizenArt(this);
     for (const citizen of this.world.citizens) this.sprites.set(citizen.id, this.paintCitizen(citizen));
+    this.updateLabelVisibility();
     // Local-space halo is drawn once; moving the object avoids Graphics tessellation every frame.
     this.highlighter = this.add.graphics().setDepth(4000).setVisible(false);
     this.highlighter.lineStyle(1.5, 0xffe7a3).strokeCircle(0, -2, 9);
@@ -106,6 +109,8 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.paintedSites.clear();
       this.siteCells.clear();
       this.sprites.clear();
+      this.citizenLabels.clear();
+      this.labelsShown = null;
       this.movementTweens.clear();
       this.highlighter = undefined;
     });
@@ -403,6 +408,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   }
   /** Render-only frame smoothing. Never advances the simulation or changes citizen tiles. */
   update(_time: number, delta: number): void {
+    this.updateLabelVisibility();
     if (this.selectedId !== null) this.redrawHighlight();
     if (document.hidden) return;
     const now = performance.now();
@@ -568,9 +574,18 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     return 100 + y + (atDoor ? TILE_PIXELS : 0);
   }
 
+  /** Text ID badges clutter the tiny landscape at Fit. Show them only when inspecting up close. */
+  private updateLabelVisibility(): void {
+    const show = this.cameras.main.zoom >= 2.4;
+    if (this.labelsShown === show) return;
+    this.labelsShown = show;
+    for (const label of this.citizenLabels.values()) label.setVisible(show);
+  }
+
   private paintCitizen(citizen: Citizen): Phaser.GameObjects.Container {
     const body = this.add.image(0, 0, citizenArtKey(citizen.appearance));
     const label = this.add.text(0, -12, String(citizen.id - 26), { fontFamily: 'monospace', fontSize: '6px', color: '#fff6db', backgroundColor: '#152b23aa' }).setOrigin(0.5, 1);
+    this.citizenLabels.set(citizen.id, label);
     const sprite = this.add.container(xPixel(citizen.tile.x), yPixel(citizen.tile.y), [body, label]).setDepth(this.citizenDepth(xPixel(citizen.tile.x), yPixel(citizen.tile.y)));
     sprite.setData('citizenId', citizen.id);
     return sprite;
