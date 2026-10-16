@@ -1,9 +1,10 @@
 ## Observer V01-D — Follow NPC & Cinematic AFK (2026-10-16)
 
-- Branch: `feat/v01-d-follow-afk` from V01-C merge `a0cddcc2`; [PR #14](https://github.com/giabao2605/Tiny-Civilization/pull/14) created as draft; first CI typecheck failed on E2E spec (unused import + tuple typing), follow-up fix submitted. V01-C main post-merge run 38834221427 PASS.
-- Scope: Follow render-space NPC sprite, deterministic real-interest AFK camera with configurable 45/60/90s idle, manual override, visibility and reduced-motion handling. Camera preferences remain runtime only; `WorldState`, seed/RNG, tick and save v5 unchanged.
-- Tests: 96 Vitest tests, typecheck, lint and build PASS on runs 38835313869 and 38836186793; E2E 19 passed, 1 failed + 1 flaky on each. Root-cause: the NPC list test locator matched inspector metadata instead of citizen buttons; corrected and pending final CI verification. AFK fake-clock E2E exposed frame-dependent idle activation (20 E2E passed, 1 failed on run 38836951648); activation now uses a cancellable real-time timer, pending final CI. **Acceptance PARTIAL until complete E2E CI, visual QA and PC performance gates are independently verified.**
-- See [V01_D_IMPLEMENTATION](observer-upgrade-2026/V01_D_IMPLEMENTATION.md) and [V01_D_HANDOFF](observer-upgrade-2026/V01_D_HANDOFF.md).
+- **Status:** Implementation and Chromium CI PASS, acceptance **PARTIAL** pending physical-PC performance, long-run leak checks and complete visual QA (not a merge approval).
+- **PR:** [#14](https://github.com/giabao2605/Tiny-Civilization/pull/14) (Draft), branch `feat/v01-d-follow-afk` from V01-C merge `a0cddcc2`. V01-C post-merge [CI #38834221427 PASS](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38834221427).
+- **V01-D verified run:** [#38837917119 PASS](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38837917119), commit `b9c9ecbb`: npm ci/audit/typecheck/lint/build, 96 Vitest tests, 21 Chromium Playwright E2E passed (1 existing skipped), production Pages-path build/smoke passed. The final PR HEAD must be checked again if new commits are added.
+- **Scope:** Follow moving render-space NPC sprite; AFK is opt-in OFF by default with real-time 45/60/90-second idle timer, deterministic existing-interest targets, manual override, visibility/reduced-motion handling. Canonical `WorldState`, tick, seed/RNG, economy/social/governance and save v5 untouched.
+- **Evidence:** [V01_D_QA](observer-upgrade-2026/V01_D_QA.md) records screenshot review and paired CI runner performance; [V01_D_IMPLEMENTATION](observer-upgrade-2026/V01_D_IMPLEMENTATION.md), [V01_D_HANDOFF](observer-upgrade-2026/V01_D_HANDOFF.md). Keep pending acceptance gates open.
 
 # Tiny Civilization — Progress / handoff log
 

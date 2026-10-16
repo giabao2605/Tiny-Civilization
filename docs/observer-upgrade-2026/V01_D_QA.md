@@ -1,0 +1,59 @@
+# V01-D — QA & Performance Evidence (2026-10-16)
+
+**Task:** Follow NPC / Cinematic AFK, PC local-first observer.
+**PR:** [#14](https://github.com/giabao2605/Tiny-Civilization/pull/14), deliberately Draft. V01-C base commit `a0cddcc2`.
+**Latest verified baseline CI:** [38837917119](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38837917119) at commit `b9c9ecbb`.
+**Artifact:** [phase-07-release-evidence #12019608904](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38837917119/artifacts/12019608904).
+**Status:** CI PASS; overall acceptance PARTIAL. Re-verify this PR's final commit before any merge.
+
+## Checks confirmed by run 38837917119
+
+| Gate | Result |
+| --- | --- |
+| `npm ci`, production `npm audit` | PASS |
+| `npm run typecheck`, `npm run lint` | PASS |
+| `npm run test` | PASS: 96 Vitest, 16 files |
+| `npm run build` | PASS |
+| `npm run test:e2e` | PASS: 21 Chromium cases, 1 skipped |
+| Pages-path production build, release smoke | PASS: 1 Playwright case |
+| PC device FPS / memory over extended runtime | NOT RUN; physical PC required |
+| Full acceptance visual QA and extreme edge-of-map / long-run | PARTIAL |
+
+All passing test counts represent the named CI HEAD only, not an untested subsequent commit.
+
+## Actual screenshot review
+
+Reviewed PNG images extracted from the GitHub Actions artifact, not just file presence:
+- `v01-d-follow-a.png`: selection marker for NPC #27 is present, UI indicates Follow; initial frame is mid-easing, not settled.
+- `v01-d-follow-b-paused.png`: target changes to NPC #28; ring visible, camera is zoomed and the sim HUD says paused. No obvious canvas duplication/art tearing in this frame.
+- `v01-d-manual-override.png`: camera readout is `manual`, target highlight remains; viewport stays filled by terrain.
+- `v01-d-afk-commons.png` and `v01-d-afk-next-scene.png`: UI shows `afk` with real site anchors, but the images were captured at the *start* of an easing transition. Follow-up E2E now waits for a settled frame before capture.
+- `v01-d-390x844-fit.png`: mobile fallback layout stacks correctly, buttons wrap without evident horizontal overflow. Mobile is ancillary: the goal is PC local.
+- 1366×768 and 1920×1080 desktop samples show readable controls and one Phaser map canvas.
+
+Remaining manual observations: settled AFK scenes, boundary focus on a traveling NPC near each map edge, subjective motion smoothness on physical monitor, live tab background/resume, and long-duration renderer memory profiling. These are not claimed PASS.
+
+## Same-run Chromium performance: fit vs follow
+
+Run 38837917119, seed 12345, Chromium headless, 1920×1080. Mean FPS samples measured from requestAnimationFrame, not guaranteed real game FPS or equivalent to a physical PC. Manual mode used *Fit*, with different zoom than Follow, so those two samples do not fully isolate camera-motion overhead.
+
+| NPC | Sim speed | Manual-fit mean FPS | Follow mean FPS | Follow p95 frame (ms) |
+| --- | --- | --- | --- | --- |
+| 20 | 1× | 43.61 | 29.59 | 66.70 |
+| 20 | 20× | 28.73 | 20.67 | 66.80 |
+| 100 | 1× | 37.49 | 25.13 | 83.40 |
+| 100 | 20× | 21.44 | 16.73 | 100.10 |
+
+Observed Follow is below Manual Fit in all four cases. A follow-up paired `manual-close` sample at a similar zoom has been added to the Playwright benchmark for a fairer same-scale comparison; check the final CI artifact. Memory samples exist per mode in `v01-d-ci-performance.json`, but isolated heap snapshots are insufficient to prove absence of leaks.
+
+## Camera invariants / regressions
+
+- `WorldState` v5 and `src/sim/**` unchanged across PR.
+- New paused-state E2E verifies seed/tick/state digest and exported save JSON remain identical before/after camera-only actions.
+- Timer uses one cancellable browser timeout; scene listener teardown and old controls require continued lifecycle review.
+- AFK disabled by default, hidden-tab and reduced-motion handling covered.
+- Do not mark performance 60 FPS or DONE until evidence warrants it.
+
+## Rollback and next gate
+
+Rollback PR #14 alone. Do not merge without independent acceptance. V01-E handles broader render/perf polish **after** V01-D gates are reviewed; never silently treat a CI PASS as acceptance of PC FPS.

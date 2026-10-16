@@ -3,7 +3,7 @@
 **Date:** 2026-10-16
 **Branch:** `feat/v01-d-follow-afk`
 **Base:** V01-C merge `a0cddcc2108d0e25ba1455b972f673b7a284b3b6`
-**Status:** PARTIAL pending full post-PR CI, visual evidence inspection and comparative measurements.
+**Status:** CI checks PASS at run 38837917119 on commit b9c9ecbb; acceptance PARTIAL pending physical-PC performance and further visual/long-run validation. Latest HEAD requires its own CI verification.
 
 ## Architecture
 
@@ -20,7 +20,7 @@
 - Unit: `src/game/camera/afkDirector.test.ts` covers world-backed interest ordering, dead targets, idle, reduction and interpolation.
 - E2E: `tests/e2e/observer-v01-d.spec.ts` covers A/B follow, override, pause, AFK idle and input exit, reduced motion, remount and viewport screenshots (Chromium).
 - CI workflow preserves V01-D evidence separately from production smoke. V01-D performance spec pairs manual/Follow captures for 20/100 NPC × 1×/20× on the *same Chromium runner*, with FPS, p50/p95, heap, canvas count. Previous V01-C evidence remains the historical reference; physical-PC performance is a separate gate.
-- These are *intended test cases*, not claims that npm commands, screenshots or performance passed locally. GitHub connector environment does not provide a local repo/Node/browser test runner.
+- Confirmed [CI run #38837917119](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38837917119): npm ci, production npm audit, typecheck, lint, 96 Vitest tests, build, 21 Chromium E2E PASS (1 skipped) and production smoke PASS. Test runner was GitHub Actions, **not a local physical PC**. See [V01_D_QA](V01_D_QA.md) for visual observations and performance measurements. A later commit needs a new final-run verification.
 - **Open gates:** actual visual review (particularly AFK scene transition and NPC at map edges), final PR CI status, physical-PC FPS at 20/100 × 1×/20×, and long-run memory/watchdog. Do not mark DONE solely on source delivery.
 
 ## Rollback

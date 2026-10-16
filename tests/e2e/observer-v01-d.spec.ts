@@ -82,9 +82,13 @@ test('V01-D: AFK only after idle, leaves on input, stops when tab hidden, reduce
   await page.clock.fastForward(2_000);
   await page.clock.runFor(120);
   await expect.poll(() => mode(page)).toBe('afk');
+  // Inspect the settled shot rather than only the first frame of the transition.
+  await page.clock.runFor(1600);
+  await expect.poll(async () => Number(await status(page).getAttribute('data-zoom'))).toBeGreaterThan(1.1);
   await page.screenshot({ path: info.outputPath('v01-d-afk-commons.png'), fullPage: true });
   const firstShot = await status(page).getAttribute('data-afk-target');
   await page.clock.fastForward(9_300);
+  await page.clock.runFor(1600);
   await expect.poll(() => status(page).getAttribute('data-afk-target')).not.toBe(firstShot);
   await page.screenshot({ path: info.outputPath('v01-d-afk-next-scene.png'), fullPage: true });
   await page.evaluate(() => {
@@ -139,4 +143,32 @@ test('V01-D: responsive, remount and 20/50/100 follow lifecycle', async ({ page 
     await page.getByTestId('camera-fit').click();
     await page.screenshot({ path: info.outputPath('v01-d-' + width + 'x' + height + '-fit.png'), fullPage: true });
   }
+});
+
+test('V01-D: camera, selection and idle preferences do not alter paused world digest or saved JSON', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/');
+  await expect(page.getByTestId('camera-fit')).toBeEnabled();
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  const digest = await page.getByTestId('world-tick').innerText();
+  await page.getByTestId('save-world').click();
+  const before = await page.evaluate(() => localStorage.getItem('tiny-civilization:world:v1'));
+  expect(before).not.toBeNull();
+  await select(page, 0);
+  await page.getByTestId('camera-follow').click();
+  await expect.poll(() => mode(page)).toBe('follow');
+  await page.getByTestId('camera-fit').click();
+  await page.getByTestId('camera-reset').click();
+  await page.getByTestId('camera-afk-timeout').selectOption('90000');
+  await page.getByTestId('camera-afk-toggle').click();
+  await expect(status(page)).toHaveAttribute('data-afk-enabled', 'true');
+  await page.getByTestId('camera-afk-toggle').click();
+  await expect(status(page)).toHaveAttribute('data-afk-enabled', 'false');
+  await page.getByRole('button', { name: 'Phóng to bản đồ' }).click();
+  expect(await page.getByTestId('world-tick').innerText()).toBe(digest);
+  await page.getByTestId('save-world').click();
+  const after = await page.evaluate(() => localStorage.getItem('tiny-civilization:world:v1'));
+  expect(after).toBe(before);
+  expect(errors).toEqual([]);
 });
