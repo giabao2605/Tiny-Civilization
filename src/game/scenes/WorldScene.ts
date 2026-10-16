@@ -74,7 +74,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.paintConstructions();
     for (const node of this.world.resourceNodes) {
       // Ground-level indicators must not paint over NPC heads.
-      const marker = this.add.graphics().setDepth(95 + (node.tile.y + 1) * TILE_PIXELS);
+      const marker = this.add.graphics().setDepth(85 + (node.tile.y + 1) * TILE_PIXELS);
       this.resourceMarkers.set(node.id, marker);
       this.resourceStocks.set(node.id, node.stock);
       this.paintResource(marker, node.kind, node.tile.x, node.tile.y, node.stock, node.capacity);
@@ -519,7 +519,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       if (construction.status !== 'active') continue;
       let marker = this.constructionMarkers.get(construction.id);
       if (!marker) {
-        marker = this.add.graphics().setDepth(95 + (construction.tile.y + 1) * TILE_PIXELS);
+        marker = this.add.graphics().setDepth(85 + (construction.tile.y + 1) * TILE_PIXELS);
         this.constructionMarkers.set(construction.id, marker);
       }
       const paintKey = [construction.tile.x, construction.tile.y, construction.progress,
