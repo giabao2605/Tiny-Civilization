@@ -1,3 +1,10 @@
+## Observer V01-D — Follow NPC & Cinematic AFK (2026-10-16)
+
+- Branch: `feat/v01-d-follow-afk` from V01-C merge `a0cddcc2`; PR and CI pending verification.
+- Scope: Follow render-space NPC sprite, deterministic real-interest AFK camera with configurable 45/60/90s idle, manual override, visibility and reduced-motion handling. Camera preferences remain runtime only; `WorldState`, seed/RNG, tick and save v5 unchanged.
+- Tests: camera director unit coverage and Playwright interaction/viewport evidence added. **Acceptance PARTIAL until final CI, screenshots, performance and PC gates are independently verified.**
+- See [V01_D_IMPLEMENTATION](observer-upgrade-2026/V01_D_IMPLEMENTATION.md) and [V01_D_HANDOFF](observer-upgrade-2026/V01_D_HANDOFF.md).
+
 # Tiny Civilization — Progress / handoff log
 
 **Updated:** 2026-10-15  

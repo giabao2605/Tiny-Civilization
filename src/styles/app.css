@@ -172,3 +172,13 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
+
+/* V01-D observer follow / optional AFK controls */
+.afk-timeout-label { display: inline-flex; align-items: center; gap: 6px; color: #d7e6c9; font-size: 11px; }
+.afk-timeout-label select { background: #1d3a2a; color: #f0efdc; border: 1px solid #658269;
+  border-radius: 8px; padding: 7px; font-size: 11px; }
+.afk-timeout-label select:disabled { opacity: .5; }
+@media (max-width: 620px) {
+  .camera-buttons { width: 100%; }
+  .afk-timeout-label { max-width: 100%; }
+}

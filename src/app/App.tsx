@@ -122,6 +122,22 @@ export function App() {
 
   useEffect(() => coordinator.start(), [coordinator]);
 
+  // User activity is presentation-only. Keep the idle clock independent of game speed/ticks.
+  useEffect(() => {
+    if (!cameraControls) return;
+    const activity = () => cameraControls.noteActivity();
+    window.addEventListener('pointerdown', activity, { passive: true, capture: true });
+    window.addEventListener('pointermove', activity, { passive: true });
+    window.addEventListener('wheel', activity, { passive: true, capture: true });
+    window.addEventListener('keydown', activity, { capture: true });
+    return () => {
+      window.removeEventListener('pointerdown', activity, true);
+      window.removeEventListener('pointermove', activity);
+      window.removeEventListener('wheel', activity, true);
+      window.removeEventListener('keydown', activity, true);
+    };
+  }, [cameraControls]);
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (!cameraControls || event.altKey || event.ctrlKey || event.metaKey ||
@@ -241,7 +257,7 @@ export function App() {
                 key={canvasVersion}
                 snapshot={snapshot}
                 onCitizenSelected={(id) => coordinator.dispatch({ type: 'select-citizen', id })}
-                onCameraReady={setCameraControls}
+                onCameraReady={controls => { setCameraControls(controls); if (!controls) setCameraView(null); }}
                 onCameraChange={setCameraView}
               />
             </div>
@@ -256,10 +272,36 @@ export function App() {
                   onClick={() => cameraControls?.zoomBy(1.2)}>Zoom +</button>
                 <button type="button" className="ghost-button" aria-label="Thu nhỏ bản đồ" disabled={!cameraControls}
                   onClick={() => cameraControls?.zoomBy(1 / 1.2)}>Zoom −</button>
+                <button type="button" className="ghost-button" data-testid="camera-follow"
+                  disabled={!cameraControls || !citizen?.alive}
+                  aria-pressed={cameraView?.mode === 'follow' && cameraView.followTargetId === selectedCitizenId}
+                  onClick={() => { if (selectedCitizenId !== null) cameraControls?.followNpc(selectedCitizenId); }}>
+                  Theo dõi NPC
+                </button>
+                <button type="button" className="ghost-button" data-testid="camera-afk-toggle"
+                  disabled={!cameraControls || cameraView?.reducedMotion}
+                  aria-pressed={cameraView?.afkEnabled ?? false}
+                  onClick={() => cameraControls?.setAfkEnabled(!cameraView?.afkEnabled)}>
+                  AFK {cameraView?.afkEnabled ? 'BẬT' : 'TẮT'}
+                </button>
+                <label className="afk-timeout-label" htmlFor="camera-afk-timeout">Đợi AFK
+                  <select id="camera-afk-timeout" data-testid="camera-afk-timeout"
+                    disabled={!cameraControls || cameraView?.reducedMotion}
+                    value={cameraView?.afkTimeoutMs ?? 60000}
+                    onChange={event => cameraControls?.setAfkTimeoutMs(Number(event.target.value))}>
+                    <option value={45000}>45 giây</option>
+                    <option value={60000}>60 giây</option>
+                    <option value={90000}>90 giây</option>
+                  </select>
+                </label>
                 <button type="button" className="ghost-button" onClick={() => setCanvasVersion((v) => v + 1)}>Khởi tạo lại canvas</button>
               </div>
               <span className="camera-readout" data-testid="camera-status"
                 data-mode={cameraView?.mode ?? 'loading'}
+                data-follow-id={cameraView?.followTargetId ?? ''}
+                data-afk-enabled={cameraView?.afkEnabled ?? false}
+                data-afk-target={cameraView?.afkTargetKey ?? ''}
+                data-reduced-motion={cameraView?.reducedMotion ?? false}
                 data-zoom={cameraView?.zoom ?? ''}
                 data-scroll-x={cameraView?.scrollX ?? ''}
                 data-scroll-y={cameraView?.scrollY ?? ''}
@@ -267,7 +309,11 @@ export function App() {
                 data-viewport-height={cameraView?.viewportHeight ?? ''}
                 role="status" aria-live="off">
                 Camera: {cameraView ? cameraView.mode + ' · ' + cameraView.zoom.toFixed(2) + '× · ' +
-                  cameraView.viewportWidth + '×' + cameraView.viewportHeight : 'đang tải'}
+                  cameraView.viewportWidth + '×' + cameraView.viewportHeight +
+                  (cameraView.mode === 'follow' ? ' · NPC #' + cameraView.followTargetId : '') +
+                  (cameraView.mode === 'afk' ? ' · ' + (cameraView.afkTargetKey ?? 'chọn cảnh') : '') :
+                  'đang tải'}
+                {cameraView?.reducedMotion && ' · AFK tắt để giảm chuyển động'}
               </span>
             </div>
             <div className="legend-row" aria-label="Chú giải bản đồ">

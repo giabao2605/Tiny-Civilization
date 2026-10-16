@@ -25,14 +25,15 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       # Production smoke wipes test-results/. Preserve each observer evidence generation.
-      - name: Preserve observer V01-A/B and V01-C art evidence
+      - name: Preserve observer V01-A/B/C and V01-D camera evidence
         if: always()
         run: |
-          mkdir -p observer-v01-a-evidence observer-v01-b-evidence observer-v01-c-evidence
+          mkdir -p observer-v01-a-evidence observer-v01-b-evidence observer-v01-c-evidence observer-v01-d-evidence
           if [ -d test-results ]; then
             find test-results -type f -name 'v01-a-*' -exec cp '{}' observer-v01-a-evidence/ ';'
             find test-results -type f -name 'v01-b-*' -exec cp '{}' observer-v01-b-evidence/ ';'
             find test-results -type f -name 'v01-c-*' -exec cp '{}' observer-v01-c-evidence/ ';'
+            find test-results -type f -name 'v01-d-*' -exec cp '{}' observer-v01-d-evidence/ ';'
           fi
       - name: Build for GitHub Pages project path
         run: GITHUB_PAGES=true npm run build
@@ -48,6 +49,7 @@ jobs:
             observer-v01-a-evidence/
             observer-v01-b-evidence/
             observer-v01-c-evidence/
+            observer-v01-d-evidence/
             dist/
           if-no-files-found: ignore
           retention-days: 7

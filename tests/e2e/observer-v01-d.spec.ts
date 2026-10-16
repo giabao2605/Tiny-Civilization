@@ -1,0 +1,118 @@
+import { writeFile } from 'node:fs/promises';
+import { expect, test, type Page } from '@playwright/test';
+
+const status = (page: Page) => page.getByTestId('camera-status');
+const mode = (page: Page) => status(page).getAttribute('data-mode');
+async function select(page: Page, index: number) {
+  await page.locator('[data-testid^="citizen-"]').nth(index).click();
+}
+test('V01-D: follow A/B, live motion, bounds, override, pause and durable save', async ({ page }, info) => {
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto('/');
+  await expect(page.getByTestId('camera-follow')).toBeEnabled({ enabled: false });
+  await expect(page.getByTestId('camera-afk-toggle')).toHaveAttribute('aria-pressed', 'false');
+  await select(page, 0);
+  await page.getByTestId('camera-follow').click();
+  await expect.poll(() => mode(page)).toBe('follow');
+  const a = await status(page).getAttribute('data-follow-id');
+  expect(a).toBeTruthy();
+  await page.screenshot({ path: info.outputPath('v01-d-follow-a.png'), fullPage: true });
+  await select(page, 1);
+  await page.getByTestId('camera-follow').click();
+  const b = await status(page).getAttribute('data-follow-id');
+  expect(b).toBeTruthy();
+  expect(b).not.toEqual(a);
+  await expect.poll(() => mode(page)).toBe('follow');
+  await page.waitForTimeout(600);
+  const followCamera = await status(page).getAttribute('data-scroll-x');
+  await expect(page.getByTestId('play-status')).toContainText('Đang chạy');
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  await expect.poll(() => mode(page)).toBe('follow');
+  await page.screenshot({ path: info.outputPath('v01-d-follow-b-paused.png'), fullPage: true });
+  await page.getByRole('button', { name: 'Tiếp tục' }).click();
+  await expect.poll(() => mode(page)).toBe('follow');
+  expect(followCamera).not.toBeNull();
+  await page.getByTestId('save-world').click();
+  const saved = await page.evaluate(() => localStorage.getItem('tiny-civilization:world:v1'));
+  await page.getByTestId('camera-fit').click();
+  await expect.poll(() => mode(page)).toBe('fit');
+  await page.getByTestId('camera-reset').click();
+  await expect.poll(() => mode(page)).toBe('reset');
+  await select(page, 0);
+  await page.getByTestId('camera-follow').click();
+  const canvas = page.getByTestId('game-container').locator('canvas');
+  const box = await canvas.boundingBox();
+  expect(box).not.toBeNull();
+  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await page.mouse.wheel(0, -220);
+  await expect.poll(() => mode(page)).toBe('manual');
+  await select(page, 0);
+  await page.getByTestId('camera-follow').click();
+  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box!.x + box!.width / 2 + 80, box!.y + box!.height / 2 + 45, { steps: 7 });
+  await page.mouse.up();
+  await expect.poll(() => mode(page)).toBe('manual');
+  await page.screenshot({ path: info.outputPath('v01-d-manual-override.png'), fullPage: true });
+  await expect(page.getByTestId('selected-citizen')).toBeVisible();
+  await page.getByTestId('load-world').click();
+  await expect(page.getByTestId('camera-fit')).toBeEnabled();
+  expect(await page.evaluate(() => localStorage.getItem('tiny-civilization:world:v1'))).toBe(saved);
+  await expect.poll(() => mode(page)).toBe('reset');
+  expect(errors).toEqual([]);
+});
+test('V01-D: AFK only after idle, leaves on input, stops when tab hidden, reduced-motion safe', async ({ page }, info) => {
+  test.setTimeout(120_000);
+  await page.clock.install();
+  await page.goto('/');
+  await expect(page.getByTestId('camera-afk-toggle')).toBeEnabled();
+  await expect(status(page)).toHaveAttribute('data-afk-enabled', 'false');
+  await page.getByTestId('camera-afk-timeout').selectOption('45000');
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  await page.getByTestId('camera-afk-toggle').click();
+  await expect(status(page)).toHaveAttribute('data-afk-enabled', 'true');
+  await page.clock.fastForward(44_000);
+  expect(await mode(page)).not.toBe('afk');
+  await page.clock.fastForward(2_000);
+  await expect.poll(() => mode(page)).toBe('afk');
+  await page.screenshot({ path: info.outputPath('v01-d-afk-commons.png'), fullPage: true });
+  await page.getByTestId('camera-fit').click();
+  await expect.poll(() => mode(page)).toBe('fit');
+  await expect(status(page)).toHaveAttribute('data-afk-enabled', 'false');
+  await page.getByTestId('camera-afk-toggle').click();
+  await page.clock.fastForward(46_000);
+  await expect.poll(() => mode(page)).toBe('afk');
+  await page.mouse.move(100, 100);
+  await expect.poll(() => mode(page)).toBe('manual');
+  await expect(status(page)).toHaveAttribute('data-afk-enabled', 'true');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(status(page)).toHaveAttribute('data-afk-enabled', 'false');
+  await expect(page.getByTestId('camera-afk-toggle')).toBeDisabled();
+  await page.screenshot({ path: info.outputPath('v01-d-reduced-motion.png'), fullPage: true });
+});
+test('V01-D: responsive, remount and 20/50/100 follow lifecycle', async ({ page }, info) => {
+  test.setTimeout(180_000);
+  await page.goto('/');
+  await expect(page.getByTestId('camera-follow')).toBeDisabled();
+  for (const count of [20, 50, 100] as const) {
+    await page.getByTestId('population-input').selectOption(String(count));
+    page.once('dialog', d => { void d.accept(); });
+    await page.getByRole('button', { name: 'Tạo lại', exact: true }).click();
+    await expect(page.getByTestId('game-container')).toHaveAttribute('data-npc-count', String(count));
+    await select(page, 0);
+    await page.getByTestId('camera-follow').click();
+    await expect.poll(() => mode(page)).toBe('follow');
+    await page.getByRole('button', { name: 'Khởi tạo lại canvas' }).click();
+    await expect(page.getByTestId('game-container').locator('canvas')).toHaveCount(1);
+    await expect(page.getByTestId('camera-fit')).toBeEnabled();
+    await expect.poll(() => mode(page)).toBe('reset');
+  }
+  for (const [width, height] of [[1366, 768], [1920, 1080], [2560, 1080], [390, 844]]) {
+    await page.setViewportSize({ width, height });
+    await page.getByTestId('camera-fit').click();
+    await page.screenshot({ path: info.outputPath('v01-d-' + width + 'x' + height + '-fit.png'), fullPage: true });
+  }
+});
