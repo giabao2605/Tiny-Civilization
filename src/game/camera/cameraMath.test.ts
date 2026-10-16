@@ -8,7 +8,7 @@ describe('observer camera geometry', () => {
     expect(fitZoom(350, 320, 576, 576)).toBeCloseTo(320 / 576);
   });
   it('fits 1152px synthetic maps for three desktop widths and one narrow viewport', () => {
-    for (const [width, height] of [[1366, 768], [1920, 1080], [2560, 1080], [390, 844]]) {
+    for (const [width, height] of [[1366, 768], [1920, 1080], [2560, 1080], [390, 844]] as const) {
       const zoom = fitZoom(width, height, 96 * 12, 96 * 12);
       expect(zoom).toBeCloseTo(Math.min(3, width / 1152, height / 1152));
       const [minX, maxX] = cameraCenterBounds(1152, width, zoom);
