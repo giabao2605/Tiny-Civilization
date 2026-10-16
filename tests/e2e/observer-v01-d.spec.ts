@@ -1,4 +1,3 @@
-import { writeFile } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
 
 const status = (page: Page) => page.getByTestId('camera-status');
@@ -79,6 +78,21 @@ test('V01-D: AFK only after idle, leaves on input, stops when tab hidden, reduce
   await page.clock.fastForward(2_000);
   await expect.poll(() => mode(page)).toBe('afk');
   await page.screenshot({ path: info.outputPath('v01-d-afk-commons.png'), fullPage: true });
+  const firstShot = await status(page).getAttribute('data-afk-target');
+  await page.clock.fastForward(9_300);
+  await expect.poll(() => status(page).getAttribute('data-afk-target')).not.toBe(firstShot);
+  await page.screenshot({ path: info.outputPath('v01-d-afk-next-scene.png'), fullPage: true });
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await expect.poll(() => mode(page)).toBe('manual');
+  await page.clock.fastForward(90_000);
+  expect(await mode(page)).not.toBe('afk');
+  await page.evaluate(() => {
+    Reflect.deleteProperty(document, 'hidden');
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
   await page.getByTestId('camera-fit').click();
   await expect.poll(() => mode(page)).toBe('fit');
   await expect(status(page)).toHaveAttribute('data-afk-enabled', 'false');
@@ -110,7 +124,7 @@ test('V01-D: responsive, remount and 20/50/100 follow lifecycle', async ({ page 
     await expect(page.getByTestId('camera-fit')).toBeEnabled();
     await expect.poll(() => mode(page)).toBe('reset');
   }
-  for (const [width, height] of [[1366, 768], [1920, 1080], [2560, 1080], [390, 844]]) {
+  for (const [width, height] of [[1366, 768], [1920, 1080], [2560, 1080], [390, 844]] as const) {
     await page.setViewportSize({ width, height });
     await page.getByTestId('camera-fit').click();
     await page.screenshot({ path: info.outputPath('v01-d-' + width + 'x' + height + '-fit.png'), fullPage: true });

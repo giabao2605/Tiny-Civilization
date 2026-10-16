@@ -18,7 +18,7 @@
 
 - Unit: `src/game/camera/afkDirector.test.ts` covers world-backed interest ordering, dead targets, idle, reduction and interpolation.
 - E2E: `tests/e2e/observer-v01-d.spec.ts` covers A/B follow, override, pause, AFK idle and input exit, reduced motion, remount and viewport screenshots (Chromium).
-- CI workflow preserves V01-D evidence separately from production smoke; CI benchmark comparison must use V01-C `v01-c-ci-performance.json` vs new V01-D evidence on the same environment.
+- CI workflow preserves V01-D evidence separately from production smoke. V01-D performance spec pairs manual/Follow captures for 20/100 NPC × 1×/20× on the *same Chromium runner*, with FPS, p50/p95, heap, canvas count. Previous V01-C evidence remains the historical reference; physical-PC performance is a separate gate.
 - These are *intended test cases*, not claims that npm commands, screenshots or performance passed locally. GitHub connector environment does not provide a local repo/Node/browser test runner.
 - **Open gates:** actual visual review (particularly AFK scene transition and NPC at map edges), final PR CI status, physical-PC FPS at 20/100 × 1×/20×, and long-run memory/watchdog. Do not mark DONE solely on source delivery.
 
