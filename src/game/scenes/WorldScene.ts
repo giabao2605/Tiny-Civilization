@@ -27,7 +27,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private shot: CameraInterest | null = null;
   private motionQuery?: MediaQueryList;
   private lastCameraBroadcastMs = 0;
-  private idleTimer: ReturnType<typeof setTimeout> | null = null;
+  private idleTimer: number | null = null;
   private world: WorldState;
   private selectedId: number | null = null;
   private speed = 1;
