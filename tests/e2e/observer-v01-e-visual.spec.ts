@@ -51,3 +51,54 @@ test('V01-E: AFK images on two real points of interest, with 9-second cooldown',
   await page.waitForTimeout(1600);
   await page.screenshot({ path: info.outputPath('v01-e-afk-point-b.png'), fullPage: true });
 });
+
+
+test('V01-E: follow nearest real resident to each map edge and verify centered-world clamp', async ({ page }, info) => {
+  test.setTimeout(90_000);
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto('/');
+  await expect(page.getByTestId('camera-fit')).toBeEnabled();
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  await page.getByTestId('save-world').click();
+  const residents = await page.evaluate(() => {
+    const saved = localStorage.getItem('tiny-civilization:world:v1');
+    const data = JSON.parse(saved ?? '{}') as {
+      world?: { citizens?: Array<{ id: number; alive: boolean; tile: { x: number; y: number } }> }
+    };
+    return data.world?.citizens?.filter(c => c.alive) ?? [];
+  });
+  expect(residents.length).toBeGreaterThan(0);
+  const choices = [
+    { side: 'left', citizen: residents.reduce((a, b) => a.tile.x <= b.tile.x ? a : b) },
+    { side: 'right', citizen: residents.reduce((a, b) => a.tile.x >= b.tile.x ? a : b) },
+    { side: 'top', citizen: residents.reduce((a, b) => a.tile.y <= b.tile.y ? a : b) },
+    { side: 'bottom', citizen: residents.reduce((a, b) => a.tile.y >= b.tile.y ? a : b) },
+  ];
+  const evidence: Array<{ side: string; id: number; tile: { x: number; y: number } }> = [];
+  for (const { side, citizen } of choices) {
+    await page.getByTestId('citizen-' + citizen.id).click();
+    await page.getByTestId('camera-follow').click();
+    await expect(page.getByTestId('camera-status')).toHaveAttribute('data-follow-id', String(citizen.id));
+    await page.waitForTimeout(700);
+    const status = page.getByTestId('camera-status');
+    const zoom = Number(await status.getAttribute('data-zoom'));
+    const scrollX = Number(await status.getAttribute('data-scroll-x'));
+    const scrollY = Number(await status.getAttribute('data-scroll-y'));
+    const width = Number(await status.getAttribute('data-viewport-width'));
+    const height = Number(await status.getAttribute('data-viewport-height'));
+    const bounds = (viewport: number) => {
+      const half = viewport / (2 * zoom);
+      return half * 2 >= 576 ? [288, 288] : [half, 576 - half];
+    };
+    const [minX, maxX] = bounds(width);
+    const [minY, maxY] = bounds(height);
+    expect(scrollX + width / 2).toBeGreaterThanOrEqual(minX - 1);
+    expect(scrollX + width / 2).toBeLessThanOrEqual(maxX + 1);
+    expect(scrollY + height / 2).toBeGreaterThanOrEqual(minY - 1);
+    expect(scrollY + height / 2).toBeLessThanOrEqual(maxY + 1);
+    await page.screenshot({ path: info.outputPath('v01-e-nearest-' + side + '-npc.png'), fullPage: true });
+    evidence.push({ side, id: citizen.id, tile: citizen.tile });
+  }
+  // Record actual tile positions: nearest citizen is not asserted to be on the outermost tile.
+  console.log('V01-E nearest-edge real residents:', JSON.stringify(evidence));
+});
