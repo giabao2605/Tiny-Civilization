@@ -1,6 +1,6 @@
 # Plan 01 — Visual Direction & Camera | Implementation Specification v2
 
-**Status:** READY FOR TASKING; code chưa thực hiện. **Ưu tiên:** G1 sau preflight G0.  
+**Status:** **COMPLETE / OWNER-ACCEPTED** on 2026-10-16, V01-A…E implemented through PRs; code CI verified. **G1 advanced with explicit exceptions:** physical Windows FPS, 60–120 minute memory soak and subjective camera/occlusion review remain OPEN/DEFERRED, not PASS. **Next:** Plan 02 W02-A (geometry/schema audit + v5 fixture/ADR; no 96 generator in A).  
 **Nguồn:** [Master](../MASTER_PLAN.md) · [Research](../RESEARCH_SOURCE.md) · [Simulation Contract](../../SIMULATION_CONTRACT.md).  
 **Chủ đích:** Đẹp hơn ngay trên world 48×48 hiện tại, nâng camera thành công cụ quan sát; không đổi simulation.
 
@@ -77,6 +77,14 @@
 - **Không đủ PASS:** chỉ thay màu ground, chỉ thêm zoom CSS, ảnh đẹp nhưng hitbox sai, chỉ có screenshot không chạy tests, hay thay cả WorldState để phục vụ art.
 - **Rollback:** art/camera code độc lập, có thể tắt AFK và revert renderer mà không migrate save.
 - **Bàn giao:** commit/PR, danh sách asset + license, screenshot before/after, test commands/results, FPS profile, vấn đề tồn đọng và next task V01-?.
+
+## G1 closure decision (2026-10-16)
+
+Owner explicitly approved merging PR [#15](https://github.com/giabao2605/Tiny-Civilization/pull/15) and closing Plan 01 for roadmap sequencing. V01-E source [CI 38849296446](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38849296446) and follow-up documentation [CI 38858614357](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38858614357) both passed before closure. Automated tests, screenshots and camera features are delivered; the Plan 01 execution task series is **complete** by owner decision.
+
+This does **not** change the historical measured performance results or falsely assert hardware validation. Baseline/final CI 54-case short samples showed mostly lower FPS on the later run; different runner/tick loads prevent causal attribution. Hardware FPS, manual visual evaluation, and a 60–120 minute soak remain explicitly deferred. Plan 06/07 must track them; W02-F must profile larger maps before Plan 03.
+
+**Handoff:** W02-A is the next isolated task; check whether its prior preflight audit/fixture really exists rather than assuming it was implemented. Do not attempt W02-B or C without a verified dimension/save ADR and legacy fixture.
 
 ## 7. Prompt dùng trực tiếp cho ChatGPT Task
 

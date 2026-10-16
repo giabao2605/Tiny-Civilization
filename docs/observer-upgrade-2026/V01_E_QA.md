@@ -1,6 +1,6 @@
 # V01-E — QA and visual evidence
 
-**PR:** [#15](https://github.com/giabao2605/Tiny-Civilization/pull/15) (Draft).
+**PR:** [#15](https://github.com/giabao2605/Tiny-Civilization/pull/15). **Owner approved merge and Plan 01 closure on 2026-10-16 with physical performance/soak and subjective review explicitly deferred.**
 **Final source tested:** `c1db2c1354a3063586a15ab580288a9736e359ec`.
 **Verified final workflow:** [38849296446](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38849296446) **SUCCESS**.
 
@@ -34,6 +34,10 @@ The screenshot artifacts include:
 
 **Remaining:** screenshots cannot demonstrate tween smoothness/absence of flicker, physical near-edge camera jitter, long-run depth correctness for traveling sprites, actual NPC moving in front/behind every prop/building, tab background/resume on the user's machine or FPS stability. No screenshot has been presented as proof of those. Full map occupancy remains restricted to original 48×48; expansion belongs to Plan 02.
 
+## Owner gate decision (2026-10-16)
+
+The project owner explicitly approved **merge PR #15 and mark Plan 01 complete**, treating unverified physical-PC performance and long soak as **accepted deferrals**, not as tests that passed. Automated source CI [38849296446](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38849296446) and documentation CI [38858614357](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38858614357) passed. Next W02-A may begin, but Windows benchmarking and soak remain quality debt for Plan 06/07 and map-performance gate W02-F.
+
 ## Rollback & next quality gate
 
-Keep PR Draft. No `src/sim` or persistence schema changes; rollback PR without save migration. Plan 01 should remain **PARTIAL**, not DONE, until hardware FPS and sustained soak are independently accepted or recorded as an explicit waiver. See [performance](V01_E_PERFORMANCE.md) and [handoff](V01_E_HANDOFF.md).
+Owner approved moving this PR out of Draft for merge and closing the Plan 01 execution milestone with explicit, documented quality deferrals. No `src/sim` or persistence schema changes; rollback PR without save migration. Do **not** relabel the deferred hardware FPS/soak results as PASS. See [performance](V01_E_PERFORMANCE.md) and [handoff](V01_E_HANDOFF.md).
