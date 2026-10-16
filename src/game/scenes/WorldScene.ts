@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { LivingSnapshot } from '../../app/livingCoordinator';
 import { TILE_PIXELS } from '../../sim/grid';
-import { dimensionsOf, type Citizen, type Site, type WorldState } from '../../sim/world';
+import { dimensionsOf, worldGeometryChanged, type Citizen, type Site, type WorldState } from '../../sim/world';
 import { cameraCenterBounds, fitZoom, zoomAnchorCenter } from '../camera/cameraMath';
 import { AFK_DEFAULT_TIMEOUT_MS, AFK_MAX_TIMEOUT_MS, AFK_MIN_TIMEOUT_MS, AFK_SCENE_COOLDOWN_MS,
   approachCamera, cameraInterests, followTargetIsAlive, idleReady, nextCameraInterest,
@@ -328,10 +328,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.followId = this.selectedId;
       this.announceCamera();
     }
-    const previousDimensions = dimensionsOf(before);
-    const nextDimensions = dimensionsOf(snapshot.world);
-    if (previousDimensions.width !== nextDimensions.width || previousDimensions.height !== nextDimensions.height ||
-      before.tiles.length !== snapshot.world.tiles.length ||
+    if (worldGeometryChanged(before, snapshot.world) ||
       before.seed !== snapshot.world.seed || before.citizens.length !== snapshot.world.citizens.length ||
       before.tick > snapshot.world.tick || (before.tick === snapshot.world.tick && before.citizens !== snapshot.world.citizens)) {
       this.scene.restart();

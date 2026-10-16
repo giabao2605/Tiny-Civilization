@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { GRID_HEIGHT, GRID_WIDTH, isValidDimensions, isValidTileAt, tileIndexAt,
   tilePositionAt, isValidTile, tileIndex, type WorldDimensions } from './grid';
 import { findPath } from './pathfinding';
-import { createWorld, dimensionsOf, walkable, type Terrain, type WorldGeometry } from './world';
+import { createWorld, dimensionsOf, walkable, worldGeometryChanged, type Terrain, type WorldGeometry } from './world';
 import { terrainAt } from '../game/render/terrain';
 
 const legacy = { width: 48, height: 48 } as const;
@@ -56,6 +56,19 @@ describe('W02-B explicit row-major geometry', () => {
     for (const x of [-1, 0.5, NaN, Infinity, -Infinity, Number.MAX_SAFE_INTEGER]) {
       expect(isValidTileAt({ x, y: 1 }, expanded)).toBe(false);
     }
+  });
+});
+
+describe('W02-B scene geometry identity', () => {
+  it('detects map footprint swaps even when the number of NPCs and seed stay identical', () => {
+    const existing = createWorld(613, 20);
+    const same = { ...existing, tiles: [...existing.tiles] };
+    const larger = synthetic(expanded).world;
+    expect(worldGeometryChanged(existing, same)).toBe(false);
+    expect(worldGeometryChanged(existing, larger)).toBe(true);
+    expect(worldGeometryChanged(larger, existing)).toBe(true);
+    expect(worldGeometryChanged(larger, larger)).toBe(false);
+    expect(JSON.stringify(existing)).toBe(JSON.stringify(createWorld(613, 20)));
   });
 });
 

@@ -96,6 +96,14 @@ export function dimensionsOf(world: WorldGeometry): WorldDimensions {
   return world.schemaVersion === 5 ? LEGACY_DIMENSIONS : world.map;
 }
 
+/** Render/scene identity: a new map footprint requires terrain and camera rebuild. */
+export function worldGeometryChanged(previous: WorldGeometry, next: WorldGeometry): boolean {
+  const before = dimensionsOf(previous);
+  const after = dimensionsOf(next);
+  return before.width !== after.width || before.height !== after.height ||
+    previous.tiles.length !== next.tiles.length;
+}
+
 const FORENAMES = ['An', 'Bình', 'Chi', 'Dũng', 'Giang', 'Hà', 'Hải', 'Hương', 'Khánh', 'Lan', 'Linh', 'Mai', 'Minh', 'Nam', 'Ngọc', 'Phúc', 'Quân', 'Thảo', 'Trang', 'Vân'];
 const SURNAMES = ['Nguyễn', 'Trần', 'Lê', 'Phạm', 'Hoàng', 'Vũ', 'Đặng', 'Bùi'];
 const CENTER = { x: 24, y: 24 };
