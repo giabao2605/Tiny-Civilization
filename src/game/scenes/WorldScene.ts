@@ -34,9 +34,12 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private selectedId: number | null = null;
   private speed = 1;
   private sprites = new Map<number, Phaser.GameObjects.Container>();
+  private citizenLabels = new Map<number, Phaser.GameObjects.Text>();
+  private labelsShown: boolean | null = null;
   private movementTweens = new Map<number, Phaser.Tweens.Tween>();
   private resourceMarkers = new Map<number, Phaser.GameObjects.Graphics>();
   private constructionMarkers = new Map<number, Phaser.GameObjects.Graphics>();
+  private constructionPaintKeys = new Map<number, string>();
   private paintedSites = new Set<number>();
   private siteCells = new Set<number>();
   private resourceStocks = new Map<number, number>();
@@ -70,13 +73,18 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     for (const site of this.world.sites) { this.paintSite(site); this.paintedSites.add(site.id); }
     this.paintConstructions();
     for (const node of this.world.resourceNodes) {
-      const marker = this.add.graphics().setDepth(1200);
+      // Ground-level indicators must not paint over NPC heads.
+      const marker = this.add.graphics().setDepth(85 + (node.tile.y + 1) * TILE_PIXELS);
       this.resourceMarkers.set(node.id, marker);
       this.resourceStocks.set(node.id, node.stock);
       this.paintResource(marker, node.kind, node.tile.x, node.tile.y, node.stock, node.capacity);
     }
     for (const citizen of this.world.citizens) this.sprites.set(citizen.id, this.paintCitizen(citizen));
-    this.highlighter = this.add.graphics().setDepth(4000);
+    this.updateLabelVisibility();
+    // Local-space halo is drawn once; moving the object avoids Graphics tessellation every frame.
+    this.highlighter = this.add.graphics().setDepth(4000).setVisible(false);
+    this.highlighter.lineStyle(1.5, 0xffe7a3).strokeCircle(0, -2, 9);
+    this.highlighter.fillStyle(0xffe7a3, 0.9).fillTriangle(-3, -15, 3, -15, 0, -11);
     this.input.on(Phaser.Input.Events.POINTER_DOWN, this.onDown);
     this.input.on(Phaser.Input.Events.POINTER_MOVE, this.onMove);
     this.input.on(Phaser.Input.Events.POINTER_UP, this.onUp);
@@ -96,9 +104,12 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.resourceMarkers.clear();
       this.resourceStocks.clear();
       this.constructionMarkers.clear();
+      this.constructionPaintKeys.clear();
       this.paintedSites.clear();
       this.siteCells.clear();
       this.sprites.clear();
+      this.citizenLabels.clear();
+      this.labelsShown = null;
       this.movementTweens.clear();
       this.highlighter = undefined;
     });
@@ -164,7 +175,9 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       }
     } else this.armAfkTimer();
   };
-  private isReducedMotion(): boolean { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+  private isReducedMotion(): boolean {
+    return this.motionQuery?.matches ?? window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
   private cancelAutomatic(disableAfk = true): void {
     this.followId = null;
     this.shot = null;
@@ -394,6 +407,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   }
   /** Render-only frame smoothing. Never advances the simulation or changes citizen tiles. */
   update(_time: number, delta: number): void {
+    this.updateLabelVisibility();
     if (this.selectedId !== null) this.redrawHighlight();
     if (document.hidden) return;
     const now = performance.now();
@@ -421,8 +435,9 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
         this.announceCamera();
       }
     } else if (this.cameraMode === 'afk') {
-      const interests = cameraInterests(this.world, this.selectedId);
       if (!this.shot || !this.interestPosition(this.shot) || now - this.lastShotMs >= AFK_SCENE_COOLDOWN_MS) {
+        // Compute choices when rotating, not on every render frame.
+        const interests = cameraInterests(this.world, this.selectedId);
         this.shot = nextCameraInterest(interests, this.shot?.key ?? null, this.shotRotation++);
         this.lastShotMs = now;
         this.announceCamera();
@@ -493,12 +508,23 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private paintConstructions(): void {
     const active = new Set(this.world.constructions.filter((c) => c.status === 'active').map((c) => c.id));
     for (const [id, marker] of this.constructionMarkers) {
-      if (!active.has(id)) { marker.destroy(); this.constructionMarkers.delete(id); }
+      if (!active.has(id)) {
+        marker.destroy();
+        this.constructionMarkers.delete(id);
+        this.constructionPaintKeys.delete(id);
+      }
     }
     for (const construction of this.world.constructions) {
       if (construction.status !== 'active') continue;
       let marker = this.constructionMarkers.get(construction.id);
-      if (!marker) { marker = this.add.graphics().setDepth(1200); this.constructionMarkers.set(construction.id, marker); }
+      if (!marker) {
+        marker = this.add.graphics().setDepth(85 + (construction.tile.y + 1) * TILE_PIXELS);
+        this.constructionMarkers.set(construction.id, marker);
+      }
+      const paintKey = [construction.tile.x, construction.tile.y, construction.progress,
+        construction.hoursRequired].join(':');
+      if (this.constructionPaintKeys.get(construction.id) === paintKey) continue;
+      this.constructionPaintKeys.set(construction.id, paintKey);
       marker.clear();
       const x = construction.tile.x * TILE_PIXELS;
       const y = construction.tile.y * TILE_PIXELS;
@@ -547,7 +573,16 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     return 100 + y + (atDoor ? TILE_PIXELS : 0);
   }
 
+  /** Text ID badges clutter the tiny landscape at Fit. Show them only when inspecting up close. */
+  private updateLabelVisibility(): void {
+    const show = this.cameras.main.zoom >= 2.4;
+    if (this.labelsShown === show) return;
+    this.labelsShown = show;
+    for (const label of this.citizenLabels.values()) label.setVisible(show);
+  }
+
   private paintCitizen(citizen: Citizen): Phaser.GameObjects.Container {
+    // Keep vector Graphics per citizen: same-run CI showed texture-cache prototype regressed FPS.
     const outfit = PALETTE[citizen.appearance % PALETTE.length]!;
     const body = this.add.graphics();
     body.fillStyle(0x132d20, 0.7).fillEllipse(0, 5, 9, 4);
@@ -556,19 +591,22 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     body.fillStyle(citizen.appearance % 2 ? 0x403329 : 0x6c4d2f).fillRect(-3, -8, 6, 2);
     body.fillStyle(0x1b2922).fillRect(-2, -5, 1, 1).fillRect(1, -5, 1, 1);
     const label = this.add.text(0, -12, String(citizen.id - 26), { fontFamily: 'monospace', fontSize: '6px', color: '#fff6db', backgroundColor: '#152b23aa' }).setOrigin(0.5, 1);
+    this.citizenLabels.set(citizen.id, label);
     const sprite = this.add.container(xPixel(citizen.tile.x), yPixel(citizen.tile.y), [body, label]).setDepth(this.citizenDepth(xPixel(citizen.tile.x), yPixel(citizen.tile.y)));
     sprite.setData('citizenId', citizen.id);
     return sprite;
   }
 
   private redrawHighlight(): void {
-    if (!this.highlighter) return;
-    this.highlighter.clear();
-    if (this.selectedId === null) return;
-    const sprite = this.sprites.get(this.selectedId);
-    if (!sprite) return;
-    this.highlighter.lineStyle(1.5, 0xffe7a3).strokeCircle(sprite.x, sprite.y - 2, 9);
-    this.highlighter.fillStyle(0xffe7a3, 0.9).fillTriangle(sprite.x - 3, sprite.y - 15, sprite.x + 3, sprite.y - 15, sprite.x, sprite.y - 11);
+    const highlight = this.highlighter;
+    if (!highlight) return;
+    const sprite = this.selectedId === null ? undefined : this.sprites.get(this.selectedId);
+    if (!sprite?.visible) {
+      if (highlight.visible) highlight.setVisible(false);
+      return;
+    }
+    if (!highlight.visible) highlight.setVisible(true);
+    if (highlight.x !== sprite.x || highlight.y !== sprite.y) highlight.setPosition(sprite.x, sprite.y);
   }
 
   private readonly onDown = (pointer: Phaser.Input.Pointer): void => {
@@ -587,14 +625,14 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.clampCamera();
       this.cancelAutomatic();
       this.cameraMode = 'manual';
-      this.announceCamera();
+      if (performance.now() - this.lastCameraBroadcastMs >= 150) this.announceCamera();
     }
     this.lastDrag = { x: pointer.x, y: pointer.y };
   };
   private readonly onUp = (pointer: Phaser.Input.Pointer): void => {
     this.dragStart = undefined;
     this.lastDrag = undefined;
-    if (this.dragged) { this.dragged = false; return; }
+    if (this.dragged) { this.dragged = false; this.announceCamera(); return; }
     const position = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
     let best: { id: number; distance: number } | null = null;
     for (const [id, sprite] of this.sprites) {

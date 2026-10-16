@@ -4,6 +4,9 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -35,6 +38,13 @@ jobs:
             find test-results -type f -name 'v01-c-*' -exec cp '{}' observer-v01-c-evidence/ ';'
             find test-results -type f -name 'v01-d-*' -exec cp '{}' observer-v01-d-evidence/ ';'
           fi
+      - name: Preserve V01-E benchmark and screenshot evidence
+        if: always()
+        run: |
+          mkdir -p observer-v01-e-evidence
+          if [ -d test-results ]; then
+            find test-results -type f -name 'v01-e-*' -exec cp '{}' observer-v01-e-evidence/ ';'
+          fi
       - name: Build for GitHub Pages project path
         run: GITHUB_PAGES=true npm run build
       - name: Smoke-test the actual production build
@@ -50,6 +60,7 @@ jobs:
             observer-v01-b-evidence/
             observer-v01-c-evidence/
             observer-v01-d-evidence/
+            observer-v01-e-evidence/
             dist/
           if-no-files-found: ignore
           retention-days: 7

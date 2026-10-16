@@ -93,7 +93,7 @@ createWorld(seed, size) -> WorldState + map metadata (48 legacy / 96 new)
 | Gate | Plan / kết quả giao | Phụ thuộc | Không được triển khai trước |
 |---|---|---|---|
 | G0 | Preflight: baseline CI, screenshot, test seeds, clock/save ADR, performance baseline | main HEAD | Mọi thay đổi lớn |
-| G1 | [01 Visual & Camera](plans/01_VISUAL_DIRECTION_AND_CAMERA.md): art kit + camera/viewport, không đổi sim | G0 | 96 map mặc định |
+| G1 | [01 Visual & Camera](plans/01_VISUAL_DIRECTION_AND_CAMERA.md): **COMPLETE / OWNER-ACCEPTED 2026-10-16**, V01-A…E, PC FPS/soak deferred | G0 | 96 map mặc định |
 | G2 | [02 World Map](plans/02_WORLD_MAP_EXPANSION.md): 96 new world, 3 districts, entrances, 20+ anchors, v5 migration | G1, G0 | Weather gameplay |
 | G3 | [03 NPC Navigation](plans/03_NPC_AI_AND_NAVIGATION.md): weighted routing + readable routines, giữ goal/economy | G2 | Full weather response |
 | G4 | [04 Day/Night & Weather](plans/04_DAY_NIGHT_AND_WEATHER.md): time visuals, clock ADR, 4-layer weather | G3 | Gameplay weather không có test |

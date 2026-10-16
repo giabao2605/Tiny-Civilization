@@ -87,6 +87,8 @@ export function GameCanvas({ snapshot, onCitizenSelected, onCameraReady, onCamer
       const live = liveRef.current;
       liveRef.current = null;
       if (live) live.game.destroy(true);
+      // Drop the optional benchmark closure with its old Phaser game on remount.
+      delete (host as HTMLElement & { __tcObserverMetrics?: () => object }).__tcObserverMetrics;
       host.replaceChildren();
     };
   }, []);
