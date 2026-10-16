@@ -1,3 +1,20 @@
+## Observer Plan 02 — W02-C first complete CI verification (2026-10-16)
+
+- PR [#18](https://github.com/giabao2605/Tiny-Civilization/pull/18), branch `feat/w02-c-96-world-generator`, **still unmerged**. **First complete CI [#38875512363](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38875512363) PASS** at `c628d8fe`: 19 test files / **142 unit tests**, **28 Chromium E2E passed, 1 skipped**, dependency audit, typecheck, lint, build and production smoke all successful. Generated 96×96 seed matrix was exactly **30/30 PASS**; 25 homes + 5 works + commons + market = 32 sites, 4/7/13 resource nodes for 20/50/100 residents.
+- GitHub runner median generation+validation **29.03/30.35/34.72 ms** (20/50/100 NPC); slowest was 65.96ms for seed101/pop20. Real 96 runtime smoke and Windows hardware FPS **NOT RUN** by scope (W02-E/F). Source legacy v5 save and tick720→816 frozen full-world SHA-256 regression PASS on this first run.
+- **Important:** this verification update is a documentation-only commit on top of `c628d8fe`. **Final-HEAD CI remains PENDING** until a new Actions run completes on this docs commit. Do not merge before that gate. Full measurements: [generation QA](observer-upgrade-2026/W02_C_GENERATION_QA.md).
+
+## Observer Plan 02 — W02-C 96×96 Generator & Districts (2026-10-16)
+
+- **Scope/status:** isolated W02-C generator plus validator and tests staged on `feat/w02-c-96-world-generator`, from `main@bd0e3891`; separate PR, **NOT MERGED**. Final-head CI gate **PENDING**, do not mark VERIFIED before all checks pass.
+- **Post-merge W02-B gate verified:** PR [#17](https://github.com/giabao2605/Tiny-Civilization/pull/17) merged at `bd0e3891635792d93f149b88384e25ff20b8d7c5`. Main [CI #38872100206](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38872100206) and [Pages #38872100308](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38872100308) both completed **success**.
+- **New code:** `src/sim/world96.ts`: deterministic, seeded 9216-tile terrain, three real districts, 25 housing sites (capacity100), one market, commons, five work sites, finite field/forest nodes; all economic/NPC state initialized through unchanged legacy constructor, relocated with preserved ownership, unique IDs and correct household refs. `validateWorld96` asserts bounds, balances, references, walkability, genuine BFS connectivity and layout separation.
+- **Unit work:** `src/sim/world96.test.ts` registers 10 fixed seeds (101,103,107,109,113,127,131,137,139,149) × 20/50/100 = **30 cases**, full deterministic world comparison, direct connectivity, water/barrier checks, corrupt-world rejections, baseline economic invariants and legacy constructor unchanged. Timings and path-call count print on the CI runner; actual results **PENDING**.
+- **Isolation:** `schemaVersion:6,map:{width:96,height:96}` is a standalone in-memory runtime type only; production UI, coordinator, engine save parser/export remain strict v5/48×48. No active 96 simulation or production browser E2E is possible until W02-E safety/persistence; do not cast the v6 world to v5.
+- **Verification:** local `npm ci`, typecheck, lint, tests, build and Playwright **NOT RUN** (local host cannot resolve github.com); GitHub PR CI checks **PENDING** at authoring; frozen v5 SHA-256 and tick720→816 regressions must pass on **final HEAD**. Physical Windows FPS/GPU/heap soak **NOT RUN**.
+- **Docs:** [implementation](observer-upgrade-2026/W02_C_IMPLEMENTATION.md), [seed/QA](observer-upgrade-2026/W02_C_GENERATION_QA.md), [v5 regression](observer-upgrade-2026/W02_C_LEGACY_REGRESSION.md), [handoff](observer-upgrade-2026/W02_C_HANDOFF.md).
+- **Next:** verify final PR HEAD CI, fix failures; W02-D handles roads/entrances/POIs; W02-E handles v6 migration and active 96 simulation/save; do not auto-merge or implement these follow-ups in W02-C.
+
 ## Observer Plan 02 — W02-B Dimension-Aware Core & Legacy Mode (2026-10-16)
 
 - **Implementation staged** on `feat/w02-b-dimension-aware-core` from W02-A merge `main@094b62742c0ac9b18838cd15f243159e7a7be265`. W02-B only; separate PR, **NOT MERGED**.
