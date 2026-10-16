@@ -86,7 +86,7 @@ test('V01-E: follow nearest real resident to each map edge and verify centered-w
     const scrollY = Number(await status.getAttribute('data-scroll-y'));
     const width = Number(await status.getAttribute('data-viewport-width'));
     const height = Number(await status.getAttribute('data-viewport-height'));
-    const bounds = (viewport: number) => {
+    const bounds = (viewport: number): [number, number] => {
       const half = viewport / (2 * zoom);
       return half * 2 >= 576 ? [288, 288] : [half, 576 - half];
     };
