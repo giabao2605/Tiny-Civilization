@@ -80,12 +80,17 @@ test('V01-E: follow nearest real resident to each map edge and verify centered-w
     await page.getByTestId('camera-follow').click();
     await expect(page.getByTestId('camera-status')).toHaveAttribute('data-follow-id', String(citizen.id));
     await page.waitForTimeout(700);
-    const status = page.getByTestId('camera-status');
-    const zoom = Number(await status.getAttribute('data-zoom'));
-    const scrollX = Number(await status.getAttribute('data-scroll-x'));
-    const scrollY = Number(await status.getAttribute('data-scroll-y'));
-    const width = Number(await status.getAttribute('data-viewport-width'));
-    const height = Number(await status.getAttribute('data-viewport-height'));
+    // Read one committed React camera snapshot atomically. Independent Playwright
+    // awaits may span a render-only zoom/scroll broadcast and combine *different*
+    // camera frames, which can invent an out-of-bounds center from valid frames.
+    // Keep the exact geometric assertions and tolerances below unchanged.
+    const { zoom, scrollX, scrollY, width, height } = await page.getByTestId('camera-status').evaluate(element => ({
+      zoom: Number(element.getAttribute('data-zoom')),
+      scrollX: Number(element.getAttribute('data-scroll-x')),
+      scrollY: Number(element.getAttribute('data-scroll-y')),
+      width: Number(element.getAttribute('data-viewport-width')),
+      height: Number(element.getAttribute('data-viewport-height')),
+    }));
     const bounds = (viewport: number): [number, number] => {
       const half = viewport / (2 * zoom);
       return half * 2 >= 576 ? [288, 288] : [half, 576 - half];
