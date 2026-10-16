@@ -33,3 +33,19 @@ Each matrix case records `performance.now()` generation+validator milliseconds o
 - Physical Windows GPU/FPS/soak: **NOT RUN; W02-F / owner-deferred**.
 
 A failed check blocks the W02-C completion claim. Do not change golden hashes or weaken camera, money or routing assertions to make CI green.
+
+## First complete W02-C PR CI verification (2026-10-16)
+
+**[Run #38875512363](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38875512363) COMPLETED SUCCESS** on feature commit `c628d8fe2a4b20859d568843e4a5bdcb3787dbdc` (all code plus first-pass docs). 19/19 Vitest files and **142/142 unit tests PASS**, including all 30 generator matrix cases; **28/28 executed Chromium E2E PASS**, 1 existing skipped; npm production security audit, typecheck, lint, build and production smoke **PASS**. No failures or retries reported in the final job. Browser E2E remains intentionally v5/48×48.
+
+The following measurements were extracted from **30 actual `W02-C generation` CI log rows**, measured with `performance.now` including validation/pathfinding, in milliseconds. They are runner-dependent and do **not** prove Windows FPS:
+
+| Population | Cases | Functional sites | Resource nodes | findPath calls in validation per case | Min ms | Median ms | Max ms / seed |
+|---|---:|---:|---:|---:|---:|---:|---|
+| 20 | 10 | 32 | 4 | 36 | 27.70 | 29.03 | 65.96 / 101 |
+| 50 | 10 | 32 | 7 | 39 | 20.21 | 30.35 | 33.82 / 127 |
+| 100 | 10 | 32 | 13 | 45 | 21.30 | 34.72 | 41.79 / 107 |
+
+Across the ten seeds, the map had 412–468 water cells and 1,958–2,063 forest cells; 9,216 total cells in all cases. The 20-NPC seed 101 duration (65.96 ms) is an isolated first-run outlier; record it rather than masking it, and do not extrapolate a GPU/Windows performance claim. Stock and currency checks passed; no pathfinding connectivity failures.
+
+**Final documentation-commit CI:** PENDING at this evidence update. After this docs-only commit, check the final PR HEAD GitHub Actions run before calling W02-C fully VERIFIED. Existing test logs and immutable SHA-256 fixtures are unchanged.

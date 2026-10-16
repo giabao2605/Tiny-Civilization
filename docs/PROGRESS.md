@@ -1,3 +1,9 @@
+## Observer Plan 02 — W02-C first complete CI verification (2026-10-16)
+
+- PR [#18](https://github.com/giabao2605/Tiny-Civilization/pull/18), branch `feat/w02-c-96-world-generator`, **still unmerged**. **First complete CI [#38875512363](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38875512363) PASS** at `c628d8fe`: 19 test files / **142 unit tests**, **28 Chromium E2E passed, 1 skipped**, dependency audit, typecheck, lint, build and production smoke all successful. Generated 96×96 seed matrix was exactly **30/30 PASS**; 25 homes + 5 works + commons + market = 32 sites, 4/7/13 resource nodes for 20/50/100 residents.
+- GitHub runner median generation+validation **29.03/30.35/34.72 ms** (20/50/100 NPC); slowest was 65.96ms for seed101/pop20. Real 96 runtime smoke and Windows hardware FPS **NOT RUN** by scope (W02-E/F). Source legacy v5 save and tick720→816 frozen full-world SHA-256 regression PASS on this first run.
+- **Important:** this verification update is a documentation-only commit on top of `c628d8fe`. **Final-HEAD CI remains PENDING** until a new Actions run completes on this docs commit. Do not merge before that gate. Full measurements: [generation QA](observer-upgrade-2026/W02_C_GENERATION_QA.md).
+
 ## Observer Plan 02 — W02-C 96×96 Generator & Districts (2026-10-16)
 
 - **Scope/status:** isolated W02-C generator plus validator and tests staged on `feat/w02-c-96-world-generator`, from `main@bd0e3891`; separate PR, **NOT MERGED**. Final-head CI gate **PENDING**, do not mark VERIFIED before all checks pass.
