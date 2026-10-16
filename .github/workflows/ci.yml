@@ -45,6 +45,13 @@ jobs:
           if [ -d test-results ]; then
             find test-results -type f -name 'v01-e-*' -exec cp '{}' observer-v01-e-evidence/ ';'
           fi
+      - name: Preserve W02-D isolated 96x96 map harness screenshots
+        if: always()
+        run: |
+          mkdir -p observer-w02-d-evidence
+          if [ -d test-results ]; then
+            find test-results -type f -name 'w02-d-*.png' -exec cp '{}' observer-w02-d-evidence/ ';'
+          fi
       - name: Build for GitHub Pages project path
         run: GITHUB_PAGES=true npm run build
       - name: Smoke-test the actual production build
@@ -61,6 +68,7 @@ jobs:
             observer-v01-c-evidence/
             observer-v01-d-evidence/
             observer-v01-e-evidence/
+            observer-w02-d-evidence/
             dist/
           if-no-files-found: ignore
           retention-days: 7
