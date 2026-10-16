@@ -244,6 +244,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   }
 
   setSnapshot(snapshot: LivingSnapshot): void {
+    const previouslySelectedId = this.selectedId;
     this.selectedId = snapshot.selectedCitizenId;
     this.speed = snapshot.speed;
     // Pause changes are rare; iterating every tween on every simulation tick is unnecessary.
@@ -257,6 +258,13 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     const before = this.world;
     this.world = snapshot.world;
     if (!this.sys.isActive() || !this.sprites.size) return;
+    // Changing selection while following switches targets directly, without locking
+    // the camera to a stale person or requiring another toolbar click.
+    if (this.cameraMode === 'follow' && previouslySelectedId !== this.selectedId &&
+      followTargetIsAlive(this.world, this.selectedId) && this.sprites.get(this.selectedId!)?.visible) {
+      this.followId = this.selectedId;
+      this.announceCamera();
+    }
     if (before.seed !== snapshot.world.seed || before.citizens.length !== snapshot.world.citizens.length ||
       before.tick > snapshot.world.tick || (before.tick === snapshot.world.tick && before.citizens !== snapshot.world.citizens)) {
       this.scene.restart();

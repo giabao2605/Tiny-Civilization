@@ -20,7 +20,11 @@ test('V01-D: follow A/B, live motion, bounds, override, pause and durable save',
   expect(a).toBeTruthy();
   await page.screenshot({ path: info.outputPath('v01-d-follow-a.png'), fullPage: true });
   await select(page, 1);
+  await expect(page.getByTestId('selected-citizen')).toContainText('ID #28');
+  // Follow now switches with the inspector selection, not only after clicking again.
+  await expect.poll(() => status(page).getAttribute('data-follow-id')).toBe('28');
   await page.getByTestId('camera-follow').click();
+  await expect.poll(() => status(page).getAttribute('data-follow-id')).toBe('28');
   const b = await status(page).getAttribute('data-follow-id');
   expect(b).toBeTruthy();
   expect(b).not.toEqual(a);
@@ -93,11 +97,15 @@ test('V01-D: AFK only after idle, leaves on input, stops when tab hidden, reduce
     Reflect.deleteProperty(document, 'hidden');
     document.dispatchEvent(new Event('visibilitychange'));
   });
+  expect(await page.evaluate(() => document.hidden)).toBe(false);
   await page.getByTestId('camera-fit').click();
   await expect.poll(() => mode(page)).toBe('fit');
   await expect(status(page)).toHaveAttribute('data-afk-enabled', 'false');
   await page.getByTestId('camera-afk-toggle').click();
-  await page.clock.fastForward(46_000);
+  await expect(status(page)).toHaveAttribute('data-afk-enabled', 'true');
+  await page.clock.fastForward(44_000);
+  expect(await mode(page)).not.toBe('afk');
+  await page.clock.fastForward(2_000);
   await expect.poll(() => mode(page)).toBe('afk');
   await page.mouse.move(100, 100);
   await expect.poll(() => mode(page)).toBe('manual');

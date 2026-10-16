@@ -2,7 +2,7 @@
 
 - Branch: `feat/v01-d-follow-afk` from V01-C merge `a0cddcc2`; [PR #14](https://github.com/giabao2605/Tiny-Civilization/pull/14) created as draft; first CI typecheck failed on E2E spec (unused import + tuple typing), follow-up fix submitted. V01-C main post-merge run 38834221427 PASS.
 - Scope: Follow render-space NPC sprite, deterministic real-interest AFK camera with configurable 45/60/90s idle, manual override, visibility and reduced-motion handling. Camera preferences remain runtime only; `WorldState`, seed/RNG, tick and save v5 unchanged.
-- Tests: camera director unit coverage and Playwright interaction/viewport evidence added. **Acceptance PARTIAL until final CI, screenshots, performance and PC gates are independently verified.**
+- Tests: 96 Vitest tests, typecheck, lint and build PASS on run 38835313869; E2E 19 passed, 1 failed + 1 flaky; switching-follow and AFK timing tests fixed in follow-up. **Acceptance PARTIAL until full final CI, screenshots, performance and PC gates are independently verified.**
 - See [V01_D_IMPLEMENTATION](observer-upgrade-2026/V01_D_IMPLEMENTATION.md) and [V01_D_HANDOFF](observer-upgrade-2026/V01_D_HANDOFF.md).
 
 # Tiny Civilization — Progress / handoff log
