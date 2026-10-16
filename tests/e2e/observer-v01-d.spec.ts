@@ -120,8 +120,17 @@ test('V01-D: AFK idle deadline, activity, hidden tab, scene rotation and reduced
   await expect.poll(() => mode(page)).toBe('manual');
   await expect(status(page)).toHaveAttribute('data-afk-enabled', 'true');
   await page.emulateMedia({ reducedMotion: 'reduce' });
+  // First establish that Chromium actually applied the preference change.
+  await expect.poll(() => page.evaluate(() =>
+    matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
+  await expect(status(page)).toHaveAttribute('data-reduced-motion', 'true');
   await expect(status(page)).toHaveAttribute('data-afk-enabled', 'false');
   await expect(page.getByTestId('camera-afk-toggle')).toBeDisabled();
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await expect.poll(() => page.evaluate(() =>
+    matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(false);
+  await expect(status(page)).toHaveAttribute('data-reduced-motion', 'false');
+  await expect(page.getByTestId('camera-afk-toggle')).toBeEnabled();
   await page.screenshot({ path: info.outputPath('v01-d-reduced-motion.png'), fullPage: true });
   expect(errors).toEqual([]);
 });

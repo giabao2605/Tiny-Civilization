@@ -26,6 +26,8 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private shotRotation = 0;
   private shot: CameraInterest | null = null;
   private motionQuery?: MediaQueryList;
+  private lastReducedMotion = false;
+  private lastMotionPollMs = 0;
   private lastCameraBroadcastMs = 0;
   private idleTimer: number | null = null;
   private world: WorldState;
@@ -59,6 +61,8 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.shotRotation = 0;
     this.lastActivityMs = performance.now();
     this.motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    this.lastReducedMotion = this.isReducedMotion();
+    this.lastMotionPollMs = performance.now();
     this.motionQuery.addEventListener('change', this.onMotionChanged);
     document.addEventListener('visibilitychange', this.onVisibilityChanged);
     this.reset();
@@ -129,12 +133,25 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.announceCamera();
     }, this.afkTimeoutMs);
   }
-  private readonly onMotionChanged = (): void => {
-    if (!this.isReducedMotion()) return;
-    this.noteActivity();
-    this.afkEnabled = false;
-    this.clearAfkTimer();
+  /** MediaQueryList change events are not guaranteed after browser/OS setting changes.
+   * Also reconcile on scene frames so a stale event never leaves AFK running under reduced motion.
+   */
+  private syncMotionPreference(): void {
+    const reduced = this.isReducedMotion();
+    if (reduced === this.lastReducedMotion && !(reduced && this.afkEnabled)) return;
+    this.lastReducedMotion = reduced;
+    if (reduced) {
+      this.clearAfkTimer();
+      this.afkEnabled = false;
+      if (this.cameraMode === 'afk') {
+        this.cameraMode = 'manual';
+        this.shot = null;
+      }
+    }
     this.announceCamera();
+  }
+  private readonly onMotionChanged = (): void => {
+    this.syncMotionPreference();
   };
   private readonly onVisibilityChanged = (): void => {
     this.lastActivityMs = performance.now();
@@ -147,7 +164,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       }
     } else this.armAfkTimer();
   };
-  private isReducedMotion(): boolean { return this.motionQuery?.matches ?? false; }
+  private isReducedMotion(): boolean { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
   private cancelAutomatic(disableAfk = true): void {
     this.followId = null;
     this.shot = null;
@@ -380,6 +397,10 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     if (this.selectedId !== null) this.redrawHighlight();
     if (document.hidden) return;
     const now = performance.now();
+    if (now - this.lastMotionPollMs >= 250) {
+      this.lastMotionPollMs = now;
+      this.syncMotionPreference();
+    }
     if (this.afkEnabled && this.cameraMode !== 'follow' &&
       idleReady(true, false, this.isReducedMotion(), now, this.lastActivityMs, this.afkTimeoutMs)) {
       if (this.cameraMode !== 'afk') {

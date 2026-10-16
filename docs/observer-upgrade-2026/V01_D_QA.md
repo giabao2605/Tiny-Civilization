@@ -78,3 +78,9 @@ GitHub CI [38840611102](https://github.com/giabao2605/Tiny-Civilization/actions/
 The AFK E2E now intercepts only `setTimeout(..., 45000)` in the test page, executing that specific timer after 800ms while leaving `performance.now`, animation frames and other browser timers real. It still requires true AFK entry, different existing scene anchors after the actual 9-second cooldown, manual activity override, hidden-tab guard, and reduced-motion disable. The 45,000ms API contract is therefore part of the interception condition rather than silently being rewritten in production. Final CI recheck required.
 
 The governance test failure happened in untouched legacy code and is not attributed to camera changes without independent reproduction. Keep it as an open regression observation if repeated.
+
+## Last E2E regression: reduced-motion synchronization
+
+[Run 38841646610](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38841646610) FAILED: 21 E2E passed, one AFK E2E failed, one skipped; failure at toggling `page.emulateMedia({ reducedMotion: 'reduce' })`, the scene continued to report AFK enabled. The timer-isolated AFK activation and scene rotation assertions succeeded up to this point. Root behavior: relying only on a `MediaQueryList` change callback is not sufficiently robust for in-session browser setting switches.
+
+The scene now reads the current `prefers-reduced-motion` media preference directly and reconciles it at most every 250ms during active frames, besides listening for changes. When reduced motion is activated, it clears AFK deadline, disables AFK, exits a running AFK camera, and emits an updated snapshot. E2E first asserts that Chromium applied the media override, then checks camera state; it also verifies normal mode returns after disabling the override. No gameplay fields or world-save schema were modified. **Final CI not yet verified.**
