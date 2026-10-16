@@ -1,4 +1,4 @@
-export type CameraMode = 'manual' | 'fit' | 'reset';
+export type CameraMode = 'manual' | 'fit' | 'reset' | 'follow' | 'afk';
 export type CameraSnapshot = Readonly<{
   mode: CameraMode;
   zoom: number;
@@ -6,10 +6,19 @@ export type CameraSnapshot = Readonly<{
   scrollY: number;
   viewportWidth: number;
   viewportHeight: number;
+  followTargetId: number | null;
+  afkEnabled: boolean;
+  afkTimeoutMs: number;
+  afkTargetKey: string | null;
+  reducedMotion: boolean;
 }>;
 export interface WorldCameraControls {
   fit(): void;
   reset(): void;
   zoomBy(factor: number, screenPoint?: { x: number; y: number }): void;
+  followNpc(id: number): boolean;
+  setAfkEnabled(enabled: boolean): void;
+  setAfkTimeoutMs(timeoutMs: number): void;
+  noteActivity(): void;
   getCameraSnapshot(): CameraSnapshot;
 }

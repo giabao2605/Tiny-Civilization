@@ -3,6 +3,9 @@ import type { LivingSnapshot } from '../../app/livingCoordinator';
 import { GRID_HEIGHT, GRID_WIDTH, TILE_PIXELS } from '../../sim/grid';
 import type { Citizen, Site, WorldState } from '../../sim/world';
 import { cameraCenterBounds, fitZoom, zoomAnchorCenter } from '../camera/cameraMath';
+import { AFK_DEFAULT_TIMEOUT_MS, AFK_MAX_TIMEOUT_MS, AFK_MIN_TIMEOUT_MS, AFK_SCENE_COOLDOWN_MS,
+  approachCamera, cameraInterests, followTargetIsAlive, idleReady, nextCameraInterest,
+  type CameraInterest } from '../camera/afkDirector';
 import type { CameraMode, CameraSnapshot, WorldCameraControls } from '../camera/types';
 import { ensureArtKit, imageArt } from '../render/artKit';
 import { drawTerrain } from '../render/terrain';
@@ -15,6 +18,15 @@ function yPixel(y: number) { return y * TILE_PIXELS + CENTER; }
 
 export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private cameraMode: CameraMode = 'reset';
+  private followId: number | null = null;
+  private afkEnabled = false;
+  private afkTimeoutMs = AFK_DEFAULT_TIMEOUT_MS;
+  private lastActivityMs = 0;
+  private lastShotMs = 0;
+  private shotRotation = 0;
+  private shot: CameraInterest | null = null;
+  private motionQuery?: MediaQueryList;
+  private lastCameraBroadcastMs = 0;
   private world: WorldState;
   private selectedId: number | null = null;
   private speed = 1;
@@ -40,6 +52,14 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   create(): void {
     // Manual bounds allow a smaller world to be centered inside a large viewport.
     this.cameras.main.removeBounds();
+    this.followId = null;
+    this.afkEnabled = false;
+    this.shot = null;
+    this.shotRotation = 0;
+    this.lastActivityMs = performance.now();
+    this.motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    this.motionQuery.addEventListener('change', this.onMotionChanged);
+    document.addEventListener('visibilitychange', this.onVisibilityChanged);
     this.reset();
     this.paintTerrain();
     for (const site of this.world.sites) { this.paintSite(site); this.paintedSites.add(site.id); }
@@ -57,6 +77,12 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.input.on(Phaser.Input.Events.POINTER_UP, this.onUp);
     this.input.on(Phaser.Input.Events.POINTER_WHEEL, this.onWheel);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      document.removeEventListener('visibilitychange', this.onVisibilityChanged);
+      this.motionQuery?.removeEventListener('change', this.onMotionChanged);
+      this.motionQuery = undefined;
+      this.followId = null;
+      this.afkEnabled = false;
+      this.shot = null;
       this.input.off(Phaser.Input.Events.POINTER_DOWN, this.onDown);
       this.input.off(Phaser.Input.Events.POINTER_MOVE, this.onMove);
       this.input.off(Phaser.Input.Events.POINTER_UP, this.onUp);
@@ -77,7 +103,60 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private get worldHeight(): number { return GRID_HEIGHT * TILE_PIXELS; }
 
   private announceCamera(): void {
-    if (this.sys.isActive()) this.onCameraChanged?.(this.getCameraSnapshot());
+    if (this.sys.isActive()) {
+      this.lastCameraBroadcastMs = performance.now();
+      this.onCameraChanged?.(this.getCameraSnapshot());
+    }
+  }
+  private readonly onMotionChanged = (): void => {
+    if (!this.isReducedMotion()) return;
+    this.noteActivity();
+    this.afkEnabled = false;
+    this.announceCamera();
+  };
+  private readonly onVisibilityChanged = (): void => {
+    this.lastActivityMs = performance.now();
+    if (document.hidden && this.cameraMode === 'afk') {
+      this.cameraMode = 'manual';
+      this.shot = null;
+      this.announceCamera();
+    }
+  };
+  private isReducedMotion(): boolean { return this.motionQuery?.matches ?? false; }
+  private cancelAutomatic(disableAfk = true): void {
+    this.followId = null;
+    this.shot = null;
+    if (disableAfk) this.afkEnabled = false;
+    this.lastActivityMs = performance.now();
+  }
+  noteActivity(): void {
+    this.lastActivityMs = performance.now();
+    if (this.cameraMode === 'afk') {
+      this.cameraMode = 'manual';
+      this.shot = null;
+      this.announceCamera();
+    }
+  }
+  followNpc(id: number): boolean {
+    if (!this.sys.isActive() || !followTargetIsAlive(this.world, id) || !this.sprites.get(id)?.visible) return false;
+    this.cancelAutomatic();
+    this.followId = id;
+    this.cameraMode = 'follow';
+    this.announceCamera();
+    return true;
+  }
+  setAfkEnabled(enabled: boolean): void {
+    if (!this.sys.isActive()) return;
+    this.cancelAutomatic();
+    this.afkEnabled = enabled && !this.isReducedMotion();
+    if (this.cameraMode === 'follow' || this.cameraMode === 'afk') this.cameraMode = 'manual';
+    this.announceCamera();
+  }
+  setAfkTimeoutMs(timeoutMs: number): void {
+    if (!Number.isFinite(timeoutMs) || timeoutMs < AFK_MIN_TIMEOUT_MS || timeoutMs > AFK_MAX_TIMEOUT_MS) return;
+    this.afkTimeoutMs = timeoutMs;
+    this.lastActivityMs = performance.now();
+    this.announceCamera();
   }
 
   /** Clamp the visible *center*, including letterboxed worlds. */
@@ -96,6 +175,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   fit(): void {
     if (!this.sys.isActive()) return;
     const camera = this.cameras.main;
+    this.cancelAutomatic();
     this.cameraMode = 'fit';
     camera.setZoom(fitZoom(camera.width, camera.height, this.worldWidth, this.worldHeight));
     camera.centerOn(this.worldWidth / 2, this.worldHeight / 2);
@@ -108,6 +188,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     // Scene.create can run before sys.isActive() becomes true in some Phaser lifecycles.
     const camera = this.cameras.main;
     if (!camera) return;
+    this.cancelAutomatic();
     this.cameraMode = 'reset';
     camera.setZoom(Math.min(3, fitZoom(camera.width, camera.height, this.worldWidth, this.worldHeight) * 1.15));
     camera.centerOn(this.worldWidth / 2, this.worldHeight / 2);
@@ -117,6 +198,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
 
   zoomBy(factor: number, screenPoint?: { x: number; y: number }): void {
     if (!this.sys.isActive() || !Number.isFinite(factor) || factor <= 0) return;
+    this.cancelAutomatic();
     const camera = this.cameras.main;
     const point = screenPoint ?? { x: camera.width / 2, y: camera.height / 2 };
     const centerX = camera.scrollX + camera.width / 2;
@@ -124,7 +206,9 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     const beforeX = centerX + (point.x - camera.width / 2) / camera.zoom;
     const beforeY = centerY + (point.y - camera.height / 2) / camera.zoom;
     const next = Phaser.Math.Clamp(camera.zoom * factor, 0.1, 3);
-    if (Math.abs(next - camera.zoom) < 0.00001) return;
+    if (Math.abs(next - camera.zoom) < 0.00001) {
+      this.cameraMode = 'manual'; this.announceCamera(); return;
+    }
     camera.setZoom(next);
     camera.centerOn(
       zoomAnchorCenter(beforeX, point.x, camera.width, next),
@@ -138,7 +222,9 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   getCameraSnapshot(): CameraSnapshot {
     const camera = this.cameras.main;
     return { mode: this.cameraMode, zoom: camera.zoom, scrollX: camera.scrollX,
-      scrollY: camera.scrollY, viewportWidth: camera.width, viewportHeight: camera.height };
+      scrollY: camera.scrollY, viewportWidth: camera.width, viewportHeight: camera.height,
+      followTargetId: this.followId, afkEnabled: this.afkEnabled, afkTimeoutMs: this.afkTimeoutMs,
+      afkTargetKey: this.shot?.key ?? null, reducedMotion: this.isReducedMotion() };
   }
 
   getViewportCenter(): { x: number; y: number } {
@@ -171,9 +257,13 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     const before = this.world;
     this.world = snapshot.world;
     if (!this.sys.isActive() || !this.sprites.size) return;
-    if (before.seed !== snapshot.world.seed || before.citizens.length !== snapshot.world.citizens.length || before.tick > snapshot.world.tick) {
+    if (before.seed !== snapshot.world.seed || before.citizens.length !== snapshot.world.citizens.length ||
+      before.tick > snapshot.world.tick || (before.tick === snapshot.world.tick && before.citizens !== snapshot.world.citizens)) {
       this.scene.restart();
       return;
+    }
+    if (this.followId !== null && !followTargetIsAlive(this.world, this.followId)) {
+      this.followId = null; this.cameraMode = 'manual'; this.announceCamera();
     }
     if (before.tick !== snapshot.world.tick) {
       // Fast-forward UI batching may skip intermediate snapshots. Never animate
@@ -235,9 +325,66 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.redrawHighlight();
   }
 
-  update(): void {
-    // The unselected map needs no graphics clear/redraw on every animation frame.
+  private interestPosition(interest: CameraInterest): { x: number; y: number } | null {
+    if (interest.kind === 'npc') {
+      if (!followTargetIsAlive(this.world, interest.id)) return null;
+      const sprite = this.sprites.get(interest.id);
+      return sprite?.visible ? { x: sprite.x, y: sprite.y } : null;
+    }
+    const tile = interest.kind === 'site'
+      ? this.world.sites.find(site => site.id === interest.id)?.tile
+      : this.world.resourceNodes.find(node => node.id === interest.id)?.tile;
+    return tile ? { x: xPixel(tile.x), y: yPixel(tile.y) } : null;
+  }
+  /** Render-only frame smoothing. Never advances the simulation or changes citizen tiles. */
+  update(_time: number, delta: number): void {
     if (this.selectedId !== null) this.redrawHighlight();
+    if (document.hidden) return;
+    const now = performance.now();
+    if (this.afkEnabled && this.cameraMode !== 'follow' &&
+      idleReady(true, false, this.isReducedMotion(), now, this.lastActivityMs, this.afkTimeoutMs)) {
+      if (this.cameraMode !== 'afk') {
+        this.cameraMode = 'afk';
+        this.lastShotMs = 0;
+        this.shotRotation = 0;
+        this.shot = null;
+        this.announceCamera();
+      }
+    }
+    let target: { x: number; y: number } | null = null;
+    if (this.cameraMode === 'follow') {
+      if (this.followId !== null) target = this.interestPosition({ key: 'npc:' + this.followId, kind: 'npc', id: this.followId });
+      if (!target) {
+        this.followId = null;
+        this.cameraMode = 'manual';
+        this.announceCamera();
+      }
+    } else if (this.cameraMode === 'afk') {
+      const interests = cameraInterests(this.world, this.selectedId);
+      if (!this.shot || !this.interestPosition(this.shot) || now - this.lastShotMs >= AFK_SCENE_COOLDOWN_MS) {
+        this.shot = nextCameraInterest(interests, this.shot?.key ?? null, this.shotRotation++);
+        this.lastShotMs = now;
+        this.announceCamera();
+      }
+      target = this.shot ? this.interestPosition(this.shot) : null;
+      if (!target) { this.cameraMode = 'manual'; this.shot = null; this.announceCamera(); }
+    }
+    if (!target) return;
+    const camera = this.cameras.main;
+    const follow = this.cameraMode === 'follow';
+    const desiredZoom = Math.min(3, Math.max(camera.zoom, fitZoom(camera.width, camera.height,
+      this.worldWidth, this.worldHeight) * (follow ? 2.1 : 1.6)));
+    const reduced = this.isReducedMotion();
+    const responseMs = follow ? 155 : 1050;
+    const newZoom = approachCamera(camera.zoom, desiredZoom, delta, responseMs, reduced);
+    const center = this.getViewportCenter();
+    const nextX = approachCamera(center.x, target.x, delta, responseMs, reduced);
+    const nextY = approachCamera(center.y, target.y, delta, responseMs, reduced);
+    if (newZoom === camera.zoom && nextX === center.x && nextY === center.y) return;
+    camera.setZoom(newZoom);
+    camera.centerOn(nextX, nextY);
+    this.clampCamera();
+    if (now - this.lastCameraBroadcastMs >= 300) this.announceCamera();
   }
 
   private paintTerrain(): void {
@@ -377,6 +524,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.cameras.main.scrollX -= dx / this.cameras.main.zoom;
       this.cameras.main.scrollY -= dy / this.cameras.main.zoom;
       this.clampCamera();
+      this.cancelAutomatic();
       this.cameraMode = 'manual';
       this.announceCamera();
     }
