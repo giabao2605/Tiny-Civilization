@@ -70,3 +70,11 @@ Comparison at zoom 3× in both `manual-close` and Follow on the same GitHub Chro
 | 100 | 20× | 16.70 | 17.16 | 3× / 3× |
 
 Matched zoom suggests much of the original Fit-vs-Follow FPS drop was due to differing zoom scales, **not exclusively camera motion**. Frame-time p95 and JS heap are recorded per mode in the artifact. Small-sample timing variation and headless environment prevent a physical-device FPS claim. The AFK test in this run was flaky on its first attempt after hidden/resume; `fastForward` deadline skipping has been replaced with clock `runFor` crossing the deadline. Its final-result status must be checked.
+
+## Flaky E2E diagnosis and isolation (run 38840611102)
+
+GitHub CI [38840611102](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38840611102) **FAILED** on the mock-clock AFK idle assertion (even after `clock.runFor`) and one intermittent legacy governance timeline smoke assertion. GitHub Playwright trace was downloaded and examined: fake-clock `runFor(1300)` sometimes returned in a few milliseconds without delivering the expected AFK transition, whereas a passing attempt processed frames for much longer. This implicates the simulated clock/test scheduling rather than proving a production AFK defect, but the old test could not be trusted.
+
+The AFK E2E now intercepts only `setTimeout(..., 45000)` in the test page, executing that specific timer after 800ms while leaving `performance.now`, animation frames and other browser timers real. It still requires true AFK entry, different existing scene anchors after the actual 9-second cooldown, manual activity override, hidden-tab guard, and reduced-motion disable. The 45,000ms API contract is therefore part of the interception condition rather than silently being rewritten in production. Final CI recheck required.
+
+The governance test failure happened in untouched legacy code and is not attributed to camera changes without independent reproduction. Keep it as an open regression observation if repeated.

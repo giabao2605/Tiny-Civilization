@@ -67,9 +67,18 @@ test('V01-D: follow A/B, live motion, bounds, override, pause and durable save',
   await expect.poll(() => mode(page)).toBe('reset');
   expect(errors).toEqual([]);
 });
-test('V01-D: AFK only after idle, leaves on input, stops when tab hidden, reduced-motion safe', async ({ page }, info) => {
+test('V01-D: AFK idle deadline, activity, hidden tab, scene rotation and reduced motion', async ({ page }, info) => {
   test.setTimeout(120_000);
-  await page.clock.install();
+  // Only in the test page: accelerate the *real* AFK 45s setTimeout to 800ms.
+  // Unlike page.clock.fastForward, browser rAF, visibility and Phaser lifecycle remain real.
+  // The shim only matches a real timeout request with the 45000ms production value.
+  await page.addInitScript(() => {
+    const schedule = window.setTimeout.bind(window);
+    window.setTimeout = ((handler: TimerHandler, timeout?: number, ...args: unknown[]) =>
+      schedule(handler, timeout === 45_000 ? 800 : timeout, ...args)) as typeof window.setTimeout;
+  });
+  const errors: string[] = [];
+  page.on('pageerror', err => errors.push(err.message));
   await page.goto('/');
   await expect(page.getByTestId('camera-afk-toggle')).toBeEnabled();
   await expect(status(page)).toHaveAttribute('data-afk-enabled', 'false');
@@ -77,27 +86,24 @@ test('V01-D: AFK only after idle, leaves on input, stops when tab hidden, reduce
   await page.getByRole('button', { name: 'Tạm dừng' }).click();
   await page.getByTestId('camera-afk-toggle').click();
   await expect(status(page)).toHaveAttribute('data-afk-enabled', 'true');
-  await page.clock.fastForward(44_000);
-  expect(await mode(page)).not.toBe('afk');
-  // Cross the 45-second deadline while the mock clock executes each due timer.
-  // fastForward skips intermediate scheduling and caused intermittent false failures.
-  await page.clock.runFor(1_300);
-  await expect.poll(() => mode(page)).toBe('afk');
-  // Inspect the settled shot rather than only the first frame of the transition.
-  await page.clock.runFor(1600);
+  await expect.poll(() => mode(page), { timeout: 8_000 }).toBe('afk');
+  await page.waitForTimeout(1600);
   await expect.poll(async () => Number(await status(page).getAttribute('data-zoom'))).toBeGreaterThan(1.1);
   await page.screenshot({ path: info.outputPath('v01-d-afk-commons.png'), fullPage: true });
   const firstShot = await status(page).getAttribute('data-afk-target');
-  await page.clock.fastForward(9_300);
-  await page.clock.runFor(1600);
-  await expect.poll(() => status(page).getAttribute('data-afk-target')).not.toBe(firstShot);
+  expect(firstShot).toBeTruthy();
+  // Scene changes are correctly gated by a full nine seconds of actual runtime time.
+  await expect.poll(() => status(page).getAttribute('data-afk-target'), {
+    timeout: 15_000, intervals: [500, 1000],
+  }).not.toBe(firstShot);
+  await page.waitForTimeout(1500);
   await page.screenshot({ path: info.outputPath('v01-d-afk-next-scene.png'), fullPage: true });
   await page.evaluate(() => {
     Object.defineProperty(document, 'hidden', { configurable: true, value: true });
     document.dispatchEvent(new Event('visibilitychange'));
   });
   await expect.poll(() => mode(page)).toBe('manual');
-  await page.clock.fastForward(90_000);
+  await page.waitForTimeout(1100);
   expect(await mode(page)).not.toBe('afk');
   await page.evaluate(() => {
     Reflect.deleteProperty(document, 'hidden');
@@ -109,12 +115,7 @@ test('V01-D: AFK only after idle, leaves on input, stops when tab hidden, reduce
   await expect(status(page)).toHaveAttribute('data-afk-enabled', 'false');
   await page.getByTestId('camera-afk-toggle').click();
   await expect(status(page)).toHaveAttribute('data-afk-enabled', 'true');
-  await page.clock.fastForward(44_000);
-  expect(await mode(page)).not.toBe('afk');
-  // Cross the 45-second deadline while the mock clock executes each due timer.
-  // fastForward skips intermediate scheduling and caused intermittent false failures.
-  await page.clock.runFor(1_300);
-  await expect.poll(() => mode(page)).toBe('afk');
+  await expect.poll(() => mode(page), { timeout: 8_000 }).toBe('afk');
   await page.mouse.move(100, 100);
   await expect.poll(() => mode(page)).toBe('manual');
   await expect(status(page)).toHaveAttribute('data-afk-enabled', 'true');
@@ -122,6 +123,7 @@ test('V01-D: AFK only after idle, leaves on input, stops when tab hidden, reduce
   await expect(status(page)).toHaveAttribute('data-afk-enabled', 'false');
   await expect(page.getByTestId('camera-afk-toggle')).toBeDisabled();
   await page.screenshot({ path: info.outputPath('v01-d-reduced-motion.png'), fullPage: true });
+  expect(errors).toEqual([]);
 });
 test('V01-D: responsive, remount and 20/50/100 follow lifecycle', async ({ page }, info) => {
   test.setTimeout(180_000);
