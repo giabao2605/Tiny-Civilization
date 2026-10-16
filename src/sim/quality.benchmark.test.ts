@@ -3,7 +3,7 @@ import { performance } from 'node:perf_hooks';
 import { advanceOneTick } from './engine';
 import { foodAidRejection, type GovernanceCommand } from './governance';
 import { MAX_SAVE_BYTES, serializeSave } from '../persistence/save';
-import { createWorld, housing, totalCurrency, type WorldState } from './world';
+import { createWorld, dimensionsOf, housing, totalCurrency, type WorldState } from './world';
 
 function assertSafeWorld(world: WorldState, initialMoney: number, startingFood: number, startingWood: number) {
   expect(totalCurrency(world)).toBe(initialMoney);
@@ -22,7 +22,7 @@ function assertSafeWorld(world: WorldState, initialMoney: number, startingFood: 
     expect(c.inventory.food).toBeGreaterThanOrEqual(0);
     expect(c.inventory.wood).toBeGreaterThanOrEqual(0);
     expect(c.recent.length).toBeLessThanOrEqual(8);
-    expect(c.route.length).toBeLessThanOrEqual(48 * 48);
+    expect(c.route.length).toBeLessThanOrEqual(dimensionsOf(world).width * dimensionsOf(world).height);
     if (!c.alive) {
       expect(c.activity).toBe('dead');
       expect(c.route).toEqual([]);

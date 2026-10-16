@@ -1,5 +1,5 @@
 import type Phaser from 'phaser';
-import { GRID_HEIGHT, GRID_WIDTH, TILE_PIXELS } from '../../sim/grid';
+import { TILE_PIXELS, isValidDimensions, tileIndexAt, type WorldDimensions } from '../../sim/grid';
 import type { Terrain } from '../../sim/world';
 import { visualHash } from './visualHash';
 
@@ -17,11 +17,20 @@ function rect(g: Phaser.GameObjects.Graphics, color: number, x: number, y: numbe
   g.fillRect(x, y, w, h);
 }
 
+/** Read neighbor tiles with the world's stride, never a renderer or legacy constant. */
+export function terrainAt(tiles: readonly Terrain[], dimensions: WorldDimensions, x: number, y: number): Terrain | null {
+  const index = tileIndexAt({ x, y }, dimensions);
+  return index === null ? null : tiles[index] ?? null;
+}
+
 /** Draw once per generated seed. Tile data, not illustrations, remains navigation authority. */
-export function drawTerrain(g: Phaser.GameObjects.Graphics, tiles: readonly Terrain[], seed: number): void {
-  const at = (x: number, y: number): Terrain | null =>
-    x < 0 || y < 0 || x >= GRID_WIDTH || y >= GRID_HEIGHT ? null : tiles[y * GRID_WIDTH + x]!;
-  for (let y = 0; y < GRID_HEIGHT; y++) for (let x = 0; x < GRID_WIDTH; x++) {
+export function drawTerrain(g: Phaser.GameObjects.Graphics, tiles: readonly Terrain[], seed: number,
+  dimensions: WorldDimensions): void {
+  if (!isValidDimensions(dimensions) || tiles.length !== dimensions.width * dimensions.height) {
+    throw new Error('Terrain dimensions and tile count disagree');
+  }
+  const at = (x: number, y: number): Terrain | null => terrainAt(tiles, dimensions, x, y);
+  for (let y = 0; y < dimensions.height; y++) for (let x = 0; x < dimensions.width; x++) {
     const kind = at(x, y)!;
     const px = x * SIZE;
     const py = y * SIZE;

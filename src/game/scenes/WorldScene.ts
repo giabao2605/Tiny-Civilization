@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { LivingSnapshot } from '../../app/livingCoordinator';
-import { GRID_HEIGHT, GRID_WIDTH, TILE_PIXELS } from '../../sim/grid';
-import type { Citizen, Site, WorldState } from '../../sim/world';
+import { TILE_PIXELS } from '../../sim/grid';
+import { dimensionsOf, worldGeometryChanged, type Citizen, type Site, type WorldState } from '../../sim/world';
 import { cameraCenterBounds, fitZoom, zoomAnchorCenter } from '../camera/cameraMath';
 import { AFK_DEFAULT_TIMEOUT_MS, AFK_MAX_TIMEOUT_MS, AFK_MIN_TIMEOUT_MS, AFK_SCENE_COOLDOWN_MS,
   approachCamera, cameraInterests, followTargetIsAlive, idleReady, nextCameraInterest,
@@ -116,8 +116,10 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   }
 
 
-  private get worldWidth(): number { return GRID_WIDTH * TILE_PIXELS; }
-  private get worldHeight(): number { return GRID_HEIGHT * TILE_PIXELS; }
+  private get mapWidth(): number { return dimensionsOf(this.world).width; }
+  private get mapHeight(): number { return dimensionsOf(this.world).height; }
+  private get worldWidth(): number { return this.mapWidth * TILE_PIXELS; }
+  private get worldHeight(): number { return this.mapHeight * TILE_PIXELS; }
 
   private announceCamera(): void {
     if (this.sys.isActive()) {
@@ -281,6 +283,10 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   }
 
   getCameraSnapshot(): CameraSnapshot {
+    // Camera state can be sampled between Phaser's frame updates (e.g. on
+    // immediate Follow selection). Reconcile scroll *before* broadcasting so
+    // the user and E2E read the same bounded view; never hide an invalid center.
+    if (this.sys.isActive()) this.clampCamera();
     const camera = this.cameras.main;
     return { mode: this.cameraMode, zoom: camera.zoom, scrollX: camera.scrollX,
       scrollY: camera.scrollY, viewportWidth: camera.width, viewportHeight: camera.height,
@@ -326,7 +332,8 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.followId = this.selectedId;
       this.announceCamera();
     }
-    if (before.seed !== snapshot.world.seed || before.citizens.length !== snapshot.world.citizens.length ||
+    if (worldGeometryChanged(before, snapshot.world) ||
+      before.seed !== snapshot.world.seed || before.citizens.length !== snapshot.world.citizens.length ||
       before.tick > snapshot.world.tick || (before.tick === snapshot.world.tick && before.citizens !== snapshot.world.citizens)) {
       this.scene.restart();
       return;
@@ -466,7 +473,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private paintTerrain(): void {
     ensureArtKit(this);
     const ground = this.add.graphics();
-    drawTerrain(ground, this.world.tiles, this.world.seed);
+    drawTerrain(ground, this.world.tiles, this.world.seed, dimensionsOf(this.world));
     // One generated texture per scene instead of thousands of persistent tile objects.
     const key = 'tc-v01c-ground';
     if (this.textures.exists(key)) this.textures.remove(key);
@@ -476,11 +483,11 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.add.image(0, 0, key).setOrigin(0, 0).setDepth(0);
 
     const occupied = new Set([
-      ...this.world.sites.map(site => site.tile.y * GRID_WIDTH + site.tile.x),
-      ...this.world.resourceNodes.map(node => node.tile.y * GRID_WIDTH + node.tile.x),
+      ...this.world.sites.map(site => site.tile.y * this.mapWidth + site.tile.x),
+      ...this.world.resourceNodes.map(node => node.tile.y * this.mapWidth + node.tile.x),
     ]);
-    for (let y = 0; y < GRID_HEIGHT; y += 1) for (let x = 0; x < GRID_WIDTH; x += 1) {
-      const index = y * GRID_WIDTH + x;
+    for (let y = 0; y < this.mapHeight; y += 1) for (let x = 0; x < this.mapWidth; x += 1) {
+      const index = y * this.mapWidth + x;
       if (this.world.tiles[index] !== 'forest' || occupied.has(index)) continue;
       const variation = visualHash(this.world.seed, x, y, 11);
       if (variation % 7 !== 0) continue;
@@ -535,7 +542,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   }
 
   private paintSite(site: Site): void {
-    this.siteCells.add(site.tile.y * GRID_WIDTH + site.tile.x);
+    this.siteCells.add(site.tile.y * this.mapWidth + site.tile.x);
     const cx = xPixel(site.tile.x);
     const footY = (site.tile.y + 1) * TILE_PIXELS;
     if (site.kind === 'commons') {
@@ -569,7 +576,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private citizenDepth(x: number, y: number): number {
     const tx = Math.floor(x / TILE_PIXELS);
     const ty = Math.floor(y / TILE_PIXELS);
-    const atDoor = this.siteCells.has(ty * GRID_WIDTH + tx);
+    const atDoor = this.siteCells.has(ty * this.mapWidth + tx);
     return 100 + y + (atDoor ? TILE_PIXELS : 0);
   }
 
