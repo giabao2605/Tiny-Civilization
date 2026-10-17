@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createWorld96 } from './world96';
 import { advanceOneTick } from './engine';
+import type { WorldState } from './world';
 import { getPathfindingDiagnostics, resetPathfindingDiagnostics } from './pathfinding';
 import { serializeSave, parseSave } from '../persistence/save';
 
@@ -12,7 +13,7 @@ describe('W02-F 96x96 simulation / pathfinding / save profile', () => {
   for (const population of [20, 50, 100] as const) {
     it('profiles seeded ' + population + ' NPC without mutating the gameplay contract', () => {
       const started = performance.now();
-      let world = createWorld96(12345, population);
+      let world: WorldState = createWorld96(12345, population);
       const generationMs = performance.now() - started;
       const times: number[] = [];
       const pathCalls: number[] = [];
