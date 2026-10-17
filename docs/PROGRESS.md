@@ -1,3 +1,12 @@
+## Observer Plan 03 — N03-B Weighted A* Core (2026-10-17)
+
+- **Entry gate PASS:** N03-A PR #23 merged into main at 573acc81ee8d06d68a6aeb3505f7796577232352; post-merge [CI #39014402740](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39014402740) PASS, including production Chromium smoke.
+- **Isolated branch:** feat/n03-b-weighted-astar-core. Weighted A* 4-neighbor with integer ×10 movement costs, authoritative tile walkability, v6 road subtype metadata, stable heap tie-break, diagnostics. Production BFS/engine and save schema unchanged.
+- **QA:** separate Node 22 Dijkstra harness 500/500 varied maps matched; in-repo Dijkstra 50 grids ×12 pairs, 48/96 navigation, ties, water, no mutation and BFS diagnostics. Implementation commit `2d939d02` [CI #39015721866](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39015721866) **PASS**: 28 Vitest files / 239 tests, 40 Chromium E2E, 1 production smoke, typecheck/lint/audit/build/Pages build. Docs-only follow-up still requires final-HEAD CI before VERIFIED.
+- **Benchmarks:** paired BFS vs A* Node paths 48/96 × 20/50/100 NPC logged as N03B_PATH_BENCH in [CI #39015721866](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39015721866). A* has higher p50 and p95 computation times in all six samples despite lower median weighted route costs. These are noisy Node microbenchmarks, not integrated tick timings. Exact measurements in [performance](observer-upgrade-2026/N03_B_PERFORMANCE.md). No physical Windows FPS; GPU/soak remains PARTIAL.
+- **Handoff:** N03-C alone owns engine integration, gameplay/regression study and possible rollback. No self-merge.
+- **Docs:** [implementation](observer-upgrade-2026/N03_B_IMPLEMENTATION.md), [QA](observer-upgrade-2026/N03_B_ALGORITHM_QA.md), [performance](observer-upgrade-2026/N03_B_PERFORMANCE.md), [handoff](observer-upgrade-2026/N03_B_HANDOFF.md).
+
 ## Observer Plan 03 — N03-A NPC Behavior Audit & Golden Fixtures (2026-10-17)
 
 - **Entry gate confirmed:** W02-F PR [#21](https://github.com/giabao2605/Tiny-Civilization/pull/21) and CI remediation [#22](https://github.com/giabao2605/Tiny-Civilization/pull/22) merged; `main@cf72134349e9ab3ea800393a96c48c3eb21923c8` post-merge [CI #39009292713](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39009292713) PASS. Windows GPU/60–120-minute soak still PARTIAL.
