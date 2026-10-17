@@ -298,3 +298,13 @@ Phase 00 was merged and verified. Next task may implement Phase 01 only after re
 - Branch `feat/v01-c-art-kit`: added deterministic presentation-only terrain/art modules, six distinct building silhouettes, three foliage shapes, props, feet-based occlusion, and tests/documentation. `src/sim/` and save schema untouched.
 - Screenshot and CI Chromium measurement scripts are committed; representative results and physical PC performance must be verified on final PR HEAD. **V01-C PARTIAL until those gates and visual review pass. Do not merge yet.**
 - Source and acceptance report: [V01_C_IMPLEMENTATION](observer-upgrade-2026/V01_C_IMPLEMENTATION.md), [ASSET_MANIFEST](observer-upgrade-2026/V01_C_ASSET_MANIFEST.md), [V01_D_HANDOFF](observer-upgrade-2026/V01_C_HANDOFF.md).
+
+
+## Observer Upgrade W02-E — v6 Runtime & Persistence (PR #20, in progress)
+
+- Base HEAD: `00702be2d71bd062c95c6ad6ab2769cda5a84109` (W02-D, PR #19 merged).
+- Branch: `feat/w02-e-v6-runtime-persistence`; PR: https://github.com/giabao2605/Tiny-Civilization/pull/20 (Draft, no self-merge).
+- Implemented on branch: discriminated v5/v6 world runtime, strict versioned save/parser and canonical v5 migration; new 96×96 gameplay world, layout-driven Phaser road/entrance/POI, construction candidate validation and scene lifecycle.
+- Tests added: frozen legacy SHA-256 migration/continuation, 30 seed/population 96×96 runtime cases, save roundtrip, corrupt import rollback, 96 construction/layout and CI benchmarks, Chromium production gameplay screenshots.
+- QA documents: W02_E_IMPLEMENTATION, W02_E_MIGRATION_QA, W02_E_RUNTIME_QA, W02_E_VISUAL_QA, W02_E_LEGACY_REGRESSION and W02_E_HANDOFF.
+- Status: **NOT VERIFIED** until the final PR HEAD passes typecheck/lint/Vitest/build/Chromium E2E/production smoke and required artifacts are reviewed. Physical Windows FPS/GPU/memory soak remains W02-F.
