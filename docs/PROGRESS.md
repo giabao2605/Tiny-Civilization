@@ -1,3 +1,12 @@
+## Observer Plan 02 — W02-D road hierarchy, entrances and POIs (2026-10-16)
+
+- **Branch / PR:** feat/w02-d-road-entrances-pois / [#19](https://github.com/giabao2605/Tiny-Civilization/pull/19), draft, do not self-merge. Base main W02-C merge 5c6a9d4e.
+- **Implementation:** isolated world96 layout metadata with four real road kinds (main, side, footpath, plaza), three named districts, siteId-linked road entrances and 24 seed-stable decorative/event POIs across the zones. Bounded additional road connections, actual graph-only backup route validation and real unchanged findPath obstruction tests. No production 96 activation, migration, gameplay rules or v5 save changes.
+- **QA:** 30 seed/population generator cases extended with a second 30-case metadata matrix plus negative corruption tests. Isolated SVG harness, five Chromium PNG views, archived by GitHub Actions (not production 96 gameplay).
+- **Actual verification:** GitHub Actions final PR HEAD **PENDING**; frozen full-world v5 SHA-256, tick720→816, economy/social/governance, smoke and E2E must pass before VERIFIED. W02-C post-merge CI 38880855077 and Pages 38880855112 were still in_progress when first inspected; do not infer PASS. Windows FPS/soak NOT RUN.
+- **Docs:** [implementation](observer-upgrade-2026/W02_D_IMPLEMENTATION.md), [layout QA](observer-upgrade-2026/W02_D_LAYOUT_QA.md), [connectivity QA](observer-upgrade-2026/W02_D_CONNECTIVITY_QA.md), [legacy regression](observer-upgrade-2026/W02_D_LEGACY_REGRESSION.md), [handoff](observer-upgrade-2026/W02_D_HANDOFF.md).
+- **Next:** after W02-D gate and owner merge, W02-E handles strictly versioned v5/v6 migration, active 96 renderer + runtime and real save/load E2E. W02-F owns Windows performance. Do not do W02-E in this PR.
+
 ## Observer Plan 02 — W02-C first complete CI verification (2026-10-16)
 
 - PR [#18](https://github.com/giabao2605/Tiny-Civilization/pull/18), branch `feat/w02-c-96-world-generator`, **still unmerged**. **First complete CI [#38875512363](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38875512363) PASS** at `c628d8fe`: 19 test files / **142 unit tests**, **28 Chromium E2E passed, 1 skipped**, dependency audit, typecheck, lint, build and production smoke all successful. Generated 96×96 seed matrix was exactly **30/30 PASS**; 25 homes + 5 works + commons + market = 32 sites, 4/7/13 resource nodes for 20/50/100 residents.
