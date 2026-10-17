@@ -375,6 +375,9 @@ test('Phase 06: hidden browser tab drops elapsed time without catch-up', async (
 
 
 test('Phase 06: Chromium 100-NPC 20× HUD/inspector/timeline/save and sampled frame time', async ({ page }, testInfo) => {
+  // The 96×96 headless CI scene at 100 NPC/20× can legitimately take longer than the default 30s.
+  // Keep all HUD, pause, screenshot and runtime assertions; this only extends the stress-case deadline.
+  test.setTimeout(120_000);
   const errors = collectErrors(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/');
