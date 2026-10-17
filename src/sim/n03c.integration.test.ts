@@ -31,81 +31,71 @@ function physicalBalances(world: WorldState) {
   };
 }
 
+/** Fast per-hour checks: avoid millions of Vitest matcher allocations in the stress matrix. */
 function assertSimulationInvariants(previous: WorldState, world: WorldState,
   balances: ReturnType<typeof physicalBalances>): void {
-  expect(world.tick).toBe(previous.tick + 1);
-  expect(physicalBalances(world)).toEqual(balances);
-  expect(world.market.cash).toBeGreaterThanOrEqual(0);
-  expect(world.inventory.food).toBeGreaterThanOrEqual(0);
-  expect(world.inventory.wood).toBeGreaterThanOrEqual(0);
+  const fail = (reason: string): never => { throw new Error('N03-C tick ' + world.tick + ': ' + reason); };
+  if (world.tick !== previous.tick + 1) fail('tick must advance once');
+  const stock = physicalBalances(world);
+  if (stock.currency !== balances.currency || stock.food !== balances.food || stock.wood !== balances.wood)
+    fail('currency/food/wood provenance was not conserved');
+  if (world.market.cash < 0 || world.inventory.food < 0 || world.inventory.wood < 0)
+    fail('market cash/stock negative');
   const prior = new Map(previous.citizens.map(c => [c.id, c]));
   const { width, height } = dimensionsOf(world);
   const seen = new Set<number>();
   for (const resident of world.citizens) {
     const before = prior.get(resident.id);
-    expect(seen.has(resident.id)).toBe(false);
+    if (seen.has(resident.id)) fail('duplicate citizen ' + resident.id);
     seen.add(resident.id);
-    expect(resident.wallet).toBeGreaterThanOrEqual(0);
-    expect(resident.inventory.food).toBeGreaterThanOrEqual(0);
-    expect(resident.inventory.wood).toBeGreaterThanOrEqual(0);
-    for (const need of [resident.energy, resident.health, resident.hunger]) {
-      expect(need).toBeGreaterThanOrEqual(0);
-      expect(need).toBeLessThanOrEqual(100);
-    }
-    expect(resident.lastMove.length).toBeGreaterThanOrEqual(1);
-    expect(resident.lastMove.length).toBeLessThanOrEqual(BALANCE.moveTilesPerHour + 1);
-    if (before) expect(resident.lastMove[0]).toEqual(before.tile);
-    expect(resident.lastMove.at(-1)).toEqual(resident.tile);
+    if (resident.wallet < 0 || resident.inventory.food < 0 || resident.inventory.wood < 0)
+      fail('negative citizen ownership: ' + resident.id);
+    for (const need of [resident.energy, resident.health, resident.hunger])
+      if (!Number.isFinite(need) || need < 0 || need > 100) fail('needs out of bounds: ' + resident.id);
+    if (resident.lastMove.length < 1 || resident.lastMove.length > BALANCE.moveTilesPerHour + 1)
+      fail('movement budget: ' + resident.id);
+    if (before && !same(resident.lastMove[0]!, before.tile)) fail('lastMove start mismatch: ' + resident.id);
+    if (!same(resident.lastMove.at(-1)!, resident.tile)) fail('lastMove end mismatch: ' + resident.id);
     let at = resident.lastMove[0]!;
     for (const step of resident.lastMove.slice(1)) {
-      expect(distance(at, step)).toBe(1);
-      expect(walkable(world, step)).toBe(true);
+      if (distance(at, step) !== 1 || !walkable(world, step)) fail('illegal movement: ' + resident.id);
       at = step;
     }
-    expect(walkable(world, resident.tile)).toBe(true);
-    expect(resident.route.length).toBeLessThanOrEqual(width * height);
+    if (!walkable(world, resident.tile)) fail('resident in blocked tile: ' + resident.id);
+    if (resident.route.length > width * height) fail('oversized route: ' + resident.id);
     at = resident.tile;
     for (const step of resident.route) {
-      expect(step.x).toBeGreaterThanOrEqual(0);
-      expect(step.x).toBeLessThan(width);
-      expect(step.y).toBeGreaterThanOrEqual(0);
-      expect(step.y).toBeLessThan(height);
-      expect(distance(at, step)).toBe(1);
-      expect(walkable(world, step)).toBe(true);
+      if (step.x < 0 || step.x >= width || step.y < 0 || step.y >= height ||
+          distance(at, step) !== 1 || !walkable(world, step)) fail('invalid route: ' + resident.id);
       at = step;
     }
-    if (resident.route.length) expect(at).toEqual(resident.destination);
+    if (resident.route.length && !same(at, resident.destination)) fail('route/destination mismatch: ' + resident.id);
     if (before && !before.alive) {
-      expect(resident.alive).toBe(false);
-      expect(resident.tile).toEqual(before.tile);
-      expect(resident.inventory).toEqual(before.inventory);
-      expect(resident.wallet).toBe(before.wallet);
-      expect(resident.lastMove).toHaveLength(1);
+      if (resident.alive || !same(resident.tile, before.tile) ||
+          resident.inventory.food !== before.inventory.food ||
+          resident.inventory.wood !== before.inventory.wood || resident.wallet !== before.wallet ||
+          resident.lastMove.length !== 1) fail('dead actor mutated: ' + resident.id);
     }
-    if (!resident.alive) {
-      expect(resident.activity).toBe('dead');
-      expect(resident.route).toEqual([]);
-    }
+    if (!resident.alive && (resident.activity !== 'dead' || resident.route.length !== 0))
+      fail('dead actor has activity/route: ' + resident.id);
   }
   for (const node of world.resourceNodes) {
-    expect(node.stock).toBeGreaterThanOrEqual(0);
-    expect(node.stock).toBeLessThanOrEqual(node.capacity);
+    if (node.stock < 0 || node.stock > node.capacity) fail('invalid resource-node capacity: ' + node.id);
   }
-  // Trades may have been truncated from the bounded history; the retained ones
-  // from this tick still require an actor who was alive and at the real market.
-  for (const trade of world.market.trades.filter(t => t.tick === world.tick)) {
+  // Stored trade history is bounded; check every retained trade from the current tick.
+  for (const trade of world.market.trades) {
+    if (trade.tick !== world.tick) continue;
     const buyer = prior.get(trade.citizenId);
     const after = world.citizens.find(c => c.id === trade.citizenId);
-    expect(buyer?.alive).toBe(true);
-    expect(after).toBeDefined();
-    expect(after!.tile).toEqual(marketTile(world));
-    expect(trade.quantity).toBeGreaterThan(0);
-    expect(trade.amount).toBeGreaterThan(0);
+    if (!buyer?.alive || !after || !same(after.tile, marketTile(world)) ||
+        trade.quantity <= 0 || trade.amount <= 0) fail('invalid trade actor/location/quantity: ' + trade.citizenId);
   }
-  const emitted = world.events.filter(event => event.id >= previous.nextEventId);
-  for (let i = 0; i < emitted.length; i++) {
-    expect(emitted[i]!.tick).toBe(world.tick);
-    if (i > 0) expect(emitted[i]!.id).toBe(emitted[i - 1]!.id + 1);
+  let lastEventId = 0;
+  for (const event of world.events) {
+    if (event.id < previous.nextEventId) continue;
+    if (event.tick !== world.tick || lastEventId !== 0 && event.id !== lastEventId + 1)
+      fail('unordered newly emitted events');
+    lastEventId = event.id;
   }
 }
 
