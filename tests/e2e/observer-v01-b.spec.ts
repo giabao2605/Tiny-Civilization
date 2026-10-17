@@ -17,7 +17,6 @@ function worldAt(c: Awaited<ReturnType<typeof camera>>, x: number, y: number) {
   return { x: c.scrollX + c.width / 2 + (x - c.width / 2) / c.zoom,
     y: c.scrollY + c.height / 2 + (y - c.height / 2) / c.zoom };
 }
-const worldFootprint = 576;
 
 test('V01-B: responsive, Fit/Reset, zoom anchor, drag, select and stable save', async ({ page }, testInfo) => {
   // Multiple 4k-high screenshots and three viewport changes exceed Playwright's 30s default on CI.
@@ -31,6 +30,7 @@ test('V01-B: responsive, Fit/Reset, zoom anchor, drag, select and stable save', 
   await expect(page.getByTestId('camera-fit')).toBeEnabled({ timeout: 15000 });
   await page.getByRole('button', { name: 'Tạm dừng' }).click();
   const originalTick = await page.getByTestId('world-tick').innerText();
+  const worldFootprint = Number(await page.getByTestId('game-container').getAttribute('data-map-width')) * 12;
   const evidence: Array<{ viewport: string; variant: string; camera: Awaited<ReturnType<typeof camera>>;
     intrinsic: { width: number; height: number }; css: { width: number; height: number } }> = [];
   async function capture(viewport: string, variant: string) {
@@ -94,10 +94,15 @@ test('V01-B: responsive, Fit/Reset, zoom anchor, drag, select and stable save', 
 
   await page.getByTestId('camera-fit').click();
   const fit = await camera(page);
-  const clickPos = { x: fit.width / 2 + (13 * 12 + 6 - 288) * fit.zoom,
-    y: fit.height / 2 + (14 * 12 + 6 - 288) * fit.zoom };
+  await page.getByTestId('save-world').click();
+  const firstCitizen = await page.evaluate(() => {
+    const stored = JSON.parse(localStorage.getItem('tiny-civilization:world:v1') ?? '{}');
+    return stored.world.citizens[0] as { name: string; tile: {x:number;y:number} };
+  });
+  const clickPos = { x: fit.width / 2 + (firstCitizen.tile.x * 12 + 6 - worldFootprint / 2) * fit.zoom,
+    y: fit.height / 2 + (firstCitizen.tile.y * 12 + 6 - worldFootprint / 2) * fit.zoom };
   await canvas.click({ position: clickPos });
-  await expect(page.getByTestId('selected-citizen')).toContainText('An');
+  await expect(page.getByTestId('selected-citizen')).toContainText(firstCitizen.name);
   await capture('1366x768', 'npc-selected');
   await page.getByTestId('save-world').click();
   const saved = await page.evaluate(() => localStorage.getItem('tiny-civilization:world:v1'));
