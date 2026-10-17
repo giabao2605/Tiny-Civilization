@@ -6,7 +6,7 @@ import { advanceOneTick, advanceTicks } from '../sim/engine';
 import { GRID_HEIGHT, GRID_WIDTH, isValidTile, tileIndex } from '../sim/grid';
 import type { GovernanceCommand } from '../sim/governance';
 import { createWorld, totalCurrency, type WorldState } from '../sim/world';
-import { ENGINE_VERSION, parseSave, SAVE_FORMAT, serializeSave, validateWorld } from './save';
+import { ENGINE_VERSION, parseLegacySave, SAVE_FORMAT, serializeSave, validateWorld } from './save';
 
 // The checked-in fixture is a gzip-compressed, base64-encoded *real v5 JSON save*.
 // Compression is storage-only: decode it before exercising the real v5 parser.
@@ -90,7 +90,7 @@ describe('W02-A: frozen v5 legacy save compatibility (no schema change)', () => 
     expect(manifest.engineVersion).toBe(ENGINE_VERSION);
     expect(manifest.saveBytes).toBe(Buffer.byteLength(raw, 'utf8'));
     expect(sha256(raw)).toBe(manifest.saveSha256);
-    const parsed = parseSave(raw);
+    const parsed = parseLegacySave(raw);
     const world = parsed.world;
     validateWorld(world);
     expect(world.schemaVersion).toBe(5);
@@ -120,17 +120,17 @@ describe('W02-A: frozen v5 legacy save compatibility (no schema change)', () => 
     expect(resumed.tick).toBe(manifest.tick + manifest.continuationTicks);
     expect(worldSha(resumed)).toBe(manifest.continuationWorldSha256);
     const replay = continueSave(
-      parseSave(raw).world,
-      parseSave(raw).pending,
+      parseLegacySave(raw).world,
+      parseLegacySave(raw).pending,
     );
     expect(replay).toEqual(resumed);
 
     const tampered = JSON.parse(raw);
     tampered.world.tiles.push('grass');
-    expect(() => parseSave(JSON.stringify(tampered))).toThrow(/world.tiles/);
+    expect(() => parseLegacySave(JSON.stringify(tampered))).toThrow(/world.tiles/);
     tampered.world.tiles.pop();
     tampered.world.citizens[0].destination.x = 48;
-    expect(() => parseSave(JSON.stringify(tampered))).toThrow(/destination/);
+    expect(() => parseLegacySave(JSON.stringify(tampered))).toThrow(/destination/);
     expect(worldSha(world)).toBe(manifest.worldSha256);
   }, 120000);
 });
