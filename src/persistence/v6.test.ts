@@ -60,6 +60,24 @@ describe('W02-E strict migration and real multi-size runtime', () => {
     }, 120000);
   }
 
+  for (const population of [20, 50, 100] as const) {
+    it('96×96 sustained 240-hour economy/social/governance continuation for ' + population + ' NPC', () => {
+      const world = createWorld96(137, population);
+      const initialCurrency = totalCurrency(world);
+      const checkpoint = advanceTicks(world, 120);
+      const saved = serializeSave(checkpoint);
+      const replayed = advanceTicks(parseSave(saved).world, 120);
+      const uninterrupted = advanceTicks(createWorld96(137, population), 240);
+      expect(replayed).toEqual(uninterrupted);
+      expect(totalCurrency(replayed)).toBe(initialCurrency);
+      expect(replayed.governance.elections).toBeGreaterThan(0);
+      expect(replayed.stats.totalFoodProduced).toBeGreaterThan(0);
+      expect(replayed.citizens.every(c => c.wallet >= 0 &&
+        c.inventory.food >= 0 && c.inventory.wood >= 0)).toBe(true);
+      validateWorld(replayed);
+    }, 120000);
+  }
+
   it('rejects damaged v6 envelopes without touching active world or save', () => {
     const coordinator = createLivingCoordinator(103, 20);
     const before = JSON.stringify(coordinator.getSnapshot().world);
