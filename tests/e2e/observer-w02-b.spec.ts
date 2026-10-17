@@ -19,7 +19,8 @@ test('W02-B: migrated legacy 48 geometry remains stable across fit/resize/remoun
   await expect(host).toHaveAttribute('data-map-height', '48');
   await expect(page.locator('.map-dimensions')).toContainText('48 × 48');
   await expect(page.getByTestId('camera-fit')).toBeEnabled();
-  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  // Import always pauses the world atomically.
+  await expect(page.getByTestId('play-status')).toHaveText('Tạm dừng');
   const tick = await page.getByTestId('world-tick').innerText();
 
   for (const [width, height] of [[1366, 768], [1920, 1080], [2560, 1080], [390, 844]] as const) {
