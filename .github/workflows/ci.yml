@@ -12,7 +12,9 @@ permissions:
 jobs:
   checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 96x96 Chromium stress and production smoke can exceed the old 20-minute cap on hosted runners.
+    # Keep every check; extend only the wall-clock allowance for the full verification gate.
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
