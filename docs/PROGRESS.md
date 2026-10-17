@@ -1,3 +1,13 @@
+## Observer Plan 03 — N03-C Weighted Routing Integration (2026-10-17)
+
+- **Entry gate PASS:** N03-B PR #24 merged into `main@a95dc075f86d00e8a99dbb345d647bf47843c163`; exact post-merge [CI #39018629697](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39018629697) PASS before branching.
+- **Branch:** `feat/n03-c-weighted-routing-integration`, **UNMERGED**. Weighted A* activated for NPC movement on v6 96×96; v5 and migrated v6 48×48 retain BFS. Explicit BFS strategy is the rollback and frozen N03-A golden compatibility path. Resource/construction feasibility probes intentionally stay BFS, not actual movement routing.
+- **Mechanics:** no goal priority, speed/energy, money/food/wood, social/governance, map generator, renderer or save schema change. Old N03-A golden manifest remains untouched; new weighted test proves actual NPC route choice against BFS cost.
+- **QA planned/executed by branch CI:** 20/50/100 NPC × 48/96 × 3 seeds (101,107,12345) × 720 ticks, plus paired BFS/weighted 96 cases; economy conservation, movement, event ordering, deterministic weighted replay, 96 mid-route save/load, original legacy/migration/routeBlocked/Dijkstra/Chromium suites.
+- **Current status:** implementation/tests/docs committed, **final branch HEAD CI PENDING**. The 720-tick and performance results cannot be marked PASS before their actual CI logs. Existing N03-B path microbench A* slower than BFS in all six cases; integrated effects are not yet measured.
+- **Physical Windows PC GPU/FPS and 60–120m soak:** **PARTIAL / NOT RUN**. No deployment required. Do not merge without owner approval.
+- **Docs:** [implementation](observer-upgrade-2026/N03_C_IMPLEMENTATION.md), [routing QA](observer-upgrade-2026/N03_C_ROUTING_REGRESSION.md), [economic QA](observer-upgrade-2026/N03_C_ECONOMIC_QA.md), [performance](observer-upgrade-2026/N03_C_PERFORMANCE.md), [handoff](observer-upgrade-2026/N03_C_HANDOFF.md).
+
 ## Observer Plan 03 — N03-B Weighted A* Core (2026-10-17)
 
 - **Entry gate PASS:** N03-A PR #23 merged into main at 573acc81ee8d06d68a6aeb3505f7796577232352; post-merge [CI #39014402740](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39014402740) PASS, including production Chromium smoke.
