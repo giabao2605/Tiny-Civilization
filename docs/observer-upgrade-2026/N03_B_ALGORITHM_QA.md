@@ -11,5 +11,12 @@
 ## Regression gate
 Existing N03-A four golden 48-tick traces, two RouteBlocked cases, frozen v5 SHA-256, v5→v6 migration, save/load, replay, economy/survival/social/governance, Chromium E2E and production smoke must all pass final-head CI. Never rewrite expected fixtures to force success.
 
-## Status
-Independent local Node 22 minimal-harness Dijkstra comparison PASS on 500/500 varied maps; this is not full repository verification. Final QA comes only from completed GitHub Actions. Windows GPU/FPS and 60–120-minute physical soak: PARTIAL / NOT RUN.
+## Confirmed CI and remaining gate
+
+- Independent temporary Node 22 comparison: 500/500 varied maps matched Dijkstra (separate harness; not a substitute for repository tests).
+- Repository Vitest: **28 files / 239 tests PASS**, including the in-repo 50-grid × 12-pair Dijkstra oracle, four immutable N03-A traces, blocked-route regressions, legacy save/migration and gameplay tests.
+- Chromium Playwright: **40 E2E PASS**, production build smoke **1 PASS**. `npm ci`, npm production audit, typecheck, lint, unit tests, normal and Pages-mode build, artifact upload all PASS.
+- Evidence: [CI #39015721866](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39015721866) on implementation commit `2d939d02ddd029b26eccb58a87515f7ef46ac16c` (conclusion: success).
+- This is implementation-HEAD evidence. A documentation-only follow-up commit must pass its own **final-HEAD CI** before complete PR acceptance.
+- Physical Windows GPU/FPS, local long soak 60–120 minutes and target-PC manual validation: **PARTIAL / NOT RUN**, not covered by Linux hosted browser CI.
+- The cost/route algorithm remains isolated, with unmodified production BFS and unchanged N03-A fixtures.
