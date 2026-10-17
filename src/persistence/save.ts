@@ -92,7 +92,7 @@ export function validateWorld(value: unknown): asserts value is WorldState {
   }
   const position = (value: unknown, path: string): void => {
     checkPosition(value, path, dimensions);
-    if (isV6) {
+    if (isV6 && dimensions.width === 96) {
       const p = value as { x: number; y: number };
       const tiles = w.tiles as unknown[];
       if (tiles[p.y * dimensions.width + p.x] === 'water') fail(path, 'tọa độ nằm trên nước');
@@ -195,8 +195,9 @@ export function validateWorld(value: unknown): asserts value is WorldState {
     position(o.destination, p + '.destination');
     positions(o.route, p + '.route', tileCount);
     positions(o.lastMove, p + '.lastMove', tileCount);
-    if (isV6) {
-      // Each route step must be cardinal-adjacent; reject forged teleport paths.
+    if (isV6 && dimensions.width === 96) {
+      // Do not tighten historical 48×48 route semantics during migration.
+      // On the new 96×96 format, each step must be cardinal-adjacent.
       const step = (a: { x: number; y: number }, b: { x: number; y: number }) =>
         Math.abs(a.x - b.x) + Math.abs(a.y - b.y) <= 1;
       const route = o.route as Array<{ x: number; y: number }>;
