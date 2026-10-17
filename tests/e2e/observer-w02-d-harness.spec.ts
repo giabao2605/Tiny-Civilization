@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 import { createWorld96 } from '../../src/sim/world96';
 import { renderWorld96HarnessSvg, type World96View } from '../../src/sim/world96Visual';
 
-test('W02-D: capture five genuine isolated-layout harness screenshots; production remains legacy', async ({ page }) => {
+test('W02-D: preserve isolated-layout harness screenshots; W02-E production uses 96×96', async ({ page }) => {
   test.setTimeout(110_000);
   const world = createWorld96(101, 50);
   const views: World96View[] = ['overview', 'residential', 'civic', 'nature', 'road-entrances'];
@@ -21,6 +21,6 @@ test('W02-D: capture five genuine isolated-layout harness screenshots; productio
   }
   // The production app must NOT begin consuming 96x96 layout or a new serializer.
   await page.goto('/');
-  await expect(page.getByTestId('game-container')).toHaveAttribute('data-map-width', '48');
-  await expect(page.getByTestId('game-container')).toHaveAttribute('data-map-height', '48');
+  await expect(page.getByTestId('game-container')).toHaveAttribute('data-map-width', '96');
+  await expect(page.getByTestId('game-container')).toHaveAttribute('data-map-height', '96');
 });

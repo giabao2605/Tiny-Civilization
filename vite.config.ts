@@ -8,5 +8,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    // CPU-intensive seeded simulation suites can starve Vitest's worker RPC when
+    // all files run simultaneously on the small CI runner. Keep concurrency bounded.
+    maxWorkers: 2,
   },
 });

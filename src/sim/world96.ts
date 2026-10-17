@@ -12,15 +12,11 @@ import {
   buildWorld96Layout, validateWorld96Layout, ROAD_BACKUP_CASES, type World96Layout,
 } from './world96Layout';
 import {
-  createWorld, walkable, type Citizen, type ResourceNode, type Site, type Terrain, type WorldState,
+  createWorld, walkable, type Citizen, type ResourceNode, type Site, type Terrain, type WorldStateV6,
 } from './world';
 
 export const WORLD96_DIMENSIONS: WorldDimensions = Object.freeze({ width: 96, height: 96 });
-export type World96State = Omit<WorldState, 'schemaVersion'> & {
-  schemaVersion: 6;
-  map: WorldDimensions;
-  layout: World96Layout;
-};
+export type World96State = WorldStateV6 & { layout: World96Layout };
 export const WORLD96_DISTRICTS = Object.freeze({
   residential: { minX: 10, maxX: 40, minY: 14, maxY: 76 },
   civic: { minX: 41, maxX: 70, minY: 31, maxY: 62 },

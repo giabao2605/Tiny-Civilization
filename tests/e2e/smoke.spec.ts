@@ -38,11 +38,18 @@ test('20 visible citizens, inspector, play/pause, speed, canvas click and remoun
   const zoom = Number(await page.getByTestId('camera-status').getAttribute('data-zoom'));
   const initialBox = await canvas.boundingBox();
   expect(initialBox).not.toBeNull();
+  await page.getByTestId('save-world').click();
+  const initial = await page.evaluate(() => {
+    const data = JSON.parse(localStorage.getItem('tiny-civilization:world:v1') ?? '{}');
+    return { mapWidth: data.world.map?.width ?? 48,
+      citizen: data.world.citizens[0] as { tile: {x:number;y:number}; name:string } };
+  });
+  const halfWorld = initial.mapWidth * 12 / 2;
   await canvas.click({ position: {
-    x: initialBox!.width / 2 + (13 * 12 + 6 - 288) * zoom,
-    y: initialBox!.height / 2 + (14 * 12 + 6 - 288) * zoom,
+    x: initialBox!.width / 2 + (initial.citizen.tile.x * 12 + 6 - halfWorld) * zoom,
+    y: initialBox!.height / 2 + (initial.citizen.tile.y * 12 + 6 - halfWorld) * zoom,
   } });
-  await expect(page.getByTestId('selected-citizen')).toContainText('An');
+  await expect(page.getByTestId('selected-citizen')).toContainText(initial.citizen.name);
   await page.getByRole('button', { name: 'Bỏ chọn' }).click();
   await expect(page.getByTestId('selected-citizen')).toContainText('Chưa chọn cư dân');
   await page.getByTestId('citizen-30').click();
@@ -128,8 +135,8 @@ test('Phase 03: 100 NPCs, real wallets, market and construction stay observable'
   await page.getByRole('button', { name: 'Tạo lại', exact: true }).click();
   await expect(page.getByTestId('game-container')).toHaveAttribute('data-npc-count', '100');
   await expect(page.getByTestId('population-value')).toHaveText('100');
-  await expect(page.getByTestId('homeless-count')).toHaveText('20');
-  await expect(page.getByTestId('housing-capacity')).toHaveText('80/80');
+  await expect(page.getByTestId('homeless-count')).toHaveText('0');
+  await expect(page.getByTestId('housing-capacity')).toHaveText('100/100');
   await expect(page.getByTestId('market-inspector')).toContainText('Food / Wood');
   await page.getByRole('button', { name: 'Tạm dừng' }).click();
   await page.getByTestId('citizen-27').click();
@@ -368,6 +375,9 @@ test('Phase 06: hidden browser tab drops elapsed time without catch-up', async (
 
 
 test('Phase 06: Chromium 100-NPC 20× HUD/inspector/timeline/save and sampled frame time', async ({ page }, testInfo) => {
+  // The 96×96 headless CI scene at 100 NPC/20× can legitimately take longer than the default 30s.
+  // Keep all HUD, pause, screenshot and runtime assertions; this only extends the stress-case deadline.
+  test.setTimeout(120_000);
   const errors = collectErrors(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/');

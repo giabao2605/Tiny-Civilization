@@ -35,9 +35,16 @@ test('V01-C: pixel world, camera/selection and screenshot evidence at four resol
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.getByTestId('camera-fit').click();
   const fit = await readCamera(page);
-  await canvas.click({ position: { x: fit.width / 2 + (13 * 12 + 6 - 288) * fit.zoom,
-    y: fit.height / 2 + (14 * 12 + 6 - 288) * fit.zoom } });
-  await expect(page.getByTestId('selected-citizen')).toContainText('An');
+  await page.getByTestId('save-world').click();
+  const first = await page.evaluate(() => {
+    const saved = JSON.parse(localStorage.getItem('tiny-civilization:world:v1') ?? '{}');
+    return { width: saved.world.map?.width ?? 48,
+      citizen: saved.world.citizens[0] as { name: string; tile: { x: number; y: number } } };
+  });
+  const middle = first.width * 12 / 2;
+  await canvas.click({ position: { x: fit.width / 2 + (first.citizen.tile.x * 12 + 6 - middle) * fit.zoom,
+    y: fit.height / 2 + (first.citizen.tile.y * 12 + 6 - middle) * fit.zoom } });
+  await expect(page.getByTestId('selected-citizen')).toContainText(first.citizen.name);
   await page.screenshot({ path: testInfo.outputPath('v01-c-selected-npc.png'), fullPage: true });
   await page.getByTestId('save-world').click();
   const saved = await page.evaluate(() => localStorage.getItem('tiny-civilization:world:v1'));

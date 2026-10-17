@@ -88,7 +88,18 @@ test('V01-D: AFK idle deadline, activity, hidden tab, scene rotation and reduced
   await expect(status(page)).toHaveAttribute('data-afk-enabled', 'true');
   await expect.poll(() => mode(page), { timeout: 8_000 }).toBe('afk');
   await page.waitForTimeout(1600);
-  await expect.poll(async () => Number(await status(page).getAttribute('data-zoom'))).toBeGreaterThan(1.1);
+  // W02-E doubles each map axis. AFK close-up is relative to the actual
+  // world footprint, so a hard-coded zoom >1.1 from the 48×48 era is invalid.
+  // Verify an AFK push-in beyond Reset (Fit * 1.15) on either 48 or 96 maps.
+  const footprint = Number(await page.getByTestId('game-container').getAttribute('data-map-width')) * 12;
+  const viewport = await status(page).evaluate(el => ({
+    width: Number(el.getAttribute('data-viewport-width')),
+    height: Number(el.getAttribute('data-viewport-height')),
+  }));
+  const fit = Math.max(0.1, Math.min(3, viewport.width / footprint, viewport.height / footprint));
+  await expect.poll(async () => Number(await status(page).getAttribute('data-zoom')), {
+    timeout: 8_000,
+  }).toBeGreaterThan(fit * 1.2);
   await page.screenshot({ path: info.outputPath('v01-d-afk-commons.png'), fullPage: true });
   const firstShot = await status(page).getAttribute('data-afk-target');
   expect(firstShot).toBeTruthy();

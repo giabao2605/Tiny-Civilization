@@ -8,7 +8,7 @@ import { beginGovernanceTick, advanceGovernanceAfterCitizens, applyFoodAid, appl
   affectedIllness, harvestYield, harvestRegeneration, illnessPausesWork, type GovernanceCommand } from './governance';
 import {
   getSite, housing, marketTile, walkable, type Activity, type Citizen, type EventType, type Goal,
-  type Good, type ResourceNode, type WorldEvent, type WorldState,
+  type Good, type ResourceNode, type WorldEvent, type LegacyWorldState, type WorldStateV6, type WorldState,
 } from './world';
 
 export function dayOf(tick: number): number { return Math.floor(tick / 24) + 1; }
@@ -62,6 +62,10 @@ function availableNode(world: WorldState, citizen: Citizen, occupancy: Map<numbe
   return null;
 }
 
+// Preserve static v5 return types for frozen historical tests and independent v6 worlds.
+export function advanceOneTick(previous: LegacyWorldState, commands?: GovernanceCommand[]): LegacyWorldState;
+export function advanceOneTick(previous: WorldStateV6, commands?: GovernanceCommand[]): WorldStateV6;
+export function advanceOneTick(previous: WorldState, commands?: GovernanceCommand[]): WorldState;
 export function advanceOneTick(previous: WorldState, commands: GovernanceCommand[] = []): WorldState {
   const tick = previous.tick + 1;
   const day = dayOf(tick);
@@ -442,6 +446,9 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
   return world;
 }
 
+export function advanceTicks(world: LegacyWorldState, count: number): LegacyWorldState;
+export function advanceTicks(world: WorldStateV6, count: number): WorldStateV6;
+export function advanceTicks(world: WorldState, count: number): WorldState;
 export function advanceTicks(world: WorldState, count: number): WorldState {
   if (!Number.isSafeInteger(count) || count < 0) throw new Error('Invalid tick count');
   let state = world;

@@ -12,7 +12,9 @@ permissions:
 jobs:
   checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 96x96 Chromium stress and production smoke can exceed the old 20-minute cap on hosted runners.
+    # Keep every check; extend only the wall-clock allowance for the full verification gate.
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -52,6 +54,13 @@ jobs:
           if [ -d test-results ]; then
             find test-results -type f -name 'w02-d-*.png' -exec cp '{}' observer-w02-d-evidence/ ';'
           fi
+      - name: Preserve W02-E production Phaser world screenshots
+        if: always()
+        run: |
+          mkdir -p observer-w02-e-evidence
+          if [ -d test-results ]; then
+            find test-results -type f -name 'w02-e-*.png' -exec cp '{}' observer-w02-e-evidence/ ';'
+          fi
       - name: Build for GitHub Pages project path
         run: GITHUB_PAGES=true npm run build
       - name: Smoke-test the actual production build
@@ -69,6 +78,7 @@ jobs:
             observer-v01-d-evidence/
             observer-v01-e-evidence/
             observer-w02-d-evidence/
+            observer-w02-e-evidence/
             dist/
           if-no-files-found: ignore
           retention-days: 7
