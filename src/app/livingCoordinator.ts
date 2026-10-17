@@ -2,6 +2,7 @@ import { createClock, type Speed } from '../sim/clock';
 import { advanceOneTick } from '../sim/engine';
 import { foodAidRejection, type GovernanceCommand } from '../sim/governance';
 import { createWorld, type WorldState } from '../sim/world';
+import { createWorld96 } from '../sim/world96';
 import { parseSave, serializeSave } from '../persistence/save';
 
 export type LivingSnapshot = Readonly<{
@@ -23,7 +24,7 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
   fixture?: 'governance-food-shortage' | 'governance-empty-reserve') {
   let presetPopulation = initialPopulation;
   // Explicit development/test scenario, not a player command or an engine shortcut.
-  const initialWorld = createWorld(initialSeed, initialPopulation);
+  const initialWorld: WorldState = fixture ? createWorld(initialSeed, initialPopulation) : createWorld96(initialSeed, initialPopulation);
   if (fixture === 'governance-food-shortage' || fixture === 'governance-empty-reserve') {
     initialWorld.inventory.food = fixture === 'governance-empty-reserve' ? 0 : 12;
     for (const c of initialWorld.citizens.slice(0, 6)) {
@@ -125,7 +126,7 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
         if (!Number.isSafeInteger(command.seed) || (command.population !== undefined && ![20, 50, 100].includes(command.population))) return false;
         presetPopulation = command.population ?? presetPopulation;
         pending = []; nextRequestId = 1;
-        snapshot = { ...snapshot, world: createWorld(command.seed, presetPopulation), selectedCitizenId: null, lastPolicyMessage: '' };
+        snapshot = { ...snapshot, world: createWorld96(command.seed, presetPopulation), selectedCitizenId: null, lastPolicyMessage: '' };
         clock.reset();
       }
       notify();
