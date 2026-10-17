@@ -67,7 +67,7 @@ describe('W02-E strict migration and real multi-size runtime', () => {
     const original = JSON.parse(valid);
     expect(original.saveFormat).toBe(V6_SAVE_FORMAT);
     expect(original.engineVersion).toBe(V6_ENGINE_VERSION);
-    const invalidCases: Array<[string, (obj: any) => void]> = [
+    const invalidCases: Array<[string, (obj: ReturnType<typeof JSON.parse>) => void]> = [
       ['saveFormat', o => { o.saveFormat = 3; }],
       ['engineVersion', o => { o.engineVersion = 'sim-v99'; }],
       ['schemaVersion', o => { o.world.schemaVersion = 5; }],
