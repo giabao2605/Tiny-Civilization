@@ -142,7 +142,7 @@ function run(scenario: Scenario, profile: boolean) {
     const before = world;
     const callsBefore = getPathfindingDiagnostics();
     const start = performance.now();
-    world = advanceOneTick(world, step === 0 ? pending : []);
+    world = advanceOneTick(world, step === 0 ? pending : [], 'bfs');
     const duration = performance.now() - start;
     if (profile) tickMs.push(duration);
     pathCalls.push(getPathfindingDiagnostics() - callsBefore);
@@ -214,7 +214,7 @@ function run(scenario: Scenario, profile: boolean) {
   return { world, fixture };
 }
 
-describe('N03-A immutable behavior and routing baseline (no production rule changes)', () => {
+describe('N03-A immutable BFS behavior and routing baseline (explicit compatibility strategy)', () => {
   it('locks the complete four-row golden manifest before evaluating scenarios', () => {
     expect(Object.keys(goldens).sort()).toEqual(scenarios.map(s => s.key).sort());
   });
@@ -228,13 +228,13 @@ describe('N03-A immutable behavior and routing baseline (no production rule chan
       expect(replay.world).toEqual(world);
       const { world: initial, pending } = scenario.start();
       let split = initial;
-      for (let i = 0; i < 24; i++) split = advanceOneTick(split, i === 0 ? pending : []);
+      for (let i = 0; i < 24; i++) split = advanceOneTick(split, i === 0 ? pending : [], 'bfs');
       const loaded = split.schemaVersion === 5
         ? parseLegacySave(serializeSave(split)).world
         : parseSave(serializeSave(split)).world;
       expect(loaded).toEqual(split);
       let resumed = loaded;
-      for (let i = 0; i < 24; i++) resumed = advanceOneTick(resumed);
+      for (let i = 0; i < 24; i++) resumed = advanceOneTick(resumed, [], 'bfs');
       expect(resumed).toEqual(world);
       expect(resumed.rngState).toBe(world.rngState);
       expect(resumed.events).toEqual(world.events);
