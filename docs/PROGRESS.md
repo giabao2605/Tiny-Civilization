@@ -1,3 +1,12 @@
+## Observer Plan 03 — N03-A NPC Behavior Audit & Golden Fixtures (2026-10-17)
+
+- **Entry gate confirmed:** W02-F PR [#21](https://github.com/giabao2605/Tiny-Civilization/pull/21) and CI remediation [#22](https://github.com/giabao2605/Tiny-Civilization/pull/22) merged; `main@cf72134349e9ab3ea800393a96c48c3eb21923c8` post-merge [CI #39009292713](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39009292713) PASS. Windows GPU/60–120-minute soak still PARTIAL.
+- **Isolated implementation:** [PR #23](https://github.com/giabao2605/Tiny-Civilization/pull/23), branch `feat/n03-a-behavior-audit-golden-fixtures`, **DRAFT / UNMERGED**. No production gameplay, BFS, simulation PRNG, save schema, renderer or deployment changes.
+- **Audit:** source-mapped goal hierarchy, authoritative destination/route/lastMove lifecycle, market/survival/social/governance dependencies and synthetic RouteBlocked reproduction. See [N03-A behavior audit](observer-upgrade-2026/N03_A_BEHAVIOR_AUDIT.md).
+- **Regression:** first-three-NPC fixed trace projections over 4×48 hourly ticks, v5 historical fixture (seed 613/p50/t720) and 96×96 seed12345/p20,p50,p100; frozen SHA256 trace, five structured checkpoints, event/RNG ordering, stock/money provenance, dead actors, no water/teleport, 24+24 save/load replay. See [goldens](observer-upgrade-2026/N03_A_GOLDEN_FIXTURES.md), [QA](observer-upgrade-2026/N03_A_REGRESSION_QA.md) and [handoff](observer-upgrade-2026/N03_A_HANDOFF.md).
+- **Measured baseline:** Node 22/Linux hosted-runner 48-tick p50/p95 plus path calls, isolated path sampling, route length, movement and activity distribution. Metrics are observations, **not** Windows physical hardware FPS certification.
+- **QA gate:** N03-A remains **PARTIAL** until immutable golden manifest and all final-HEAD checks PASS on PR #23; verify actual CI link in PR before marking VERIFIED. N03-B A* is intentionally not implemented or started. Do not self-merge.
+
 ## Observer Plan 02 — W02-F final-performance QA update (2026-10-17)
 
 - **PR:** [#21](https://github.com/giabao2605/Tiny-Civilization/pull/21), draft/unmerged; entry gate W02-E main CI [#38995262805](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38995262805) PASS.

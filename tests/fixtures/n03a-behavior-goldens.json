@@ -1,1 +1,7543 @@
-{}
+{
+  "legacy-v5-48-p50-seed613-t720": {
+    "seed": 613,
+    "schemaVersion": 5,
+    "dimensions": [
+      48,
+      48
+    ],
+    "population": 50,
+    "initialTick": 720,
+    "finalTick": 768,
+    "initialRngState": 3718096612,
+    "finalRngState": 3189418097,
+    "selectedCitizenIds": [
+      27,
+      28,
+      29
+    ],
+    "traceSha256": "d92594239dfd4d43122da88955555cd40a8846de001bb3831377ccdda21bcf90",
+    "eventSha256": "eb3508b726fb628106514734072c4fb12ef55e9d21b235c25180be3959b2405c",
+    "finalStateDigest": "c4f65607",
+    "checks": {
+      "initialCurrency": 6100,
+      "finalCurrency": 6100,
+      "initialFailedActions": 0,
+      "finalFailedActions": 0,
+      "routeBlocked": 0,
+      "goalTransitions": 564,
+      "pathCalls": 1220,
+      "movedCitizenHours": 974
+    },
+    "checkpoints": [
+      {
+        "tick": 721,
+        "rngState": 1097030340,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "home",
+            "activity": "rest",
+            "tile": {
+              "x": 13,
+              "y": 14
+            },
+            "destination": {
+              "x": 13,
+              "y": 14
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 13,
+                "y": 14
+              }
+            ],
+            "reason": "Ngủ hoặc hồi phục năng lượng.",
+            "hunger": 94,
+            "health": 96,
+            "energy": 100,
+            "wallet": 44,
+            "inventory": {
+              "food": 5,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "food",
+            "activity": "eating",
+            "tile": {
+              "x": 18,
+              "y": 14
+            },
+            "destination": {
+              "x": 18,
+              "y": 14
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 18,
+                "y": 14
+              }
+            ],
+            "reason": "Ăn một food do bản thân sở hữu; không ăn miễn phí từ chợ.",
+            "hunger": 100,
+            "health": 100,
+            "energy": 99,
+            "wallet": 50,
+            "inventory": {
+              "food": 5,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "food",
+            "activity": "eating",
+            "tile": {
+              "x": 23,
+              "y": 14
+            },
+            "destination": {
+              "x": 23,
+              "y": 14
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 23,
+                "y": 14
+              }
+            ],
+            "reason": "Ăn một food do bản thân sở hữu; không ăn miễn phí từ chợ.",
+            "hunger": 100,
+            "health": 100,
+            "energy": 99,
+            "wallet": 43,
+            "inventory": {
+              "food": 5,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 7256,
+            "tick": 721,
+            "type": "leaderChosen",
+            "citizenId": 67,
+            "reason": "Lê An 3 trở thành trưởng làng. Ủng hộ 75 = quan hệ 47 + sinh kế/sức khỏe 28; hòa điểm ưu tiên ID nhỏ."
+          },
+          {
+            "id": 7257,
+            "tick": 721,
+            "type": "foodAidDenied",
+            "citizenId": 32,
+            "reason": "Từ chối cứu trợ: Chỉ trưởng làng còn sống, đủ tuổi mới có quyền."
+          },
+          {
+            "id": 7258,
+            "tick": 721,
+            "type": "foodEaten",
+            "citizenId": 28,
+            "reason": "Nguyễn Bình: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 7259,
+            "tick": 721,
+            "type": "foodEaten",
+            "citizenId": 29,
+            "reason": "Nguyễn Chi: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 7260,
+            "tick": 721,
+            "type": "foodEaten",
+            "citizenId": 42,
+            "reason": "Phạm Phúc: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 7261,
+            "tick": 721,
+            "type": "foodEaten",
+            "citizenId": 44,
+            "reason": "Đặng Thảo: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 7262,
+            "tick": 721,
+            "type": "foodEaten",
+            "citizenId": 47,
+            "reason": "Phạm An 2: ăn 1 food từ túi cá nhân."
+          }
+        ],
+        "currency": 6100,
+        "failedActions": 0
+      },
+      {
+        "tick": 732,
+        "rngState": 547723576,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "home",
+            "activity": "rest",
+            "tile": {
+              "x": 13,
+              "y": 14
+            },
+            "destination": {
+              "x": 13,
+              "y": 14
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 12,
+                "y": 16
+              },
+              {
+                "x": 12,
+                "y": 15
+              },
+              {
+                "x": 12,
+                "y": 14
+              },
+              {
+                "x": 13,
+                "y": 14
+              }
+            ],
+            "reason": "Ngủ hoặc hồi phục năng lượng.",
+            "hunger": 72,
+            "health": 96,
+            "energy": 83,
+            "wallet": 44,
+            "inventory": {
+              "food": 6,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "home",
+            "activity": "travelHome",
+            "tile": {
+              "x": 20,
+              "y": 19
+            },
+            "destination": {
+              "x": 18,
+              "y": 14
+            },
+            "route": [
+              {
+                "x": 20,
+                "y": 18
+              },
+              {
+                "x": 20,
+                "y": 17
+              },
+              {
+                "x": 20,
+                "y": 16
+              },
+              {
+                "x": 20,
+                "y": 15
+              },
+              {
+                "x": 20,
+                "y": 14
+              },
+              {
+                "x": 19,
+                "y": 14
+              },
+              {
+                "x": 18,
+                "y": 14
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 20,
+                "y": 23
+              },
+              {
+                "x": 20,
+                "y": 22
+              },
+              {
+                "x": 20,
+                "y": 21
+              },
+              {
+                "x": 20,
+                "y": 20
+              },
+              {
+                "x": 20,
+                "y": 19
+              }
+            ],
+            "reason": "Trở về nơi nghỉ ngơi.",
+            "hunger": 78,
+            "health": 100,
+            "energy": 83,
+            "wallet": 50,
+            "inventory": {
+              "food": 6,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "work",
+            "activity": "atWork",
+            "tile": {
+              "x": 30,
+              "y": 20
+            },
+            "destination": {
+              "x": 30,
+              "y": 20
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 30,
+                "y": 20
+              }
+            ],
+            "reason": "Thu hoạch ruộng thật, rồi tự mang hàng đi bán.",
+            "hunger": 78,
+            "health": 100,
+            "energy": 83,
+            "wallet": 43,
+            "inventory": {
+              "food": 6,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 7350,
+            "tick": 732,
+            "type": "departure",
+            "citizenId": 28,
+            "reason": "Nguyễn Bình: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7351,
+            "tick": 732,
+            "type": "foodProduced",
+            "citizenId": 29,
+            "reason": "Nguyễn Chi sở hữu +1 food từ nguồn #78."
+          },
+          {
+            "id": 7352,
+            "tick": 732,
+            "type": "foodEaten",
+            "citizenId": 30,
+            "reason": "Lê Dũng: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 7353,
+            "tick": 732,
+            "type": "departure",
+            "citizenId": 31,
+            "reason": "Lê Giang: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7354,
+            "tick": 732,
+            "type": "departure",
+            "citizenId": 33,
+            "reason": "Vũ Hải: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7355,
+            "tick": 732,
+            "type": "departure",
+            "citizenId": 36,
+            "reason": "Vũ Lan: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7356,
+            "tick": 732,
+            "type": "foodProduced",
+            "citizenId": 40,
+            "reason": "Trần Nam sở hữu +1 food từ nguồn #81."
+          },
+          {
+            "id": 7357,
+            "tick": 732,
+            "type": "departure",
+            "citizenId": 42,
+            "reason": "Phạm Phúc: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7358,
+            "tick": 732,
+            "type": "departure",
+            "citizenId": 43,
+            "reason": "Trần Quân: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7359,
+            "tick": 732,
+            "type": "foodProduced",
+            "citizenId": 45,
+            "reason": "Đặng Trang sở hữu +1 food từ nguồn #81."
+          },
+          {
+            "id": 7360,
+            "tick": 732,
+            "type": "foodProduced",
+            "citizenId": 46,
+            "reason": "Bùi Vân sở hữu +1 food từ nguồn #78."
+          },
+          {
+            "id": 7361,
+            "tick": 732,
+            "type": "departure",
+            "citizenId": 49,
+            "reason": "Nguyễn Chi 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7362,
+            "tick": 732,
+            "type": "departure",
+            "citizenId": 51,
+            "reason": "Đặng Giang 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7363,
+            "tick": 732,
+            "type": "foodProduced",
+            "citizenId": 53,
+            "reason": "Vũ Hải 2 sở hữu +1 food từ nguồn #79."
+          },
+          {
+            "id": 7364,
+            "tick": 732,
+            "type": "foodEaten",
+            "citizenId": 54,
+            "reason": "Phạm Hương 2: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 7365,
+            "tick": 732,
+            "type": "departure",
+            "citizenId": 59,
+            "reason": "Vũ Minh 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7366,
+            "tick": 732,
+            "type": "departure",
+            "citizenId": 62,
+            "reason": "Lê Phúc 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7367,
+            "tick": 732,
+            "type": "departure",
+            "citizenId": 63,
+            "reason": "Trần Quân 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7368,
+            "tick": 732,
+            "type": "departure",
+            "citizenId": 64,
+            "reason": "Vũ Thảo 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7369,
+            "tick": 732,
+            "type": "departure",
+            "citizenId": 71,
+            "reason": "Vũ Giang 3: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7370,
+            "tick": 732,
+            "type": "foodProduced",
+            "citizenId": 73,
+            "reason": "Đặng Hải 3 sở hữu +1 food từ nguồn #79."
+          },
+          {
+            "id": 7371,
+            "tick": 732,
+            "type": "encounter",
+            "citizenId": 35,
+            "reason": "Bùi Khánh gặp Vũ Vân 2: Cùng làm việc tại nguồn tài nguyên #78."
+          },
+          {
+            "id": 7372,
+            "tick": 732,
+            "type": "friendship",
+            "citizenId": 39,
+            "reason": "Phạm Minh và Lê Khánh 3 đã trở thành bạn sau nhiều lần gặp gỡ: Cùng làm việc tại nguồn tài nguyên #80."
+          },
+          {
+            "id": 7373,
+            "tick": 732,
+            "type": "friendship",
+            "citizenId": 40,
+            "reason": "Trần Nam và Trần Trang 2 đã trở thành bạn sau nhiều lần gặp gỡ: Cùng làm việc tại nguồn tài nguyên #81."
+          },
+          {
+            "id": 7374,
+            "tick": 732,
+            "type": "encounter",
+            "citizenId": 44,
+            "reason": "Đặng Thảo gặp Đặng Lan 3: Cùng làm việc tại nguồn tài nguyên #77."
+          }
+        ],
+        "currency": 6100,
+        "failedActions": 0
+      },
+      {
+        "tick": 744,
+        "rngState": 3147315877,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "home",
+            "activity": "rest",
+            "tile": {
+              "x": 13,
+              "y": 14
+            },
+            "destination": {
+              "x": 13,
+              "y": 14
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 13,
+                "y": 14
+              }
+            ],
+            "reason": "Ngủ hoặc hồi phục năng lượng.",
+            "hunger": 94,
+            "health": 97,
+            "energy": 100,
+            "wallet": 44,
+            "inventory": {
+              "food": 5,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "food",
+            "activity": "eating",
+            "tile": {
+              "x": 18,
+              "y": 14
+            },
+            "destination": {
+              "x": 18,
+              "y": 14
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 18,
+                "y": 14
+              }
+            ],
+            "reason": "Ăn một food do bản thân sở hữu; không ăn miễn phí từ chợ.",
+            "hunger": 100,
+            "health": 100,
+            "energy": 99,
+            "wallet": 50,
+            "inventory": {
+              "food": 5,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "food",
+            "activity": "eating",
+            "tile": {
+              "x": 23,
+              "y": 14
+            },
+            "destination": {
+              "x": 23,
+              "y": 14
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 23,
+                "y": 14
+              }
+            ],
+            "reason": "Ăn một food do bản thân sở hữu; không ăn miễn phí từ chợ.",
+            "hunger": 100,
+            "health": 100,
+            "energy": 91,
+            "wallet": 43,
+            "inventory": {
+              "food": 5,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 7441,
+            "tick": 744,
+            "type": "foodEaten",
+            "citizenId": 28,
+            "reason": "Nguyễn Bình: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 7442,
+            "tick": 744,
+            "type": "foodEaten",
+            "citizenId": 29,
+            "reason": "Nguyễn Chi: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 7443,
+            "tick": 744,
+            "type": "departure",
+            "citizenId": 41,
+            "reason": "Vũ Ngọc: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7444,
+            "tick": 744,
+            "type": "foodEaten",
+            "citizenId": 42,
+            "reason": "Phạm Phúc: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 7445,
+            "tick": 744,
+            "type": "foodEaten",
+            "citizenId": 44,
+            "reason": "Đặng Thảo: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 7446,
+            "tick": 744,
+            "type": "foodEaten",
+            "citizenId": 47,
+            "reason": "Phạm An 2: ăn 1 food từ túi cá nhân."
+          }
+        ],
+        "currency": 6100,
+        "failedActions": 0
+      },
+      {
+        "tick": 756,
+        "rngState": 1250698675,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "home",
+            "activity": "rest",
+            "tile": {
+              "x": 13,
+              "y": 14
+            },
+            "destination": {
+              "x": 13,
+              "y": 14
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 12,
+                "y": 16
+              },
+              {
+                "x": 12,
+                "y": 15
+              },
+              {
+                "x": 12,
+                "y": 14
+              },
+              {
+                "x": 13,
+                "y": 14
+              }
+            ],
+            "reason": "Ngủ hoặc hồi phục năng lượng.",
+            "hunger": 70,
+            "health": 97,
+            "energy": 83,
+            "wallet": 44,
+            "inventory": {
+              "food": 6,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "home",
+            "activity": "travelHome",
+            "tile": {
+              "x": 20,
+              "y": 19
+            },
+            "destination": {
+              "x": 18,
+              "y": 14
+            },
+            "route": [
+              {
+                "x": 20,
+                "y": 18
+              },
+              {
+                "x": 20,
+                "y": 17
+              },
+              {
+                "x": 20,
+                "y": 16
+              },
+              {
+                "x": 20,
+                "y": 15
+              },
+              {
+                "x": 20,
+                "y": 14
+              },
+              {
+                "x": 19,
+                "y": 14
+              },
+              {
+                "x": 18,
+                "y": 14
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 20,
+                "y": 23
+              },
+              {
+                "x": 20,
+                "y": 22
+              },
+              {
+                "x": 20,
+                "y": 21
+              },
+              {
+                "x": 20,
+                "y": 20
+              },
+              {
+                "x": 20,
+                "y": 19
+              }
+            ],
+            "reason": "Trở về nơi nghỉ ngơi.",
+            "hunger": 76,
+            "health": 100,
+            "energy": 83,
+            "wallet": 50,
+            "inventory": {
+              "food": 6,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "work",
+            "activity": "atWork",
+            "tile": {
+              "x": 30,
+              "y": 20
+            },
+            "destination": {
+              "x": 30,
+              "y": 20
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 30,
+                "y": 20
+              }
+            ],
+            "reason": "Thu hoạch ruộng thật, rồi tự mang hàng đi bán.",
+            "hunger": 76,
+            "health": 100,
+            "energy": 83,
+            "wallet": 43,
+            "inventory": {
+              "food": 6,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 7535,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 28,
+            "reason": "Nguyễn Bình: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7536,
+            "tick": 756,
+            "type": "foodProduced",
+            "citizenId": 29,
+            "reason": "Nguyễn Chi sở hữu +1 food từ nguồn #78."
+          },
+          {
+            "id": 7537,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 30,
+            "reason": "Lê Dũng: Đi đến nguồn tài nguyên có thể khai thác."
+          },
+          {
+            "id": 7538,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 31,
+            "reason": "Lê Giang: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7539,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 33,
+            "reason": "Vũ Hải: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7540,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 36,
+            "reason": "Vũ Lan: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7541,
+            "tick": 756,
+            "type": "foodProduced",
+            "citizenId": 39,
+            "reason": "Phạm Minh sở hữu +1 food từ nguồn #80."
+          },
+          {
+            "id": 7542,
+            "tick": 756,
+            "type": "foodProduced",
+            "citizenId": 40,
+            "reason": "Trần Nam sở hữu +1 food từ nguồn #81."
+          },
+          {
+            "id": 7543,
+            "tick": 756,
+            "type": "foodProduced",
+            "citizenId": 41,
+            "reason": "Vũ Ngọc sở hữu +1 food từ nguồn #78."
+          },
+          {
+            "id": 7544,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 42,
+            "reason": "Phạm Phúc: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7545,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 43,
+            "reason": "Trần Quân: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7546,
+            "tick": 756,
+            "type": "foodProduced",
+            "citizenId": 45,
+            "reason": "Đặng Trang sở hữu +1 food từ nguồn #81."
+          },
+          {
+            "id": 7547,
+            "tick": 756,
+            "type": "foodEaten",
+            "citizenId": 46,
+            "reason": "Bùi Vân: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 7548,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 49,
+            "reason": "Nguyễn Chi 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7549,
+            "tick": 756,
+            "type": "foodEaten",
+            "citizenId": 50,
+            "reason": "Vũ Dũng 2: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 7550,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 51,
+            "reason": "Đặng Giang 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7551,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 53,
+            "reason": "Vũ Hải 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7552,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 54,
+            "reason": "Phạm Hương 2: Đi đến nguồn tài nguyên có thể khai thác."
+          },
+          {
+            "id": 7553,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 59,
+            "reason": "Vũ Minh 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7554,
+            "tick": 756,
+            "type": "work",
+            "citizenId": 61,
+            "reason": "Trần Ngọc 2 bắt đầu ca làm."
+          },
+          {
+            "id": 7555,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 62,
+            "reason": "Lê Phúc 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7556,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 63,
+            "reason": "Trần Quân 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7557,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 64,
+            "reason": "Vũ Thảo 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7558,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 68,
+            "reason": "Phạm Bình 3: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7559,
+            "tick": 756,
+            "type": "foodEaten",
+            "citizenId": 70,
+            "reason": "Bùi Dũng 3: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 7560,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 71,
+            "reason": "Vũ Giang 3: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7561,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 72,
+            "reason": "Nguyễn Hà 3: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7562,
+            "tick": 756,
+            "type": "departure",
+            "citizenId": 73,
+            "reason": "Đặng Hải 3: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 7563,
+            "tick": 756,
+            "type": "foodProduced",
+            "citizenId": 74,
+            "reason": "Nguyễn Hương 3 sở hữu +1 food từ nguồn #77."
+          },
+          {
+            "id": 7564,
+            "tick": 756,
+            "type": "foodProduced",
+            "citizenId": 75,
+            "reason": "Lê Khánh 3 sở hữu +1 food từ nguồn #81."
+          },
+          {
+            "id": 7565,
+            "tick": 756,
+            "type": "encounter",
+            "citizenId": 65,
+            "reason": "Trần Trang 2 gặp Lê Khánh 3: Cùng làm việc tại nguồn tài nguyên #81."
+          }
+        ],
+        "currency": 6100,
+        "failedActions": 0
+      },
+      {
+        "tick": 768,
+        "rngState": 3189418097,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "home",
+            "activity": "rest",
+            "tile": {
+              "x": 13,
+              "y": 14
+            },
+            "destination": {
+              "x": 13,
+              "y": 14
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 13,
+                "y": 14
+              }
+            ],
+            "reason": "Ngủ hoặc hồi phục năng lượng.",
+            "hunger": 92,
+            "health": 98,
+            "energy": 100,
+            "wallet": 44,
+            "inventory": {
+              "food": 5,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "home",
+            "activity": "rest",
+            "tile": {
+              "x": 18,
+              "y": 14
+            },
+            "destination": {
+              "x": 18,
+              "y": 14
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 18,
+                "y": 14
+              }
+            ],
+            "reason": "Ngủ hoặc hồi phục năng lượng.",
+            "hunger": 98,
+            "health": 100,
+            "energy": 100,
+            "wallet": 50,
+            "inventory": {
+              "food": 5,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "home",
+            "activity": "rest",
+            "tile": {
+              "x": 23,
+              "y": 14
+            },
+            "destination": {
+              "x": 23,
+              "y": 14
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 23,
+                "y": 14
+              }
+            ],
+            "reason": "Ngủ hoặc hồi phục năng lượng.",
+            "hunger": 98,
+            "health": 100,
+            "energy": 91,
+            "wallet": 43,
+            "inventory": {
+              "food": 5,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [],
+        "currency": 6100,
+        "failedActions": 0
+      }
+    ]
+  },
+  "v6-96-p20-seed12345-t0": {
+    "seed": 12345,
+    "schemaVersion": 6,
+    "dimensions": [
+      96,
+      96
+    ],
+    "population": 20,
+    "initialTick": 0,
+    "finalTick": 48,
+    "initialRngState": 3937517130,
+    "finalRngState": 4057570402,
+    "selectedCitizenIds": [
+      27,
+      28,
+      29
+    ],
+    "traceSha256": "89e3b18edd4e9b223fba67e581fdefa33e4a711859f502b7dbebeff84759fc88",
+    "eventSha256": "f6d940717c74eb95eaeb6ff71438af5a77e825b19dafdcc76d5c75be36c0e51d",
+    "finalStateDigest": "b6c2026b",
+    "checks": {
+      "initialCurrency": 2440,
+      "finalCurrency": 2440,
+      "initialFailedActions": 0,
+      "finalFailedActions": 0,
+      "routeBlocked": 0,
+      "goalTransitions": 119,
+      "pathCalls": 485,
+      "movedCitizenHours": 785
+    },
+    "checkpoints": [
+      {
+        "tick": 1,
+        "rngState": 1919585846,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "home",
+            "activity": "rest",
+            "tile": {
+              "x": 12,
+              "y": 15
+            },
+            "destination": {
+              "x": 12,
+              "y": 15
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 12,
+                "y": 15
+              }
+            ],
+            "reason": "Đang nghỉ trước giờ làm việc.",
+            "hunger": 81,
+            "health": 94,
+            "energy": 78,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "home",
+            "activity": "rest",
+            "tile": {
+              "x": 19,
+              "y": 15
+            },
+            "destination": {
+              "x": 19,
+              "y": 15
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 19,
+                "y": 15
+              }
+            ],
+            "reason": "Đang nghỉ trước giờ làm việc.",
+            "hunger": 85,
+            "health": 92,
+            "energy": 95,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "home",
+            "activity": "rest",
+            "tile": {
+              "x": 26,
+              "y": 15
+            },
+            "destination": {
+              "x": 26,
+              "y": 15
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 26,
+                "y": 15
+              }
+            ],
+            "reason": "Đang nghỉ trước giờ làm việc.",
+            "hunger": 88,
+            "health": 98,
+            "energy": 86,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 2,
+            "tick": 1,
+            "type": "leaderChosen",
+            "citizenId": 29,
+            "reason": "Phạm Chi trở thành trưởng làng. Ủng hộ 18 = quan hệ 0 + sinh kế/sức khỏe 18; hòa điểm ưu tiên ID nhỏ."
+          }
+        ],
+        "currency": 2440,
+        "failedActions": 0
+      },
+      {
+        "tick": 12,
+        "rngState": 1569205062,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "work",
+            "activity": "travelToWork",
+            "tile": {
+              "x": 40,
+              "y": 15
+            },
+            "destination": {
+              "x": 70,
+              "y": 41
+            },
+            "route": [
+              {
+                "x": 41,
+                "y": 15
+              },
+              {
+                "x": 42,
+                "y": 15
+              },
+              {
+                "x": 43,
+                "y": 15
+              },
+              {
+                "x": 44,
+                "y": 15
+              },
+              {
+                "x": 45,
+                "y": 15
+              },
+              {
+                "x": 46,
+                "y": 15
+              },
+              {
+                "x": 47,
+                "y": 15
+              },
+              {
+                "x": 48,
+                "y": 15
+              },
+              {
+                "x": 49,
+                "y": 15
+              },
+              {
+                "x": 50,
+                "y": 15
+              },
+              {
+                "x": 51,
+                "y": 15
+              },
+              {
+                "x": 52,
+                "y": 15
+              },
+              {
+                "x": 53,
+                "y": 15
+              },
+              {
+                "x": 54,
+                "y": 15
+              },
+              {
+                "x": 55,
+                "y": 15
+              },
+              {
+                "x": 56,
+                "y": 15
+              },
+              {
+                "x": 57,
+                "y": 15
+              },
+              {
+                "x": 58,
+                "y": 15
+              },
+              {
+                "x": 59,
+                "y": 15
+              },
+              {
+                "x": 60,
+                "y": 15
+              },
+              {
+                "x": 61,
+                "y": 15
+              },
+              {
+                "x": 62,
+                "y": 15
+              },
+              {
+                "x": 63,
+                "y": 15
+              },
+              {
+                "x": 64,
+                "y": 15
+              },
+              {
+                "x": 65,
+                "y": 15
+              },
+              {
+                "x": 66,
+                "y": 15
+              },
+              {
+                "x": 67,
+                "y": 15
+              },
+              {
+                "x": 68,
+                "y": 15
+              },
+              {
+                "x": 69,
+                "y": 15
+              },
+              {
+                "x": 70,
+                "y": 15
+              },
+              {
+                "x": 70,
+                "y": 16
+              },
+              {
+                "x": 70,
+                "y": 17
+              },
+              {
+                "x": 70,
+                "y": 18
+              },
+              {
+                "x": 70,
+                "y": 19
+              },
+              {
+                "x": 70,
+                "y": 20
+              },
+              {
+                "x": 70,
+                "y": 21
+              },
+              {
+                "x": 70,
+                "y": 22
+              },
+              {
+                "x": 70,
+                "y": 23
+              },
+              {
+                "x": 70,
+                "y": 24
+              },
+              {
+                "x": 70,
+                "y": 25
+              },
+              {
+                "x": 70,
+                "y": 26
+              },
+              {
+                "x": 70,
+                "y": 27
+              },
+              {
+                "x": 70,
+                "y": 28
+              },
+              {
+                "x": 70,
+                "y": 29
+              },
+              {
+                "x": 70,
+                "y": 30
+              },
+              {
+                "x": 70,
+                "y": 31
+              },
+              {
+                "x": 70,
+                "y": 32
+              },
+              {
+                "x": 70,
+                "y": 33
+              },
+              {
+                "x": 70,
+                "y": 34
+              },
+              {
+                "x": 70,
+                "y": 35
+              },
+              {
+                "x": 70,
+                "y": 36
+              },
+              {
+                "x": 70,
+                "y": 37
+              },
+              {
+                "x": 70,
+                "y": 38
+              },
+              {
+                "x": 70,
+                "y": 39
+              },
+              {
+                "x": 70,
+                "y": 40
+              },
+              {
+                "x": 70,
+                "y": 41
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 36,
+                "y": 15
+              },
+              {
+                "x": 37,
+                "y": 15
+              },
+              {
+                "x": 38,
+                "y": 15
+              },
+              {
+                "x": 39,
+                "y": 15
+              },
+              {
+                "x": 40,
+                "y": 15
+              }
+            ],
+            "reason": "Đi đến nguồn tài nguyên có thể khai thác.",
+            "hunger": 59,
+            "health": 94,
+            "energy": 86,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "work",
+            "activity": "travelToWork",
+            "tile": {
+              "x": 39,
+              "y": 7
+            },
+            "destination": {
+              "x": 82,
+              "y": 7
+            },
+            "route": [
+              {
+                "x": 40,
+                "y": 7
+              },
+              {
+                "x": 41,
+                "y": 7
+              },
+              {
+                "x": 42,
+                "y": 7
+              },
+              {
+                "x": 43,
+                "y": 7
+              },
+              {
+                "x": 44,
+                "y": 7
+              },
+              {
+                "x": 45,
+                "y": 7
+              },
+              {
+                "x": 46,
+                "y": 7
+              },
+              {
+                "x": 47,
+                "y": 7
+              },
+              {
+                "x": 48,
+                "y": 7
+              },
+              {
+                "x": 49,
+                "y": 7
+              },
+              {
+                "x": 50,
+                "y": 7
+              },
+              {
+                "x": 51,
+                "y": 7
+              },
+              {
+                "x": 52,
+                "y": 7
+              },
+              {
+                "x": 53,
+                "y": 7
+              },
+              {
+                "x": 54,
+                "y": 7
+              },
+              {
+                "x": 55,
+                "y": 7
+              },
+              {
+                "x": 56,
+                "y": 7
+              },
+              {
+                "x": 57,
+                "y": 7
+              },
+              {
+                "x": 58,
+                "y": 7
+              },
+              {
+                "x": 59,
+                "y": 7
+              },
+              {
+                "x": 60,
+                "y": 7
+              },
+              {
+                "x": 61,
+                "y": 7
+              },
+              {
+                "x": 62,
+                "y": 7
+              },
+              {
+                "x": 63,
+                "y": 7
+              },
+              {
+                "x": 64,
+                "y": 7
+              },
+              {
+                "x": 65,
+                "y": 7
+              },
+              {
+                "x": 66,
+                "y": 7
+              },
+              {
+                "x": 67,
+                "y": 7
+              },
+              {
+                "x": 68,
+                "y": 7
+              },
+              {
+                "x": 69,
+                "y": 7
+              },
+              {
+                "x": 70,
+                "y": 7
+              },
+              {
+                "x": 71,
+                "y": 7
+              },
+              {
+                "x": 72,
+                "y": 7
+              },
+              {
+                "x": 73,
+                "y": 7
+              },
+              {
+                "x": 74,
+                "y": 7
+              },
+              {
+                "x": 75,
+                "y": 7
+              },
+              {
+                "x": 76,
+                "y": 7
+              },
+              {
+                "x": 77,
+                "y": 7
+              },
+              {
+                "x": 78,
+                "y": 7
+              },
+              {
+                "x": 79,
+                "y": 7
+              },
+              {
+                "x": 80,
+                "y": 7
+              },
+              {
+                "x": 81,
+                "y": 7
+              },
+              {
+                "x": 82,
+                "y": 7
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 35,
+                "y": 7
+              },
+              {
+                "x": 36,
+                "y": 7
+              },
+              {
+                "x": 37,
+                "y": 7
+              },
+              {
+                "x": 38,
+                "y": 7
+              },
+              {
+                "x": 39,
+                "y": 7
+              }
+            ],
+            "reason": "Đi đến nguồn tài nguyên có thể khai thác.",
+            "hunger": 63,
+            "health": 92,
+            "energy": 86,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "work",
+            "activity": "travelToWork",
+            "tile": {
+              "x": 54,
+              "y": 15
+            },
+            "destination": {
+              "x": 70,
+              "y": 41
+            },
+            "route": [
+              {
+                "x": 55,
+                "y": 15
+              },
+              {
+                "x": 56,
+                "y": 15
+              },
+              {
+                "x": 57,
+                "y": 15
+              },
+              {
+                "x": 58,
+                "y": 15
+              },
+              {
+                "x": 59,
+                "y": 15
+              },
+              {
+                "x": 60,
+                "y": 15
+              },
+              {
+                "x": 61,
+                "y": 15
+              },
+              {
+                "x": 62,
+                "y": 15
+              },
+              {
+                "x": 63,
+                "y": 15
+              },
+              {
+                "x": 64,
+                "y": 15
+              },
+              {
+                "x": 65,
+                "y": 15
+              },
+              {
+                "x": 66,
+                "y": 15
+              },
+              {
+                "x": 67,
+                "y": 15
+              },
+              {
+                "x": 68,
+                "y": 15
+              },
+              {
+                "x": 69,
+                "y": 15
+              },
+              {
+                "x": 70,
+                "y": 15
+              },
+              {
+                "x": 70,
+                "y": 16
+              },
+              {
+                "x": 70,
+                "y": 17
+              },
+              {
+                "x": 70,
+                "y": 18
+              },
+              {
+                "x": 70,
+                "y": 19
+              },
+              {
+                "x": 70,
+                "y": 20
+              },
+              {
+                "x": 70,
+                "y": 21
+              },
+              {
+                "x": 70,
+                "y": 22
+              },
+              {
+                "x": 70,
+                "y": 23
+              },
+              {
+                "x": 70,
+                "y": 24
+              },
+              {
+                "x": 70,
+                "y": 25
+              },
+              {
+                "x": 70,
+                "y": 26
+              },
+              {
+                "x": 70,
+                "y": 27
+              },
+              {
+                "x": 70,
+                "y": 28
+              },
+              {
+                "x": 70,
+                "y": 29
+              },
+              {
+                "x": 70,
+                "y": 30
+              },
+              {
+                "x": 70,
+                "y": 31
+              },
+              {
+                "x": 70,
+                "y": 32
+              },
+              {
+                "x": 70,
+                "y": 33
+              },
+              {
+                "x": 70,
+                "y": 34
+              },
+              {
+                "x": 70,
+                "y": 35
+              },
+              {
+                "x": 70,
+                "y": 36
+              },
+              {
+                "x": 70,
+                "y": 37
+              },
+              {
+                "x": 70,
+                "y": 38
+              },
+              {
+                "x": 70,
+                "y": 39
+              },
+              {
+                "x": 70,
+                "y": 40
+              },
+              {
+                "x": 70,
+                "y": 41
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 50,
+                "y": 15
+              },
+              {
+                "x": 51,
+                "y": 15
+              },
+              {
+                "x": 52,
+                "y": 15
+              },
+              {
+                "x": 53,
+                "y": 15
+              },
+              {
+                "x": 54,
+                "y": 15
+              }
+            ],
+            "reason": "Đi đến nguồn tài nguyên có thể khai thác.",
+            "hunger": 66,
+            "health": 98,
+            "energy": 86,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 3,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 34,
+            "reason": "Nguyễn Hương: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 4,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 36,
+            "reason": "Trần Lan: Đói, đến chợ để mua food bằng tiền thật."
+          }
+        ],
+        "currency": 2440,
+        "failedActions": 0
+      },
+      {
+        "tick": 24,
+        "rngState": 3833554759,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "food",
+            "activity": "eating",
+            "tile": {
+              "x": 57,
+              "y": 46
+            },
+            "destination": {
+              "x": 57,
+              "y": 46
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 57,
+                "y": 42
+              },
+              {
+                "x": 57,
+                "y": 43
+              },
+              {
+                "x": 57,
+                "y": 44
+              },
+              {
+                "x": 57,
+                "y": 45
+              },
+              {
+                "x": 57,
+                "y": 46
+              }
+            ],
+            "reason": "Tìm hoặc ăn food đang sở hữu.",
+            "hunger": 35,
+            "health": 94,
+            "energy": 62,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "food",
+            "activity": "travelToFood",
+            "tile": {
+              "x": 57,
+              "y": 37
+            },
+            "destination": {
+              "x": 57,
+              "y": 46
+            },
+            "route": [
+              {
+                "x": 57,
+                "y": 38
+              },
+              {
+                "x": 57,
+                "y": 39
+              },
+              {
+                "x": 57,
+                "y": 40
+              },
+              {
+                "x": 57,
+                "y": 41
+              },
+              {
+                "x": 57,
+                "y": 42
+              },
+              {
+                "x": 57,
+                "y": 43
+              },
+              {
+                "x": 57,
+                "y": 44
+              },
+              {
+                "x": 57,
+                "y": 45
+              },
+              {
+                "x": 57,
+                "y": 46
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 57,
+                "y": 33
+              },
+              {
+                "x": 57,
+                "y": 34
+              },
+              {
+                "x": 57,
+                "y": 35
+              },
+              {
+                "x": 57,
+                "y": 36
+              },
+              {
+                "x": 57,
+                "y": 37
+              }
+            ],
+            "reason": "Đói, đến chợ để mua food bằng tiền thật.",
+            "hunger": 39,
+            "health": 92,
+            "energy": 62,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "food",
+            "activity": "travelToFood",
+            "tile": {
+              "x": 69,
+              "y": 46
+            },
+            "destination": {
+              "x": 57,
+              "y": 46
+            },
+            "route": [
+              {
+                "x": 68,
+                "y": 46
+              },
+              {
+                "x": 67,
+                "y": 46
+              },
+              {
+                "x": 66,
+                "y": 46
+              },
+              {
+                "x": 65,
+                "y": 46
+              },
+              {
+                "x": 64,
+                "y": 46
+              },
+              {
+                "x": 63,
+                "y": 46
+              },
+              {
+                "x": 62,
+                "y": 46
+              },
+              {
+                "x": 61,
+                "y": 46
+              },
+              {
+                "x": 60,
+                "y": 46
+              },
+              {
+                "x": 59,
+                "y": 46
+              },
+              {
+                "x": 58,
+                "y": 46
+              },
+              {
+                "x": 57,
+                "y": 46
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 70,
+                "y": 43
+              },
+              {
+                "x": 70,
+                "y": 44
+              },
+              {
+                "x": 70,
+                "y": 45
+              },
+              {
+                "x": 70,
+                "y": 46
+              },
+              {
+                "x": 69,
+                "y": 46
+              }
+            ],
+            "reason": "Đói, đến chợ để mua food bằng tiền thật.",
+            "hunger": 42,
+            "health": 98,
+            "energy": 62,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 21,
+            "tick": 24,
+            "type": "bought",
+            "citizenId": 30,
+            "reason": "Nguyễn Dũng: mua 1 food, tiền ví còn 29."
+          },
+          {
+            "id": 22,
+            "tick": 24,
+            "type": "bought",
+            "citizenId": 32,
+            "reason": "Lê Hà: mua 1 food, tiền ví còn 29."
+          },
+          {
+            "id": 23,
+            "tick": 24,
+            "type": "bought",
+            "citizenId": 42,
+            "reason": "Nguyễn Phúc: mua 1 food, tiền ví còn 29."
+          },
+          {
+            "id": 24,
+            "tick": 24,
+            "type": "bought",
+            "citizenId": 45,
+            "reason": "Lê Trang: mua 1 food, tiền ví còn 29."
+          }
+        ],
+        "currency": 2440,
+        "failedActions": 0
+      },
+      {
+        "tick": 36,
+        "rngState": 3969433050,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "work",
+            "activity": "atWork",
+            "tile": {
+              "x": 70,
+              "y": 41
+            },
+            "destination": {
+              "x": 70,
+              "y": 41
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 70,
+                "y": 41
+              }
+            ],
+            "reason": "Thu hoạch ruộng thật, rồi tự mang hàng đi bán.",
+            "hunger": 66,
+            "health": 94,
+            "energy": 38,
+            "wallet": 29,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "work",
+            "activity": "travelToWork",
+            "tile": {
+              "x": 57,
+              "y": 18
+            },
+            "destination": {
+              "x": 82,
+              "y": 7
+            },
+            "route": [
+              {
+                "x": 57,
+                "y": 17
+              },
+              {
+                "x": 57,
+                "y": 16
+              },
+              {
+                "x": 57,
+                "y": 15
+              },
+              {
+                "x": 57,
+                "y": 14
+              },
+              {
+                "x": 57,
+                "y": 13
+              },
+              {
+                "x": 57,
+                "y": 12
+              },
+              {
+                "x": 57,
+                "y": 11
+              },
+              {
+                "x": 57,
+                "y": 10
+              },
+              {
+                "x": 57,
+                "y": 9
+              },
+              {
+                "x": 57,
+                "y": 8
+              },
+              {
+                "x": 57,
+                "y": 7
+              },
+              {
+                "x": 58,
+                "y": 7
+              },
+              {
+                "x": 59,
+                "y": 7
+              },
+              {
+                "x": 60,
+                "y": 7
+              },
+              {
+                "x": 61,
+                "y": 7
+              },
+              {
+                "x": 62,
+                "y": 7
+              },
+              {
+                "x": 63,
+                "y": 7
+              },
+              {
+                "x": 64,
+                "y": 7
+              },
+              {
+                "x": 65,
+                "y": 7
+              },
+              {
+                "x": 66,
+                "y": 7
+              },
+              {
+                "x": 67,
+                "y": 7
+              },
+              {
+                "x": 68,
+                "y": 7
+              },
+              {
+                "x": 69,
+                "y": 7
+              },
+              {
+                "x": 70,
+                "y": 7
+              },
+              {
+                "x": 71,
+                "y": 7
+              },
+              {
+                "x": 72,
+                "y": 7
+              },
+              {
+                "x": 73,
+                "y": 7
+              },
+              {
+                "x": 74,
+                "y": 7
+              },
+              {
+                "x": 75,
+                "y": 7
+              },
+              {
+                "x": 76,
+                "y": 7
+              },
+              {
+                "x": 77,
+                "y": 7
+              },
+              {
+                "x": 78,
+                "y": 7
+              },
+              {
+                "x": 79,
+                "y": 7
+              },
+              {
+                "x": 80,
+                "y": 7
+              },
+              {
+                "x": 81,
+                "y": 7
+              },
+              {
+                "x": 82,
+                "y": 7
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 57,
+                "y": 22
+              },
+              {
+                "x": 57,
+                "y": 21
+              },
+              {
+                "x": 57,
+                "y": 20
+              },
+              {
+                "x": 57,
+                "y": 19
+              },
+              {
+                "x": 57,
+                "y": 18
+              }
+            ],
+            "reason": "Đi đến nguồn tài nguyên có thể khai thác.",
+            "hunger": 70,
+            "health": 92,
+            "energy": 40,
+            "wallet": 29,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "work",
+            "activity": "atWork",
+            "tile": {
+              "x": 76,
+              "y": 43
+            },
+            "destination": {
+              "x": 76,
+              "y": 43
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 76,
+                "y": 43
+              }
+            ],
+            "reason": "Thu hoạch ruộng thật, rồi tự mang hàng đi bán.",
+            "hunger": 73,
+            "health": 98,
+            "energy": 39,
+            "wallet": 29,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 55,
+            "tick": 36,
+            "type": "encounter",
+            "citizenId": 27,
+            "reason": "Nguyễn An gặp Đặng Giang: Cùng làm việc tại nguồn tài nguyên #47."
+          }
+        ],
+        "currency": 2440,
+        "failedActions": 0
+      },
+      {
+        "tick": 48,
+        "rngState": 4057570402,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "home",
+            "activity": "travelHome",
+            "tile": {
+              "x": 57,
+              "y": 34
+            },
+            "destination": {
+              "x": 12,
+              "y": 15
+            },
+            "route": [
+              {
+                "x": 57,
+                "y": 33
+              },
+              {
+                "x": 57,
+                "y": 32
+              },
+              {
+                "x": 57,
+                "y": 31
+              },
+              {
+                "x": 57,
+                "y": 30
+              },
+              {
+                "x": 57,
+                "y": 29
+              },
+              {
+                "x": 57,
+                "y": 28
+              },
+              {
+                "x": 57,
+                "y": 27
+              },
+              {
+                "x": 57,
+                "y": 26
+              },
+              {
+                "x": 57,
+                "y": 25
+              },
+              {
+                "x": 57,
+                "y": 24
+              },
+              {
+                "x": 57,
+                "y": 23
+              },
+              {
+                "x": 57,
+                "y": 22
+              },
+              {
+                "x": 57,
+                "y": 21
+              },
+              {
+                "x": 57,
+                "y": 20
+              },
+              {
+                "x": 57,
+                "y": 19
+              },
+              {
+                "x": 57,
+                "y": 18
+              },
+              {
+                "x": 57,
+                "y": 17
+              },
+              {
+                "x": 57,
+                "y": 16
+              },
+              {
+                "x": 57,
+                "y": 15
+              },
+              {
+                "x": 56,
+                "y": 15
+              },
+              {
+                "x": 55,
+                "y": 15
+              },
+              {
+                "x": 54,
+                "y": 15
+              },
+              {
+                "x": 53,
+                "y": 15
+              },
+              {
+                "x": 52,
+                "y": 15
+              },
+              {
+                "x": 51,
+                "y": 15
+              },
+              {
+                "x": 50,
+                "y": 15
+              },
+              {
+                "x": 49,
+                "y": 15
+              },
+              {
+                "x": 48,
+                "y": 15
+              },
+              {
+                "x": 47,
+                "y": 15
+              },
+              {
+                "x": 46,
+                "y": 15
+              },
+              {
+                "x": 45,
+                "y": 15
+              },
+              {
+                "x": 44,
+                "y": 15
+              },
+              {
+                "x": 43,
+                "y": 15
+              },
+              {
+                "x": 42,
+                "y": 15
+              },
+              {
+                "x": 41,
+                "y": 15
+              },
+              {
+                "x": 40,
+                "y": 15
+              },
+              {
+                "x": 39,
+                "y": 15
+              },
+              {
+                "x": 38,
+                "y": 15
+              },
+              {
+                "x": 37,
+                "y": 15
+              },
+              {
+                "x": 36,
+                "y": 15
+              },
+              {
+                "x": 35,
+                "y": 15
+              },
+              {
+                "x": 34,
+                "y": 15
+              },
+              {
+                "x": 33,
+                "y": 15
+              },
+              {
+                "x": 32,
+                "y": 15
+              },
+              {
+                "x": 31,
+                "y": 15
+              },
+              {
+                "x": 30,
+                "y": 15
+              },
+              {
+                "x": 29,
+                "y": 15
+              },
+              {
+                "x": 28,
+                "y": 15
+              },
+              {
+                "x": 27,
+                "y": 15
+              },
+              {
+                "x": 26,
+                "y": 15
+              },
+              {
+                "x": 25,
+                "y": 15
+              },
+              {
+                "x": 24,
+                "y": 15
+              },
+              {
+                "x": 23,
+                "y": 15
+              },
+              {
+                "x": 22,
+                "y": 15
+              },
+              {
+                "x": 21,
+                "y": 15
+              },
+              {
+                "x": 20,
+                "y": 15
+              },
+              {
+                "x": 19,
+                "y": 15
+              },
+              {
+                "x": 18,
+                "y": 15
+              },
+              {
+                "x": 17,
+                "y": 15
+              },
+              {
+                "x": 16,
+                "y": 15
+              },
+              {
+                "x": 15,
+                "y": 15
+              },
+              {
+                "x": 14,
+                "y": 15
+              },
+              {
+                "x": 13,
+                "y": 15
+              },
+              {
+                "x": 12,
+                "y": 15
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 57,
+                "y": 38
+              },
+              {
+                "x": 57,
+                "y": 37
+              },
+              {
+                "x": 57,
+                "y": 36
+              },
+              {
+                "x": 57,
+                "y": 35
+              },
+              {
+                "x": 57,
+                "y": 34
+              }
+            ],
+            "reason": "Trở về nơi nghỉ ngơi.",
+            "hunger": 94,
+            "health": 94,
+            "energy": 16,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "food",
+            "activity": "travelToFood",
+            "tile": {
+              "x": 66,
+              "y": 35
+            },
+            "destination": {
+              "x": 57,
+              "y": 46
+            },
+            "route": [
+              {
+                "x": 66,
+                "y": 36
+              },
+              {
+                "x": 66,
+                "y": 37
+              },
+              {
+                "x": 66,
+                "y": 38
+              },
+              {
+                "x": 66,
+                "y": 39
+              },
+              {
+                "x": 66,
+                "y": 40
+              },
+              {
+                "x": 66,
+                "y": 41
+              },
+              {
+                "x": 66,
+                "y": 42
+              },
+              {
+                "x": 66,
+                "y": 43
+              },
+              {
+                "x": 66,
+                "y": 44
+              },
+              {
+                "x": 66,
+                "y": 45
+              },
+              {
+                "x": 66,
+                "y": 46
+              },
+              {
+                "x": 65,
+                "y": 46
+              },
+              {
+                "x": 64,
+                "y": 46
+              },
+              {
+                "x": 63,
+                "y": 46
+              },
+              {
+                "x": 62,
+                "y": 46
+              },
+              {
+                "x": 61,
+                "y": 46
+              },
+              {
+                "x": 60,
+                "y": 46
+              },
+              {
+                "x": 59,
+                "y": 46
+              },
+              {
+                "x": 58,
+                "y": 46
+              },
+              {
+                "x": 57,
+                "y": 46
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 66,
+                "y": 31
+              },
+              {
+                "x": 66,
+                "y": 32
+              },
+              {
+                "x": 66,
+                "y": 33
+              },
+              {
+                "x": 66,
+                "y": 34
+              },
+              {
+                "x": 66,
+                "y": 35
+              }
+            ],
+            "reason": "Đói, đến chợ để mua food bằng tiền thật.",
+            "hunger": 46,
+            "health": 92,
+            "energy": 16,
+            "wallet": 29,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "sell",
+            "activity": "trading",
+            "tile": {
+              "x": 57,
+              "y": 46
+            },
+            "destination": {
+              "x": 57,
+              "y": 46
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 59,
+                "y": 46
+              },
+              {
+                "x": 58,
+                "y": 46
+              },
+              {
+                "x": 57,
+                "y": 46
+              }
+            ],
+            "reason": "Bán hàng để kiếm thu nhập, nếu chợ còn quỹ/chỗ.",
+            "hunger": 49,
+            "health": 98,
+            "energy": 13,
+            "wallet": 29,
+            "inventory": {
+              "food": 3,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 78,
+            "tick": 48,
+            "type": "bought",
+            "citizenId": 31,
+            "reason": "Đặng Giang: mua 1 food, tiền ví còn 32."
+          },
+          {
+            "id": 79,
+            "tick": 48,
+            "type": "sold",
+            "citizenId": 32,
+            "reason": "Lê Hà: bán 3 food cho chợ."
+          },
+          {
+            "id": 80,
+            "tick": 48,
+            "type": "departure",
+            "citizenId": 36,
+            "reason": "Trần Lan: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 81,
+            "tick": 48,
+            "type": "foodEaten",
+            "citizenId": 41,
+            "reason": "Trần Ngọc: ăn 1 food từ túi cá nhân."
+          }
+        ],
+        "currency": 2440,
+        "failedActions": 0
+      }
+    ]
+  },
+  "v6-96-p50-seed12345-t0": {
+    "seed": 12345,
+    "schemaVersion": 6,
+    "dimensions": [
+      96,
+      96
+    ],
+    "population": 50,
+    "initialTick": 0,
+    "finalTick": 48,
+    "initialRngState": 3937517130,
+    "finalRngState": 1666300884,
+    "selectedCitizenIds": [
+      27,
+      28,
+      29
+    ],
+    "traceSha256": "7e35ef6decca6001387b98f8f7e03fca88bafc00fd3a8ab1322e6a06041b2076",
+    "eventSha256": "196ee965b1ad8e87fa7a355dda14c29d3b9effc36f184f3f0380727a3cb4bdfd",
+    "finalStateDigest": "ba53f1e5",
+    "checks": {
+      "initialCurrency": 6100,
+      "finalCurrency": 6100,
+      "initialFailedActions": 0,
+      "finalFailedActions": 0,
+      "routeBlocked": 0,
+      "goalTransitions": 299,
+      "pathCalls": 1207,
+      "movedCitizenHours": 1951
+    },
+    "checkpoints": [
+      {
+        "tick": 1,
+        "rngState": 1919585846,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "home",
+            "activity": "rest",
+            "tile": {
+              "x": 12,
+              "y": 15
+            },
+            "destination": {
+              "x": 12,
+              "y": 15
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 12,
+                "y": 15
+              }
+            ],
+            "reason": "Đang nghỉ trước giờ làm việc.",
+            "hunger": 81,
+            "health": 94,
+            "energy": 78,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "home",
+            "activity": "rest",
+            "tile": {
+              "x": 19,
+              "y": 15
+            },
+            "destination": {
+              "x": 19,
+              "y": 15
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 19,
+                "y": 15
+              }
+            ],
+            "reason": "Đang nghỉ trước giờ làm việc.",
+            "hunger": 85,
+            "health": 92,
+            "energy": 95,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "home",
+            "activity": "rest",
+            "tile": {
+              "x": 26,
+              "y": 15
+            },
+            "destination": {
+              "x": 26,
+              "y": 15
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 26,
+                "y": 15
+              }
+            ],
+            "reason": "Đang nghỉ trước giờ làm việc.",
+            "hunger": 88,
+            "health": 98,
+            "energy": 86,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 2,
+            "tick": 1,
+            "type": "leaderChosen",
+            "citizenId": 29,
+            "reason": "Phạm Chi trở thành trưởng làng. Ủng hộ 18 = quan hệ 0 + sinh kế/sức khỏe 18; hòa điểm ưu tiên ID nhỏ."
+          },
+          {
+            "id": 3,
+            "tick": 1,
+            "type": "unemployed",
+            "citizenId": 51,
+            "reason": "Đặng Giang 2: đổi sang nghề trồng trọt vì việc cũ không còn nhu cầu."
+          },
+          {
+            "id": 4,
+            "tick": 1,
+            "type": "unemployed",
+            "citizenId": 76,
+            "reason": "Nguyễn Lan 3: đổi sang nghề trồng trọt vì việc cũ không còn nhu cầu."
+          }
+        ],
+        "currency": 6100,
+        "failedActions": 0
+      },
+      {
+        "tick": 12,
+        "rngState": 1569205062,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "work",
+            "activity": "travelToWork",
+            "tile": {
+              "x": 40,
+              "y": 15
+            },
+            "destination": {
+              "x": 70,
+              "y": 41
+            },
+            "route": [
+              {
+                "x": 41,
+                "y": 15
+              },
+              {
+                "x": 42,
+                "y": 15
+              },
+              {
+                "x": 43,
+                "y": 15
+              },
+              {
+                "x": 44,
+                "y": 15
+              },
+              {
+                "x": 45,
+                "y": 15
+              },
+              {
+                "x": 46,
+                "y": 15
+              },
+              {
+                "x": 47,
+                "y": 15
+              },
+              {
+                "x": 48,
+                "y": 15
+              },
+              {
+                "x": 49,
+                "y": 15
+              },
+              {
+                "x": 50,
+                "y": 15
+              },
+              {
+                "x": 51,
+                "y": 15
+              },
+              {
+                "x": 52,
+                "y": 15
+              },
+              {
+                "x": 53,
+                "y": 15
+              },
+              {
+                "x": 54,
+                "y": 15
+              },
+              {
+                "x": 55,
+                "y": 15
+              },
+              {
+                "x": 56,
+                "y": 15
+              },
+              {
+                "x": 57,
+                "y": 15
+              },
+              {
+                "x": 58,
+                "y": 15
+              },
+              {
+                "x": 59,
+                "y": 15
+              },
+              {
+                "x": 60,
+                "y": 15
+              },
+              {
+                "x": 61,
+                "y": 15
+              },
+              {
+                "x": 62,
+                "y": 15
+              },
+              {
+                "x": 63,
+                "y": 15
+              },
+              {
+                "x": 64,
+                "y": 15
+              },
+              {
+                "x": 65,
+                "y": 15
+              },
+              {
+                "x": 66,
+                "y": 15
+              },
+              {
+                "x": 67,
+                "y": 15
+              },
+              {
+                "x": 68,
+                "y": 15
+              },
+              {
+                "x": 69,
+                "y": 15
+              },
+              {
+                "x": 70,
+                "y": 15
+              },
+              {
+                "x": 70,
+                "y": 16
+              },
+              {
+                "x": 70,
+                "y": 17
+              },
+              {
+                "x": 70,
+                "y": 18
+              },
+              {
+                "x": 70,
+                "y": 19
+              },
+              {
+                "x": 70,
+                "y": 20
+              },
+              {
+                "x": 70,
+                "y": 21
+              },
+              {
+                "x": 70,
+                "y": 22
+              },
+              {
+                "x": 70,
+                "y": 23
+              },
+              {
+                "x": 70,
+                "y": 24
+              },
+              {
+                "x": 70,
+                "y": 25
+              },
+              {
+                "x": 70,
+                "y": 26
+              },
+              {
+                "x": 70,
+                "y": 27
+              },
+              {
+                "x": 70,
+                "y": 28
+              },
+              {
+                "x": 70,
+                "y": 29
+              },
+              {
+                "x": 70,
+                "y": 30
+              },
+              {
+                "x": 70,
+                "y": 31
+              },
+              {
+                "x": 70,
+                "y": 32
+              },
+              {
+                "x": 70,
+                "y": 33
+              },
+              {
+                "x": 70,
+                "y": 34
+              },
+              {
+                "x": 70,
+                "y": 35
+              },
+              {
+                "x": 70,
+                "y": 36
+              },
+              {
+                "x": 70,
+                "y": 37
+              },
+              {
+                "x": 70,
+                "y": 38
+              },
+              {
+                "x": 70,
+                "y": 39
+              },
+              {
+                "x": 70,
+                "y": 40
+              },
+              {
+                "x": 70,
+                "y": 41
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 36,
+                "y": 15
+              },
+              {
+                "x": 37,
+                "y": 15
+              },
+              {
+                "x": 38,
+                "y": 15
+              },
+              {
+                "x": 39,
+                "y": 15
+              },
+              {
+                "x": 40,
+                "y": 15
+              }
+            ],
+            "reason": "Đi đến nguồn tài nguyên có thể khai thác.",
+            "hunger": 59,
+            "health": 94,
+            "energy": 86,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "work",
+            "activity": "travelToWork",
+            "tile": {
+              "x": 39,
+              "y": 7
+            },
+            "destination": {
+              "x": 82,
+              "y": 7
+            },
+            "route": [
+              {
+                "x": 40,
+                "y": 7
+              },
+              {
+                "x": 41,
+                "y": 7
+              },
+              {
+                "x": 42,
+                "y": 7
+              },
+              {
+                "x": 43,
+                "y": 7
+              },
+              {
+                "x": 44,
+                "y": 7
+              },
+              {
+                "x": 45,
+                "y": 7
+              },
+              {
+                "x": 46,
+                "y": 7
+              },
+              {
+                "x": 47,
+                "y": 7
+              },
+              {
+                "x": 48,
+                "y": 7
+              },
+              {
+                "x": 49,
+                "y": 7
+              },
+              {
+                "x": 50,
+                "y": 7
+              },
+              {
+                "x": 51,
+                "y": 7
+              },
+              {
+                "x": 52,
+                "y": 7
+              },
+              {
+                "x": 53,
+                "y": 7
+              },
+              {
+                "x": 54,
+                "y": 7
+              },
+              {
+                "x": 55,
+                "y": 7
+              },
+              {
+                "x": 56,
+                "y": 7
+              },
+              {
+                "x": 57,
+                "y": 7
+              },
+              {
+                "x": 58,
+                "y": 7
+              },
+              {
+                "x": 59,
+                "y": 7
+              },
+              {
+                "x": 60,
+                "y": 7
+              },
+              {
+                "x": 61,
+                "y": 7
+              },
+              {
+                "x": 62,
+                "y": 7
+              },
+              {
+                "x": 63,
+                "y": 7
+              },
+              {
+                "x": 64,
+                "y": 7
+              },
+              {
+                "x": 65,
+                "y": 7
+              },
+              {
+                "x": 66,
+                "y": 7
+              },
+              {
+                "x": 67,
+                "y": 7
+              },
+              {
+                "x": 68,
+                "y": 7
+              },
+              {
+                "x": 69,
+                "y": 7
+              },
+              {
+                "x": 70,
+                "y": 7
+              },
+              {
+                "x": 71,
+                "y": 7
+              },
+              {
+                "x": 72,
+                "y": 7
+              },
+              {
+                "x": 73,
+                "y": 7
+              },
+              {
+                "x": 74,
+                "y": 7
+              },
+              {
+                "x": 75,
+                "y": 7
+              },
+              {
+                "x": 76,
+                "y": 7
+              },
+              {
+                "x": 77,
+                "y": 7
+              },
+              {
+                "x": 78,
+                "y": 7
+              },
+              {
+                "x": 79,
+                "y": 7
+              },
+              {
+                "x": 80,
+                "y": 7
+              },
+              {
+                "x": 81,
+                "y": 7
+              },
+              {
+                "x": 82,
+                "y": 7
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 35,
+                "y": 7
+              },
+              {
+                "x": 36,
+                "y": 7
+              },
+              {
+                "x": 37,
+                "y": 7
+              },
+              {
+                "x": 38,
+                "y": 7
+              },
+              {
+                "x": 39,
+                "y": 7
+              }
+            ],
+            "reason": "Đi đến nguồn tài nguyên có thể khai thác.",
+            "hunger": 63,
+            "health": 92,
+            "energy": 86,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "work",
+            "activity": "travelToWork",
+            "tile": {
+              "x": 54,
+              "y": 15
+            },
+            "destination": {
+              "x": 70,
+              "y": 41
+            },
+            "route": [
+              {
+                "x": 55,
+                "y": 15
+              },
+              {
+                "x": 56,
+                "y": 15
+              },
+              {
+                "x": 57,
+                "y": 15
+              },
+              {
+                "x": 58,
+                "y": 15
+              },
+              {
+                "x": 59,
+                "y": 15
+              },
+              {
+                "x": 60,
+                "y": 15
+              },
+              {
+                "x": 61,
+                "y": 15
+              },
+              {
+                "x": 62,
+                "y": 15
+              },
+              {
+                "x": 63,
+                "y": 15
+              },
+              {
+                "x": 64,
+                "y": 15
+              },
+              {
+                "x": 65,
+                "y": 15
+              },
+              {
+                "x": 66,
+                "y": 15
+              },
+              {
+                "x": 67,
+                "y": 15
+              },
+              {
+                "x": 68,
+                "y": 15
+              },
+              {
+                "x": 69,
+                "y": 15
+              },
+              {
+                "x": 70,
+                "y": 15
+              },
+              {
+                "x": 70,
+                "y": 16
+              },
+              {
+                "x": 70,
+                "y": 17
+              },
+              {
+                "x": 70,
+                "y": 18
+              },
+              {
+                "x": 70,
+                "y": 19
+              },
+              {
+                "x": 70,
+                "y": 20
+              },
+              {
+                "x": 70,
+                "y": 21
+              },
+              {
+                "x": 70,
+                "y": 22
+              },
+              {
+                "x": 70,
+                "y": 23
+              },
+              {
+                "x": 70,
+                "y": 24
+              },
+              {
+                "x": 70,
+                "y": 25
+              },
+              {
+                "x": 70,
+                "y": 26
+              },
+              {
+                "x": 70,
+                "y": 27
+              },
+              {
+                "x": 70,
+                "y": 28
+              },
+              {
+                "x": 70,
+                "y": 29
+              },
+              {
+                "x": 70,
+                "y": 30
+              },
+              {
+                "x": 70,
+                "y": 31
+              },
+              {
+                "x": 70,
+                "y": 32
+              },
+              {
+                "x": 70,
+                "y": 33
+              },
+              {
+                "x": 70,
+                "y": 34
+              },
+              {
+                "x": 70,
+                "y": 35
+              },
+              {
+                "x": 70,
+                "y": 36
+              },
+              {
+                "x": 70,
+                "y": 37
+              },
+              {
+                "x": 70,
+                "y": 38
+              },
+              {
+                "x": 70,
+                "y": 39
+              },
+              {
+                "x": 70,
+                "y": 40
+              },
+              {
+                "x": 70,
+                "y": 41
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 50,
+                "y": 15
+              },
+              {
+                "x": 51,
+                "y": 15
+              },
+              {
+                "x": 52,
+                "y": 15
+              },
+              {
+                "x": 53,
+                "y": 15
+              },
+              {
+                "x": 54,
+                "y": 15
+              }
+            ],
+            "reason": "Đi đến nguồn tài nguyên có thể khai thác.",
+            "hunger": 66,
+            "health": 98,
+            "energy": 86,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 5,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 34,
+            "reason": "Nguyễn Hương: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 6,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 36,
+            "reason": "Trần Lan: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 7,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 54,
+            "reason": "Lê Hương 2: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 8,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 60,
+            "reason": "Bùi Nam 2: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 9,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 66,
+            "reason": "Hoàng Vân 2: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 10,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 69,
+            "reason": "Trần Chi 3: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 11,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 73,
+            "reason": "Nguyễn Hải 3: Đói, đến chợ để mua food bằng tiền thật."
+          }
+        ],
+        "currency": 6100,
+        "failedActions": 0
+      },
+      {
+        "tick": 24,
+        "rngState": 3833554759,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "food",
+            "activity": "eating",
+            "tile": {
+              "x": 57,
+              "y": 46
+            },
+            "destination": {
+              "x": 57,
+              "y": 46
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 57,
+                "y": 42
+              },
+              {
+                "x": 57,
+                "y": 43
+              },
+              {
+                "x": 57,
+                "y": 44
+              },
+              {
+                "x": 57,
+                "y": 45
+              },
+              {
+                "x": 57,
+                "y": 46
+              }
+            ],
+            "reason": "Tìm hoặc ăn food đang sở hữu.",
+            "hunger": 35,
+            "health": 94,
+            "energy": 62,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "food",
+            "activity": "travelToFood",
+            "tile": {
+              "x": 57,
+              "y": 37
+            },
+            "destination": {
+              "x": 57,
+              "y": 46
+            },
+            "route": [
+              {
+                "x": 57,
+                "y": 38
+              },
+              {
+                "x": 57,
+                "y": 39
+              },
+              {
+                "x": 57,
+                "y": 40
+              },
+              {
+                "x": 57,
+                "y": 41
+              },
+              {
+                "x": 57,
+                "y": 42
+              },
+              {
+                "x": 57,
+                "y": 43
+              },
+              {
+                "x": 57,
+                "y": 44
+              },
+              {
+                "x": 57,
+                "y": 45
+              },
+              {
+                "x": 57,
+                "y": 46
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 57,
+                "y": 33
+              },
+              {
+                "x": 57,
+                "y": 34
+              },
+              {
+                "x": 57,
+                "y": 35
+              },
+              {
+                "x": 57,
+                "y": 36
+              },
+              {
+                "x": 57,
+                "y": 37
+              }
+            ],
+            "reason": "Đói, đến chợ để mua food bằng tiền thật.",
+            "hunger": 39,
+            "health": 92,
+            "energy": 62,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "food",
+            "activity": "travelToFood",
+            "tile": {
+              "x": 69,
+              "y": 46
+            },
+            "destination": {
+              "x": 57,
+              "y": 46
+            },
+            "route": [
+              {
+                "x": 68,
+                "y": 46
+              },
+              {
+                "x": 67,
+                "y": 46
+              },
+              {
+                "x": 66,
+                "y": 46
+              },
+              {
+                "x": 65,
+                "y": 46
+              },
+              {
+                "x": 64,
+                "y": 46
+              },
+              {
+                "x": 63,
+                "y": 46
+              },
+              {
+                "x": 62,
+                "y": 46
+              },
+              {
+                "x": 61,
+                "y": 46
+              },
+              {
+                "x": 60,
+                "y": 46
+              },
+              {
+                "x": 59,
+                "y": 46
+              },
+              {
+                "x": 58,
+                "y": 46
+              },
+              {
+                "x": 57,
+                "y": 46
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 70,
+                "y": 43
+              },
+              {
+                "x": 70,
+                "y": 44
+              },
+              {
+                "x": 70,
+                "y": 45
+              },
+              {
+                "x": 70,
+                "y": 46
+              },
+              {
+                "x": 69,
+                "y": 46
+              }
+            ],
+            "reason": "Đói, đến chợ để mua food bằng tiền thật.",
+            "hunger": 42,
+            "health": 98,
+            "energy": 62,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 47,
+            "tick": 24,
+            "type": "bought",
+            "citizenId": 30,
+            "reason": "Nguyễn Dũng: mua 1 food, tiền ví còn 29."
+          },
+          {
+            "id": 48,
+            "tick": 24,
+            "type": "bought",
+            "citizenId": 32,
+            "reason": "Lê Hà: mua 1 food, tiền ví còn 29."
+          },
+          {
+            "id": 49,
+            "tick": 24,
+            "type": "bought",
+            "citizenId": 42,
+            "reason": "Nguyễn Phúc: mua 1 food, tiền ví còn 29."
+          },
+          {
+            "id": 50,
+            "tick": 24,
+            "type": "bought",
+            "citizenId": 45,
+            "reason": "Lê Trang: mua 1 food, tiền ví còn 29."
+          },
+          {
+            "id": 51,
+            "tick": 24,
+            "type": "bought",
+            "citizenId": 49,
+            "reason": "Nguyễn Chi 2: mua 1 food, tiền ví còn 29."
+          },
+          {
+            "id": 52,
+            "tick": 24,
+            "type": "foodEaten",
+            "citizenId": 52,
+            "reason": "Nguyễn Hà 2: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 53,
+            "tick": 24,
+            "type": "foodEaten",
+            "citizenId": 56,
+            "reason": "Bùi Lan 2: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 54,
+            "tick": 24,
+            "type": "foodEaten",
+            "citizenId": 62,
+            "reason": "Lê Phúc 2: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 55,
+            "tick": 24,
+            "type": "departure",
+            "citizenId": 65,
+            "reason": "Bùi Trang 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 56,
+            "tick": 24,
+            "type": "departure",
+            "citizenId": 69,
+            "reason": "Trần Chi 3: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 57,
+            "tick": 24,
+            "type": "bought",
+            "citizenId": 70,
+            "reason": "Bùi Dũng 3: mua 1 food, tiền ví còn 29."
+          },
+          {
+            "id": 58,
+            "tick": 24,
+            "type": "foodEaten",
+            "citizenId": 72,
+            "reason": "Nguyễn Hà 3: ăn 1 food từ túi cá nhân."
+          }
+        ],
+        "currency": 6100,
+        "failedActions": 0
+      },
+      {
+        "tick": 36,
+        "rngState": 3407152403,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "work",
+            "activity": "atWork",
+            "tile": {
+              "x": 70,
+              "y": 41
+            },
+            "destination": {
+              "x": 70,
+              "y": 41
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 70,
+                "y": 41
+              }
+            ],
+            "reason": "Thu hoạch ruộng thật, rồi tự mang hàng đi bán.",
+            "hunger": 66,
+            "health": 94,
+            "energy": 38,
+            "wallet": 29,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "work",
+            "activity": "travelToWork",
+            "tile": {
+              "x": 57,
+              "y": 18
+            },
+            "destination": {
+              "x": 82,
+              "y": 7
+            },
+            "route": [
+              {
+                "x": 57,
+                "y": 17
+              },
+              {
+                "x": 57,
+                "y": 16
+              },
+              {
+                "x": 57,
+                "y": 15
+              },
+              {
+                "x": 57,
+                "y": 14
+              },
+              {
+                "x": 57,
+                "y": 13
+              },
+              {
+                "x": 57,
+                "y": 12
+              },
+              {
+                "x": 57,
+                "y": 11
+              },
+              {
+                "x": 57,
+                "y": 10
+              },
+              {
+                "x": 57,
+                "y": 9
+              },
+              {
+                "x": 57,
+                "y": 8
+              },
+              {
+                "x": 57,
+                "y": 7
+              },
+              {
+                "x": 58,
+                "y": 7
+              },
+              {
+                "x": 59,
+                "y": 7
+              },
+              {
+                "x": 60,
+                "y": 7
+              },
+              {
+                "x": 61,
+                "y": 7
+              },
+              {
+                "x": 62,
+                "y": 7
+              },
+              {
+                "x": 63,
+                "y": 7
+              },
+              {
+                "x": 64,
+                "y": 7
+              },
+              {
+                "x": 65,
+                "y": 7
+              },
+              {
+                "x": 66,
+                "y": 7
+              },
+              {
+                "x": 67,
+                "y": 7
+              },
+              {
+                "x": 68,
+                "y": 7
+              },
+              {
+                "x": 69,
+                "y": 7
+              },
+              {
+                "x": 70,
+                "y": 7
+              },
+              {
+                "x": 71,
+                "y": 7
+              },
+              {
+                "x": 72,
+                "y": 7
+              },
+              {
+                "x": 73,
+                "y": 7
+              },
+              {
+                "x": 74,
+                "y": 7
+              },
+              {
+                "x": 75,
+                "y": 7
+              },
+              {
+                "x": 76,
+                "y": 7
+              },
+              {
+                "x": 77,
+                "y": 7
+              },
+              {
+                "x": 78,
+                "y": 7
+              },
+              {
+                "x": 79,
+                "y": 7
+              },
+              {
+                "x": 80,
+                "y": 7
+              },
+              {
+                "x": 81,
+                "y": 7
+              },
+              {
+                "x": 82,
+                "y": 7
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 57,
+                "y": 22
+              },
+              {
+                "x": 57,
+                "y": 21
+              },
+              {
+                "x": 57,
+                "y": 20
+              },
+              {
+                "x": 57,
+                "y": 19
+              },
+              {
+                "x": 57,
+                "y": 18
+              }
+            ],
+            "reason": "Đi đến nguồn tài nguyên có thể khai thác.",
+            "hunger": 70,
+            "health": 92,
+            "energy": 40,
+            "wallet": 29,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "work",
+            "activity": "atWork",
+            "tile": {
+              "x": 76,
+              "y": 43
+            },
+            "destination": {
+              "x": 76,
+              "y": 43
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 76,
+                "y": 43
+              }
+            ],
+            "reason": "Thu hoạch ruộng thật, rồi tự mang hàng đi bán.",
+            "hunger": 73,
+            "health": 98,
+            "energy": 39,
+            "wallet": 29,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 142,
+            "tick": 36,
+            "type": "departure",
+            "citizenId": 50,
+            "reason": "Phạm Dũng 2: Đi đến nguồn tài nguyên có thể khai thác."
+          },
+          {
+            "id": 143,
+            "tick": 36,
+            "type": "foodEaten",
+            "citizenId": 63,
+            "reason": "Trần Quân 2: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 144,
+            "tick": 36,
+            "type": "foodProduced",
+            "citizenId": 74,
+            "reason": "Bùi Hương 3 sở hữu +3 food từ nguồn #77."
+          },
+          {
+            "id": 145,
+            "tick": 36,
+            "type": "encounter",
+            "citizenId": 27,
+            "reason": "Nguyễn An gặp Lê Hà: Cùng làm việc tại nguồn tài nguyên #77."
+          },
+          {
+            "id": 146,
+            "tick": 36,
+            "type": "encounter",
+            "citizenId": 31,
+            "reason": "Đặng Giang gặp Phạm An 2: Cùng làm việc tại nguồn tài nguyên #77."
+          },
+          {
+            "id": 147,
+            "tick": 36,
+            "type": "encounter",
+            "citizenId": 51,
+            "reason": "Đặng Giang 2 gặp Bùi Hương 3: Cùng làm việc tại nguồn tài nguyên #77."
+          },
+          {
+            "id": 148,
+            "tick": 36,
+            "type": "encounter",
+            "citizenId": 29,
+            "reason": "Phạm Chi gặp Đặng Giang 3: Cùng làm việc tại nguồn tài nguyên #78."
+          }
+        ],
+        "currency": 6100,
+        "failedActions": 0
+      },
+      {
+        "tick": 48,
+        "rngState": 1666300884,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "home",
+            "activity": "travelHome",
+            "tile": {
+              "x": 57,
+              "y": 34
+            },
+            "destination": {
+              "x": 12,
+              "y": 15
+            },
+            "route": [
+              {
+                "x": 57,
+                "y": 33
+              },
+              {
+                "x": 57,
+                "y": 32
+              },
+              {
+                "x": 57,
+                "y": 31
+              },
+              {
+                "x": 57,
+                "y": 30
+              },
+              {
+                "x": 57,
+                "y": 29
+              },
+              {
+                "x": 57,
+                "y": 28
+              },
+              {
+                "x": 57,
+                "y": 27
+              },
+              {
+                "x": 57,
+                "y": 26
+              },
+              {
+                "x": 57,
+                "y": 25
+              },
+              {
+                "x": 57,
+                "y": 24
+              },
+              {
+                "x": 57,
+                "y": 23
+              },
+              {
+                "x": 57,
+                "y": 22
+              },
+              {
+                "x": 57,
+                "y": 21
+              },
+              {
+                "x": 57,
+                "y": 20
+              },
+              {
+                "x": 57,
+                "y": 19
+              },
+              {
+                "x": 57,
+                "y": 18
+              },
+              {
+                "x": 57,
+                "y": 17
+              },
+              {
+                "x": 57,
+                "y": 16
+              },
+              {
+                "x": 57,
+                "y": 15
+              },
+              {
+                "x": 56,
+                "y": 15
+              },
+              {
+                "x": 55,
+                "y": 15
+              },
+              {
+                "x": 54,
+                "y": 15
+              },
+              {
+                "x": 53,
+                "y": 15
+              },
+              {
+                "x": 52,
+                "y": 15
+              },
+              {
+                "x": 51,
+                "y": 15
+              },
+              {
+                "x": 50,
+                "y": 15
+              },
+              {
+                "x": 49,
+                "y": 15
+              },
+              {
+                "x": 48,
+                "y": 15
+              },
+              {
+                "x": 47,
+                "y": 15
+              },
+              {
+                "x": 46,
+                "y": 15
+              },
+              {
+                "x": 45,
+                "y": 15
+              },
+              {
+                "x": 44,
+                "y": 15
+              },
+              {
+                "x": 43,
+                "y": 15
+              },
+              {
+                "x": 42,
+                "y": 15
+              },
+              {
+                "x": 41,
+                "y": 15
+              },
+              {
+                "x": 40,
+                "y": 15
+              },
+              {
+                "x": 39,
+                "y": 15
+              },
+              {
+                "x": 38,
+                "y": 15
+              },
+              {
+                "x": 37,
+                "y": 15
+              },
+              {
+                "x": 36,
+                "y": 15
+              },
+              {
+                "x": 35,
+                "y": 15
+              },
+              {
+                "x": 34,
+                "y": 15
+              },
+              {
+                "x": 33,
+                "y": 15
+              },
+              {
+                "x": 32,
+                "y": 15
+              },
+              {
+                "x": 31,
+                "y": 15
+              },
+              {
+                "x": 30,
+                "y": 15
+              },
+              {
+                "x": 29,
+                "y": 15
+              },
+              {
+                "x": 28,
+                "y": 15
+              },
+              {
+                "x": 27,
+                "y": 15
+              },
+              {
+                "x": 26,
+                "y": 15
+              },
+              {
+                "x": 25,
+                "y": 15
+              },
+              {
+                "x": 24,
+                "y": 15
+              },
+              {
+                "x": 23,
+                "y": 15
+              },
+              {
+                "x": 22,
+                "y": 15
+              },
+              {
+                "x": 21,
+                "y": 15
+              },
+              {
+                "x": 20,
+                "y": 15
+              },
+              {
+                "x": 19,
+                "y": 15
+              },
+              {
+                "x": 18,
+                "y": 15
+              },
+              {
+                "x": 17,
+                "y": 15
+              },
+              {
+                "x": 16,
+                "y": 15
+              },
+              {
+                "x": 15,
+                "y": 15
+              },
+              {
+                "x": 14,
+                "y": 15
+              },
+              {
+                "x": 13,
+                "y": 15
+              },
+              {
+                "x": 12,
+                "y": 15
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 57,
+                "y": 38
+              },
+              {
+                "x": 57,
+                "y": 37
+              },
+              {
+                "x": 57,
+                "y": 36
+              },
+              {
+                "x": 57,
+                "y": 35
+              },
+              {
+                "x": 57,
+                "y": 34
+              }
+            ],
+            "reason": "Trở về nơi nghỉ ngơi.",
+            "hunger": 94,
+            "health": 94,
+            "energy": 16,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "food",
+            "activity": "travelToFood",
+            "tile": {
+              "x": 66,
+              "y": 35
+            },
+            "destination": {
+              "x": 57,
+              "y": 46
+            },
+            "route": [
+              {
+                "x": 66,
+                "y": 36
+              },
+              {
+                "x": 66,
+                "y": 37
+              },
+              {
+                "x": 66,
+                "y": 38
+              },
+              {
+                "x": 66,
+                "y": 39
+              },
+              {
+                "x": 66,
+                "y": 40
+              },
+              {
+                "x": 66,
+                "y": 41
+              },
+              {
+                "x": 66,
+                "y": 42
+              },
+              {
+                "x": 66,
+                "y": 43
+              },
+              {
+                "x": 66,
+                "y": 44
+              },
+              {
+                "x": 66,
+                "y": 45
+              },
+              {
+                "x": 66,
+                "y": 46
+              },
+              {
+                "x": 65,
+                "y": 46
+              },
+              {
+                "x": 64,
+                "y": 46
+              },
+              {
+                "x": 63,
+                "y": 46
+              },
+              {
+                "x": 62,
+                "y": 46
+              },
+              {
+                "x": 61,
+                "y": 46
+              },
+              {
+                "x": 60,
+                "y": 46
+              },
+              {
+                "x": 59,
+                "y": 46
+              },
+              {
+                "x": 58,
+                "y": 46
+              },
+              {
+                "x": 57,
+                "y": 46
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 66,
+                "y": 31
+              },
+              {
+                "x": 66,
+                "y": 32
+              },
+              {
+                "x": 66,
+                "y": 33
+              },
+              {
+                "x": 66,
+                "y": 34
+              },
+              {
+                "x": 66,
+                "y": 35
+              }
+            ],
+            "reason": "Đói, đến chợ để mua food bằng tiền thật.",
+            "hunger": 46,
+            "health": 92,
+            "energy": 16,
+            "wallet": 29,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "sell",
+            "activity": "trading",
+            "tile": {
+              "x": 57,
+              "y": 46
+            },
+            "destination": {
+              "x": 57,
+              "y": 46
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 59,
+                "y": 46
+              },
+              {
+                "x": 58,
+                "y": 46
+              },
+              {
+                "x": 57,
+                "y": 46
+              }
+            ],
+            "reason": "Bán hàng để kiếm thu nhập, nếu chợ còn quỹ/chỗ.",
+            "hunger": 49,
+            "health": 98,
+            "energy": 13,
+            "wallet": 29,
+            "inventory": {
+              "food": 3,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 208,
+            "tick": 48,
+            "type": "bought",
+            "citizenId": 31,
+            "reason": "Đặng Giang: mua 1 food, tiền ví còn 32."
+          },
+          {
+            "id": 209,
+            "tick": 48,
+            "type": "sold",
+            "citizenId": 32,
+            "reason": "Lê Hà: bán 3 food cho chợ."
+          },
+          {
+            "id": 210,
+            "tick": 48,
+            "type": "departure",
+            "citizenId": 51,
+            "reason": "Đặng Giang 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 211,
+            "tick": 48,
+            "type": "bought",
+            "citizenId": 56,
+            "reason": "Bùi Lan 2: mua 1 food, tiền ví còn 26."
+          },
+          {
+            "id": 212,
+            "tick": 48,
+            "type": "foodEaten",
+            "citizenId": 57,
+            "reason": "Hoàng Linh 2: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 213,
+            "tick": 48,
+            "type": "departure",
+            "citizenId": 64,
+            "reason": "Hoàng Thảo 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 214,
+            "tick": 48,
+            "type": "departure",
+            "citizenId": 71,
+            "reason": "Đặng Giang 3: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 215,
+            "tick": 48,
+            "type": "foodEaten",
+            "citizenId": 74,
+            "reason": "Bùi Hương 3: ăn 1 food từ túi cá nhân."
+          }
+        ],
+        "currency": 6100,
+        "failedActions": 0
+      }
+    ]
+  },
+  "v6-96-p100-seed12345-t0": {
+    "seed": 12345,
+    "schemaVersion": 6,
+    "dimensions": [
+      96,
+      96
+    ],
+    "population": 100,
+    "initialTick": 0,
+    "finalTick": 48,
+    "initialRngState": 3937517130,
+    "finalRngState": 141899122,
+    "selectedCitizenIds": [
+      27,
+      28,
+      29
+    ],
+    "traceSha256": "a2ec335f7b9c2cf8eb4b8325e03de4ae2f656ba82b83efa8b72a2d2bb382ec90",
+    "eventSha256": "113dfa5c4f03aef3d243a1721c3022bc2c5116775c412cc831252b5d9b730724",
+    "finalStateDigest": "4491d396",
+    "checks": {
+      "initialCurrency": 12200,
+      "finalCurrency": 12200,
+      "initialFailedActions": 0,
+      "finalFailedActions": 0,
+      "routeBlocked": 0,
+      "goalTransitions": 600,
+      "pathCalls": 2384,
+      "movedCitizenHours": 3924
+    },
+    "checkpoints": [
+      {
+        "tick": 1,
+        "rngState": 1919585846,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "home",
+            "activity": "rest",
+            "tile": {
+              "x": 12,
+              "y": 15
+            },
+            "destination": {
+              "x": 12,
+              "y": 15
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 12,
+                "y": 15
+              }
+            ],
+            "reason": "Đang nghỉ trước giờ làm việc.",
+            "hunger": 81,
+            "health": 94,
+            "energy": 78,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "home",
+            "activity": "rest",
+            "tile": {
+              "x": 19,
+              "y": 15
+            },
+            "destination": {
+              "x": 19,
+              "y": 15
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 19,
+                "y": 15
+              }
+            ],
+            "reason": "Đang nghỉ trước giờ làm việc.",
+            "hunger": 85,
+            "health": 92,
+            "energy": 95,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "home",
+            "activity": "rest",
+            "tile": {
+              "x": 26,
+              "y": 15
+            },
+            "destination": {
+              "x": 26,
+              "y": 15
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 26,
+                "y": 15
+              }
+            ],
+            "reason": "Đang nghỉ trước giờ làm việc.",
+            "hunger": 88,
+            "health": 98,
+            "energy": 86,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 2,
+            "tick": 1,
+            "type": "leaderChosen",
+            "citizenId": 29,
+            "reason": "Phạm Chi trở thành trưởng làng. Ủng hộ 18 = quan hệ 0 + sinh kế/sức khỏe 18; hòa điểm ưu tiên ID nhỏ."
+          },
+          {
+            "id": 3,
+            "tick": 1,
+            "type": "unemployed",
+            "citizenId": 51,
+            "reason": "Đặng Giang 2: đổi sang nghề trồng trọt vì việc cũ không còn nhu cầu."
+          },
+          {
+            "id": 4,
+            "tick": 1,
+            "type": "unemployed",
+            "citizenId": 76,
+            "reason": "Nguyễn Lan 3: đổi sang nghề trồng trọt vì việc cũ không còn nhu cầu."
+          },
+          {
+            "id": 5,
+            "tick": 1,
+            "type": "unemployed",
+            "citizenId": 101,
+            "reason": "Lê Ngọc 4: đổi sang nghề trồng trọt vì việc cũ không còn nhu cầu."
+          },
+          {
+            "id": 6,
+            "tick": 1,
+            "type": "unemployed",
+            "citizenId": 126,
+            "reason": "Bùi Vân 5: đổi sang nghề trồng trọt vì việc cũ không còn nhu cầu."
+          }
+        ],
+        "currency": 12200,
+        "failedActions": 0
+      },
+      {
+        "tick": 12,
+        "rngState": 1569205062,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "work",
+            "activity": "travelToWork",
+            "tile": {
+              "x": 40,
+              "y": 15
+            },
+            "destination": {
+              "x": 70,
+              "y": 41
+            },
+            "route": [
+              {
+                "x": 41,
+                "y": 15
+              },
+              {
+                "x": 42,
+                "y": 15
+              },
+              {
+                "x": 43,
+                "y": 15
+              },
+              {
+                "x": 44,
+                "y": 15
+              },
+              {
+                "x": 45,
+                "y": 15
+              },
+              {
+                "x": 46,
+                "y": 15
+              },
+              {
+                "x": 47,
+                "y": 15
+              },
+              {
+                "x": 48,
+                "y": 15
+              },
+              {
+                "x": 49,
+                "y": 15
+              },
+              {
+                "x": 50,
+                "y": 15
+              },
+              {
+                "x": 51,
+                "y": 15
+              },
+              {
+                "x": 52,
+                "y": 15
+              },
+              {
+                "x": 53,
+                "y": 15
+              },
+              {
+                "x": 54,
+                "y": 15
+              },
+              {
+                "x": 55,
+                "y": 15
+              },
+              {
+                "x": 56,
+                "y": 15
+              },
+              {
+                "x": 57,
+                "y": 15
+              },
+              {
+                "x": 58,
+                "y": 15
+              },
+              {
+                "x": 59,
+                "y": 15
+              },
+              {
+                "x": 60,
+                "y": 15
+              },
+              {
+                "x": 61,
+                "y": 15
+              },
+              {
+                "x": 62,
+                "y": 15
+              },
+              {
+                "x": 63,
+                "y": 15
+              },
+              {
+                "x": 64,
+                "y": 15
+              },
+              {
+                "x": 65,
+                "y": 15
+              },
+              {
+                "x": 66,
+                "y": 15
+              },
+              {
+                "x": 67,
+                "y": 15
+              },
+              {
+                "x": 68,
+                "y": 15
+              },
+              {
+                "x": 69,
+                "y": 15
+              },
+              {
+                "x": 70,
+                "y": 15
+              },
+              {
+                "x": 70,
+                "y": 16
+              },
+              {
+                "x": 70,
+                "y": 17
+              },
+              {
+                "x": 70,
+                "y": 18
+              },
+              {
+                "x": 70,
+                "y": 19
+              },
+              {
+                "x": 70,
+                "y": 20
+              },
+              {
+                "x": 70,
+                "y": 21
+              },
+              {
+                "x": 70,
+                "y": 22
+              },
+              {
+                "x": 70,
+                "y": 23
+              },
+              {
+                "x": 70,
+                "y": 24
+              },
+              {
+                "x": 70,
+                "y": 25
+              },
+              {
+                "x": 70,
+                "y": 26
+              },
+              {
+                "x": 70,
+                "y": 27
+              },
+              {
+                "x": 70,
+                "y": 28
+              },
+              {
+                "x": 70,
+                "y": 29
+              },
+              {
+                "x": 70,
+                "y": 30
+              },
+              {
+                "x": 70,
+                "y": 31
+              },
+              {
+                "x": 70,
+                "y": 32
+              },
+              {
+                "x": 70,
+                "y": 33
+              },
+              {
+                "x": 70,
+                "y": 34
+              },
+              {
+                "x": 70,
+                "y": 35
+              },
+              {
+                "x": 70,
+                "y": 36
+              },
+              {
+                "x": 70,
+                "y": 37
+              },
+              {
+                "x": 70,
+                "y": 38
+              },
+              {
+                "x": 70,
+                "y": 39
+              },
+              {
+                "x": 70,
+                "y": 40
+              },
+              {
+                "x": 70,
+                "y": 41
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 36,
+                "y": 15
+              },
+              {
+                "x": 37,
+                "y": 15
+              },
+              {
+                "x": 38,
+                "y": 15
+              },
+              {
+                "x": 39,
+                "y": 15
+              },
+              {
+                "x": 40,
+                "y": 15
+              }
+            ],
+            "reason": "Đi đến nguồn tài nguyên có thể khai thác.",
+            "hunger": 59,
+            "health": 94,
+            "energy": 86,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "work",
+            "activity": "travelToWork",
+            "tile": {
+              "x": 39,
+              "y": 7
+            },
+            "destination": {
+              "x": 82,
+              "y": 7
+            },
+            "route": [
+              {
+                "x": 40,
+                "y": 7
+              },
+              {
+                "x": 41,
+                "y": 7
+              },
+              {
+                "x": 42,
+                "y": 7
+              },
+              {
+                "x": 43,
+                "y": 7
+              },
+              {
+                "x": 44,
+                "y": 7
+              },
+              {
+                "x": 45,
+                "y": 7
+              },
+              {
+                "x": 46,
+                "y": 7
+              },
+              {
+                "x": 47,
+                "y": 7
+              },
+              {
+                "x": 48,
+                "y": 7
+              },
+              {
+                "x": 49,
+                "y": 7
+              },
+              {
+                "x": 50,
+                "y": 7
+              },
+              {
+                "x": 51,
+                "y": 7
+              },
+              {
+                "x": 52,
+                "y": 7
+              },
+              {
+                "x": 53,
+                "y": 7
+              },
+              {
+                "x": 54,
+                "y": 7
+              },
+              {
+                "x": 55,
+                "y": 7
+              },
+              {
+                "x": 56,
+                "y": 7
+              },
+              {
+                "x": 57,
+                "y": 7
+              },
+              {
+                "x": 58,
+                "y": 7
+              },
+              {
+                "x": 59,
+                "y": 7
+              },
+              {
+                "x": 60,
+                "y": 7
+              },
+              {
+                "x": 61,
+                "y": 7
+              },
+              {
+                "x": 62,
+                "y": 7
+              },
+              {
+                "x": 63,
+                "y": 7
+              },
+              {
+                "x": 64,
+                "y": 7
+              },
+              {
+                "x": 65,
+                "y": 7
+              },
+              {
+                "x": 66,
+                "y": 7
+              },
+              {
+                "x": 67,
+                "y": 7
+              },
+              {
+                "x": 68,
+                "y": 7
+              },
+              {
+                "x": 69,
+                "y": 7
+              },
+              {
+                "x": 70,
+                "y": 7
+              },
+              {
+                "x": 71,
+                "y": 7
+              },
+              {
+                "x": 72,
+                "y": 7
+              },
+              {
+                "x": 73,
+                "y": 7
+              },
+              {
+                "x": 74,
+                "y": 7
+              },
+              {
+                "x": 75,
+                "y": 7
+              },
+              {
+                "x": 76,
+                "y": 7
+              },
+              {
+                "x": 77,
+                "y": 7
+              },
+              {
+                "x": 78,
+                "y": 7
+              },
+              {
+                "x": 79,
+                "y": 7
+              },
+              {
+                "x": 80,
+                "y": 7
+              },
+              {
+                "x": 81,
+                "y": 7
+              },
+              {
+                "x": 82,
+                "y": 7
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 35,
+                "y": 7
+              },
+              {
+                "x": 36,
+                "y": 7
+              },
+              {
+                "x": 37,
+                "y": 7
+              },
+              {
+                "x": 38,
+                "y": 7
+              },
+              {
+                "x": 39,
+                "y": 7
+              }
+            ],
+            "reason": "Đi đến nguồn tài nguyên có thể khai thác.",
+            "hunger": 63,
+            "health": 92,
+            "energy": 86,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "work",
+            "activity": "travelToWork",
+            "tile": {
+              "x": 54,
+              "y": 15
+            },
+            "destination": {
+              "x": 70,
+              "y": 41
+            },
+            "route": [
+              {
+                "x": 55,
+                "y": 15
+              },
+              {
+                "x": 56,
+                "y": 15
+              },
+              {
+                "x": 57,
+                "y": 15
+              },
+              {
+                "x": 58,
+                "y": 15
+              },
+              {
+                "x": 59,
+                "y": 15
+              },
+              {
+                "x": 60,
+                "y": 15
+              },
+              {
+                "x": 61,
+                "y": 15
+              },
+              {
+                "x": 62,
+                "y": 15
+              },
+              {
+                "x": 63,
+                "y": 15
+              },
+              {
+                "x": 64,
+                "y": 15
+              },
+              {
+                "x": 65,
+                "y": 15
+              },
+              {
+                "x": 66,
+                "y": 15
+              },
+              {
+                "x": 67,
+                "y": 15
+              },
+              {
+                "x": 68,
+                "y": 15
+              },
+              {
+                "x": 69,
+                "y": 15
+              },
+              {
+                "x": 70,
+                "y": 15
+              },
+              {
+                "x": 70,
+                "y": 16
+              },
+              {
+                "x": 70,
+                "y": 17
+              },
+              {
+                "x": 70,
+                "y": 18
+              },
+              {
+                "x": 70,
+                "y": 19
+              },
+              {
+                "x": 70,
+                "y": 20
+              },
+              {
+                "x": 70,
+                "y": 21
+              },
+              {
+                "x": 70,
+                "y": 22
+              },
+              {
+                "x": 70,
+                "y": 23
+              },
+              {
+                "x": 70,
+                "y": 24
+              },
+              {
+                "x": 70,
+                "y": 25
+              },
+              {
+                "x": 70,
+                "y": 26
+              },
+              {
+                "x": 70,
+                "y": 27
+              },
+              {
+                "x": 70,
+                "y": 28
+              },
+              {
+                "x": 70,
+                "y": 29
+              },
+              {
+                "x": 70,
+                "y": 30
+              },
+              {
+                "x": 70,
+                "y": 31
+              },
+              {
+                "x": 70,
+                "y": 32
+              },
+              {
+                "x": 70,
+                "y": 33
+              },
+              {
+                "x": 70,
+                "y": 34
+              },
+              {
+                "x": 70,
+                "y": 35
+              },
+              {
+                "x": 70,
+                "y": 36
+              },
+              {
+                "x": 70,
+                "y": 37
+              },
+              {
+                "x": 70,
+                "y": 38
+              },
+              {
+                "x": 70,
+                "y": 39
+              },
+              {
+                "x": 70,
+                "y": 40
+              },
+              {
+                "x": 70,
+                "y": 41
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 50,
+                "y": 15
+              },
+              {
+                "x": 51,
+                "y": 15
+              },
+              {
+                "x": 52,
+                "y": 15
+              },
+              {
+                "x": 53,
+                "y": 15
+              },
+              {
+                "x": 54,
+                "y": 15
+              }
+            ],
+            "reason": "Đi đến nguồn tài nguyên có thể khai thác.",
+            "hunger": 66,
+            "health": 98,
+            "energy": 86,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 7,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 34,
+            "reason": "Nguyễn Hương: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 8,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 36,
+            "reason": "Trần Lan: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 9,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 54,
+            "reason": "Lê Hương 2: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 10,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 60,
+            "reason": "Bùi Nam 2: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 11,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 66,
+            "reason": "Hoàng Vân 2: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 12,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 69,
+            "reason": "Trần Chi 3: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 13,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 73,
+            "reason": "Nguyễn Hải 3: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 14,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 83,
+            "reason": "Đặng Quân 3: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 15,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 88,
+            "reason": "Trần Bình 4: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 16,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 92,
+            "reason": "Vũ Hà 4: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 17,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 94,
+            "reason": "Phạm Hương 4: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 18,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 107,
+            "reason": "Hoàng An 5: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 19,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 109,
+            "reason": "Hoàng Chi 5: Đói, đến chợ để mua food bằng tiền thật."
+          },
+          {
+            "id": 20,
+            "tick": 12,
+            "type": "departure",
+            "citizenId": 124,
+            "reason": "Phạm Thảo 5: Đói, đến chợ để mua food bằng tiền thật."
+          }
+        ],
+        "currency": 12200,
+        "failedActions": 0
+      },
+      {
+        "tick": 24,
+        "rngState": 3833554759,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "food",
+            "activity": "eating",
+            "tile": {
+              "x": 57,
+              "y": 46
+            },
+            "destination": {
+              "x": 57,
+              "y": 46
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 57,
+                "y": 42
+              },
+              {
+                "x": 57,
+                "y": 43
+              },
+              {
+                "x": 57,
+                "y": 44
+              },
+              {
+                "x": 57,
+                "y": 45
+              },
+              {
+                "x": 57,
+                "y": 46
+              }
+            ],
+            "reason": "Tìm hoặc ăn food đang sở hữu.",
+            "hunger": 35,
+            "health": 94,
+            "energy": 62,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "food",
+            "activity": "travelToFood",
+            "tile": {
+              "x": 57,
+              "y": 37
+            },
+            "destination": {
+              "x": 57,
+              "y": 46
+            },
+            "route": [
+              {
+                "x": 57,
+                "y": 38
+              },
+              {
+                "x": 57,
+                "y": 39
+              },
+              {
+                "x": 57,
+                "y": 40
+              },
+              {
+                "x": 57,
+                "y": 41
+              },
+              {
+                "x": 57,
+                "y": 42
+              },
+              {
+                "x": 57,
+                "y": 43
+              },
+              {
+                "x": 57,
+                "y": 44
+              },
+              {
+                "x": 57,
+                "y": 45
+              },
+              {
+                "x": 57,
+                "y": 46
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 57,
+                "y": 33
+              },
+              {
+                "x": 57,
+                "y": 34
+              },
+              {
+                "x": 57,
+                "y": 35
+              },
+              {
+                "x": 57,
+                "y": 36
+              },
+              {
+                "x": 57,
+                "y": 37
+              }
+            ],
+            "reason": "Đói, đến chợ để mua food bằng tiền thật.",
+            "hunger": 39,
+            "health": 92,
+            "energy": 62,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "food",
+            "activity": "travelToFood",
+            "tile": {
+              "x": 69,
+              "y": 46
+            },
+            "destination": {
+              "x": 57,
+              "y": 46
+            },
+            "route": [
+              {
+                "x": 68,
+                "y": 46
+              },
+              {
+                "x": 67,
+                "y": 46
+              },
+              {
+                "x": 66,
+                "y": 46
+              },
+              {
+                "x": 65,
+                "y": 46
+              },
+              {
+                "x": 64,
+                "y": 46
+              },
+              {
+                "x": 63,
+                "y": 46
+              },
+              {
+                "x": 62,
+                "y": 46
+              },
+              {
+                "x": 61,
+                "y": 46
+              },
+              {
+                "x": 60,
+                "y": 46
+              },
+              {
+                "x": 59,
+                "y": 46
+              },
+              {
+                "x": 58,
+                "y": 46
+              },
+              {
+                "x": 57,
+                "y": 46
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 70,
+                "y": 43
+              },
+              {
+                "x": 70,
+                "y": 44
+              },
+              {
+                "x": 70,
+                "y": 45
+              },
+              {
+                "x": 70,
+                "y": 46
+              },
+              {
+                "x": 69,
+                "y": 46
+              }
+            ],
+            "reason": "Đói, đến chợ để mua food bằng tiền thật.",
+            "hunger": 42,
+            "health": 98,
+            "energy": 62,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 141,
+            "tick": 24,
+            "type": "bought",
+            "citizenId": 30,
+            "reason": "Nguyễn Dũng: mua 1 food, tiền ví còn 29."
+          },
+          {
+            "id": 142,
+            "tick": 24,
+            "type": "bought",
+            "citizenId": 32,
+            "reason": "Lê Hà: mua 1 food, tiền ví còn 29."
+          },
+          {
+            "id": 143,
+            "tick": 24,
+            "type": "departure",
+            "citizenId": 42,
+            "reason": "Nguyễn Phúc: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 144,
+            "tick": 24,
+            "type": "bought",
+            "citizenId": 49,
+            "reason": "Nguyễn Chi 2: mua 1 food, tiền ví còn 29."
+          },
+          {
+            "id": 145,
+            "tick": 24,
+            "type": "foodEaten",
+            "citizenId": 52,
+            "reason": "Nguyễn Hà 2: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 146,
+            "tick": 24,
+            "type": "foodEaten",
+            "citizenId": 56,
+            "reason": "Bùi Lan 2: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 147,
+            "tick": 24,
+            "type": "departure",
+            "citizenId": 58,
+            "reason": "Vũ Mai 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 148,
+            "tick": 24,
+            "type": "departure",
+            "citizenId": 62,
+            "reason": "Lê Phúc 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 149,
+            "tick": 24,
+            "type": "bought",
+            "citizenId": 63,
+            "reason": "Trần Quân 2: mua 1 food, tiền ví còn 29."
+          },
+          {
+            "id": 150,
+            "tick": 24,
+            "type": "departure",
+            "citizenId": 69,
+            "reason": "Trần Chi 3: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 151,
+            "tick": 24,
+            "type": "bought",
+            "citizenId": 70,
+            "reason": "Bùi Dũng 3: mua 1 food, tiền ví còn 29."
+          },
+          {
+            "id": 152,
+            "tick": 24,
+            "type": "foodEaten",
+            "citizenId": 72,
+            "reason": "Nguyễn Hà 3: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 153,
+            "tick": 24,
+            "type": "foodEaten",
+            "citizenId": 81,
+            "reason": "Đặng Ngọc 3: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 154,
+            "tick": 24,
+            "type": "departure",
+            "citizenId": 82,
+            "reason": "Trần Phúc 3: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 155,
+            "tick": 24,
+            "type": "foodEaten",
+            "citizenId": 85,
+            "reason": "Phạm Trang 3: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 156,
+            "tick": 24,
+            "type": "bought",
+            "citizenId": 91,
+            "reason": "Trần Giang 4: mua 1 food, tiền ví còn 29."
+          },
+          {
+            "id": 157,
+            "tick": 24,
+            "type": "foodEaten",
+            "citizenId": 92,
+            "reason": "Vũ Hà 4: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 158,
+            "tick": 24,
+            "type": "departure",
+            "citizenId": 102,
+            "reason": "Vũ Phúc 4: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 159,
+            "tick": 24,
+            "type": "foodEaten",
+            "citizenId": 111,
+            "reason": "Nguyễn Giang 5: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 160,
+            "tick": 24,
+            "type": "foodEaten",
+            "citizenId": 112,
+            "reason": "Trần Hà 5: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 161,
+            "tick": 24,
+            "type": "foodEaten",
+            "citizenId": 113,
+            "reason": "Trần Hải 5: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 162,
+            "tick": 24,
+            "type": "foodEaten",
+            "citizenId": 114,
+            "reason": "Đặng Hương 5: ăn 1 food từ túi cá nhân."
+          }
+        ],
+        "currency": 12200,
+        "failedActions": 0
+      },
+      {
+        "tick": 36,
+        "rngState": 4022610403,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "work",
+            "activity": "atWork",
+            "tile": {
+              "x": 70,
+              "y": 41
+            },
+            "destination": {
+              "x": 70,
+              "y": 41
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 70,
+                "y": 41
+              }
+            ],
+            "reason": "Thu hoạch ruộng thật, rồi tự mang hàng đi bán.",
+            "hunger": 66,
+            "health": 94,
+            "energy": 38,
+            "wallet": 29,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "work",
+            "activity": "travelToWork",
+            "tile": {
+              "x": 78,
+              "y": 53
+            },
+            "destination": {
+              "x": 78,
+              "y": 83
+            },
+            "route": [
+              {
+                "x": 78,
+                "y": 54
+              },
+              {
+                "x": 78,
+                "y": 55
+              },
+              {
+                "x": 78,
+                "y": 56
+              },
+              {
+                "x": 78,
+                "y": 57
+              },
+              {
+                "x": 78,
+                "y": 58
+              },
+              {
+                "x": 78,
+                "y": 59
+              },
+              {
+                "x": 78,
+                "y": 60
+              },
+              {
+                "x": 78,
+                "y": 61
+              },
+              {
+                "x": 78,
+                "y": 62
+              },
+              {
+                "x": 78,
+                "y": 63
+              },
+              {
+                "x": 78,
+                "y": 64
+              },
+              {
+                "x": 78,
+                "y": 65
+              },
+              {
+                "x": 78,
+                "y": 66
+              },
+              {
+                "x": 78,
+                "y": 67
+              },
+              {
+                "x": 78,
+                "y": 68
+              },
+              {
+                "x": 78,
+                "y": 69
+              },
+              {
+                "x": 78,
+                "y": 70
+              },
+              {
+                "x": 78,
+                "y": 71
+              },
+              {
+                "x": 78,
+                "y": 72
+              },
+              {
+                "x": 78,
+                "y": 73
+              },
+              {
+                "x": 78,
+                "y": 74
+              },
+              {
+                "x": 78,
+                "y": 75
+              },
+              {
+                "x": 78,
+                "y": 76
+              },
+              {
+                "x": 78,
+                "y": 77
+              },
+              {
+                "x": 78,
+                "y": 78
+              },
+              {
+                "x": 78,
+                "y": 79
+              },
+              {
+                "x": 78,
+                "y": 80
+              },
+              {
+                "x": 78,
+                "y": 81
+              },
+              {
+                "x": 78,
+                "y": 82
+              },
+              {
+                "x": 78,
+                "y": 83
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 78,
+                "y": 49
+              },
+              {
+                "x": 78,
+                "y": 50
+              },
+              {
+                "x": 78,
+                "y": 51
+              },
+              {
+                "x": 78,
+                "y": 52
+              },
+              {
+                "x": 78,
+                "y": 53
+              }
+            ],
+            "reason": "Đi đến nguồn tài nguyên có thể khai thác.",
+            "hunger": 70,
+            "health": 92,
+            "energy": 40,
+            "wallet": 29,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "work",
+            "activity": "atWork",
+            "tile": {
+              "x": 74,
+              "y": 49
+            },
+            "destination": {
+              "x": 74,
+              "y": 49
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 74,
+                "y": 49
+              }
+            ],
+            "reason": "Thu hoạch ruộng thật, rồi tự mang hàng đi bán.",
+            "hunger": 73,
+            "health": 98,
+            "energy": 38,
+            "wallet": 29,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 264,
+            "tick": 36,
+            "type": "work",
+            "citizenId": 47,
+            "reason": "Phạm An 2 bắt đầu ca làm."
+          },
+          {
+            "id": 265,
+            "tick": 36,
+            "type": "departure",
+            "citizenId": 50,
+            "reason": "Phạm Dũng 2: Đi đến nguồn tài nguyên có thể khai thác."
+          },
+          {
+            "id": 266,
+            "tick": 36,
+            "type": "work",
+            "citizenId": 72,
+            "reason": "Nguyễn Hà 3 bắt đầu ca làm."
+          },
+          {
+            "id": 267,
+            "tick": 36,
+            "type": "encounter",
+            "citizenId": 27,
+            "reason": "Nguyễn An gặp Lê Hà: Cùng làm việc tại nguồn tài nguyên #127."
+          },
+          {
+            "id": 268,
+            "tick": 36,
+            "type": "encounter",
+            "citizenId": 51,
+            "reason": "Đặng Giang 2 gặp Trần Giang 4: Cùng làm việc tại nguồn tài nguyên #127."
+          },
+          {
+            "id": 269,
+            "tick": 36,
+            "type": "encounter",
+            "citizenId": 29,
+            "reason": "Phạm Chi gặp Hoàng Chi 4: Cùng làm việc tại nguồn tài nguyên #132."
+          }
+        ],
+        "currency": 12200,
+        "failedActions": 0
+      },
+      {
+        "tick": 48,
+        "rngState": 141899122,
+        "selected": [
+          {
+            "id": 27,
+            "alive": true,
+            "goal": "home",
+            "activity": "travelHome",
+            "tile": {
+              "x": 57,
+              "y": 34
+            },
+            "destination": {
+              "x": 12,
+              "y": 15
+            },
+            "route": [
+              {
+                "x": 57,
+                "y": 33
+              },
+              {
+                "x": 57,
+                "y": 32
+              },
+              {
+                "x": 57,
+                "y": 31
+              },
+              {
+                "x": 57,
+                "y": 30
+              },
+              {
+                "x": 57,
+                "y": 29
+              },
+              {
+                "x": 57,
+                "y": 28
+              },
+              {
+                "x": 57,
+                "y": 27
+              },
+              {
+                "x": 57,
+                "y": 26
+              },
+              {
+                "x": 57,
+                "y": 25
+              },
+              {
+                "x": 57,
+                "y": 24
+              },
+              {
+                "x": 57,
+                "y": 23
+              },
+              {
+                "x": 57,
+                "y": 22
+              },
+              {
+                "x": 57,
+                "y": 21
+              },
+              {
+                "x": 57,
+                "y": 20
+              },
+              {
+                "x": 57,
+                "y": 19
+              },
+              {
+                "x": 57,
+                "y": 18
+              },
+              {
+                "x": 57,
+                "y": 17
+              },
+              {
+                "x": 57,
+                "y": 16
+              },
+              {
+                "x": 57,
+                "y": 15
+              },
+              {
+                "x": 56,
+                "y": 15
+              },
+              {
+                "x": 55,
+                "y": 15
+              },
+              {
+                "x": 54,
+                "y": 15
+              },
+              {
+                "x": 53,
+                "y": 15
+              },
+              {
+                "x": 52,
+                "y": 15
+              },
+              {
+                "x": 51,
+                "y": 15
+              },
+              {
+                "x": 50,
+                "y": 15
+              },
+              {
+                "x": 49,
+                "y": 15
+              },
+              {
+                "x": 48,
+                "y": 15
+              },
+              {
+                "x": 47,
+                "y": 15
+              },
+              {
+                "x": 46,
+                "y": 15
+              },
+              {
+                "x": 45,
+                "y": 15
+              },
+              {
+                "x": 44,
+                "y": 15
+              },
+              {
+                "x": 43,
+                "y": 15
+              },
+              {
+                "x": 42,
+                "y": 15
+              },
+              {
+                "x": 41,
+                "y": 15
+              },
+              {
+                "x": 40,
+                "y": 15
+              },
+              {
+                "x": 39,
+                "y": 15
+              },
+              {
+                "x": 38,
+                "y": 15
+              },
+              {
+                "x": 37,
+                "y": 15
+              },
+              {
+                "x": 36,
+                "y": 15
+              },
+              {
+                "x": 35,
+                "y": 15
+              },
+              {
+                "x": 34,
+                "y": 15
+              },
+              {
+                "x": 33,
+                "y": 15
+              },
+              {
+                "x": 32,
+                "y": 15
+              },
+              {
+                "x": 31,
+                "y": 15
+              },
+              {
+                "x": 30,
+                "y": 15
+              },
+              {
+                "x": 29,
+                "y": 15
+              },
+              {
+                "x": 28,
+                "y": 15
+              },
+              {
+                "x": 27,
+                "y": 15
+              },
+              {
+                "x": 26,
+                "y": 15
+              },
+              {
+                "x": 25,
+                "y": 15
+              },
+              {
+                "x": 24,
+                "y": 15
+              },
+              {
+                "x": 23,
+                "y": 15
+              },
+              {
+                "x": 22,
+                "y": 15
+              },
+              {
+                "x": 21,
+                "y": 15
+              },
+              {
+                "x": 20,
+                "y": 15
+              },
+              {
+                "x": 19,
+                "y": 15
+              },
+              {
+                "x": 18,
+                "y": 15
+              },
+              {
+                "x": 17,
+                "y": 15
+              },
+              {
+                "x": 16,
+                "y": 15
+              },
+              {
+                "x": 15,
+                "y": 15
+              },
+              {
+                "x": 14,
+                "y": 15
+              },
+              {
+                "x": 13,
+                "y": 15
+              },
+              {
+                "x": 12,
+                "y": 15
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 57,
+                "y": 38
+              },
+              {
+                "x": 57,
+                "y": 37
+              },
+              {
+                "x": 57,
+                "y": 36
+              },
+              {
+                "x": 57,
+                "y": 35
+              },
+              {
+                "x": 57,
+                "y": 34
+              }
+            ],
+            "reason": "Trở về nơi nghỉ ngơi.",
+            "hunger": 94,
+            "health": 94,
+            "energy": 16,
+            "wallet": 32,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 28,
+            "alive": true,
+            "goal": "food",
+            "activity": "travelToFood",
+            "tile": {
+              "x": 77,
+              "y": 46
+            },
+            "destination": {
+              "x": 57,
+              "y": 46
+            },
+            "route": [
+              {
+                "x": 76,
+                "y": 46
+              },
+              {
+                "x": 75,
+                "y": 46
+              },
+              {
+                "x": 74,
+                "y": 46
+              },
+              {
+                "x": 73,
+                "y": 46
+              },
+              {
+                "x": 72,
+                "y": 46
+              },
+              {
+                "x": 71,
+                "y": 46
+              },
+              {
+                "x": 70,
+                "y": 46
+              },
+              {
+                "x": 69,
+                "y": 46
+              },
+              {
+                "x": 68,
+                "y": 46
+              },
+              {
+                "x": 67,
+                "y": 46
+              },
+              {
+                "x": 66,
+                "y": 46
+              },
+              {
+                "x": 65,
+                "y": 46
+              },
+              {
+                "x": 64,
+                "y": 46
+              },
+              {
+                "x": 63,
+                "y": 46
+              },
+              {
+                "x": 62,
+                "y": 46
+              },
+              {
+                "x": 61,
+                "y": 46
+              },
+              {
+                "x": 60,
+                "y": 46
+              },
+              {
+                "x": 59,
+                "y": 46
+              },
+              {
+                "x": 58,
+                "y": 46
+              },
+              {
+                "x": 57,
+                "y": 46
+              }
+            ],
+            "lastMove": [
+              {
+                "x": 78,
+                "y": 49
+              },
+              {
+                "x": 78,
+                "y": 48
+              },
+              {
+                "x": 78,
+                "y": 47
+              },
+              {
+                "x": 78,
+                "y": 46
+              },
+              {
+                "x": 77,
+                "y": 46
+              }
+            ],
+            "reason": "Đói, đến chợ để mua food bằng tiền thật.",
+            "hunger": 46,
+            "health": 92,
+            "energy": 16,
+            "wallet": 29,
+            "inventory": {
+              "food": 0,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          },
+          {
+            "id": 29,
+            "alive": true,
+            "goal": "food",
+            "activity": "trading",
+            "tile": {
+              "x": 57,
+              "y": 46
+            },
+            "destination": {
+              "x": 57,
+              "y": 46
+            },
+            "route": [],
+            "lastMove": [
+              {
+                "x": 57,
+                "y": 46
+              }
+            ],
+            "reason": "Đã trả 3 tiền mua 1 food; sẽ ăn ở giờ sau.",
+            "hunger": 49,
+            "health": 98,
+            "energy": 15,
+            "wallet": 32,
+            "inventory": {
+              "food": 1,
+              "wood": 0
+            },
+            "blockedGoal": null,
+            "retryAfterTick": 0
+          }
+        ],
+        "events": [
+          {
+            "id": 391,
+            "tick": 48,
+            "type": "bought",
+            "citizenId": 29,
+            "reason": "Phạm Chi: mua 1 food, tiền ví còn 32."
+          },
+          {
+            "id": 392,
+            "tick": 48,
+            "type": "sold",
+            "citizenId": 32,
+            "reason": "Lê Hà: bán 3 food cho chợ."
+          },
+          {
+            "id": 393,
+            "tick": 48,
+            "type": "departure",
+            "citizenId": 34,
+            "reason": "Nguyễn Hương: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 394,
+            "tick": 48,
+            "type": "departure",
+            "citizenId": 41,
+            "reason": "Trần Ngọc: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 395,
+            "tick": 48,
+            "type": "foodEaten",
+            "citizenId": 44,
+            "reason": "Nguyễn Thảo: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 396,
+            "tick": 48,
+            "type": "foodEaten",
+            "citizenId": 47,
+            "reason": "Phạm An 2: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 397,
+            "tick": 48,
+            "type": "departure",
+            "citizenId": 51,
+            "reason": "Đặng Giang 2: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 398,
+            "tick": 48,
+            "type": "bought",
+            "citizenId": 56,
+            "reason": "Bùi Lan 2: mua 1 food, tiền ví còn 26."
+          },
+          {
+            "id": 399,
+            "tick": 48,
+            "type": "foodEaten",
+            "citizenId": 57,
+            "reason": "Hoàng Linh 2: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 400,
+            "tick": 48,
+            "type": "foodEaten",
+            "citizenId": 64,
+            "reason": "Hoàng Thảo 2: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 401,
+            "tick": 48,
+            "type": "departure",
+            "citizenId": 69,
+            "reason": "Trần Chi 3: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 402,
+            "tick": 48,
+            "type": "sold",
+            "citizenId": 71,
+            "reason": "Đặng Giang 3: bán 3 food cho chợ."
+          },
+          {
+            "id": 403,
+            "tick": 48,
+            "type": "departure",
+            "citizenId": 72,
+            "reason": "Nguyễn Hà 3: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 404,
+            "tick": 48,
+            "type": "bought",
+            "citizenId": 74,
+            "reason": "Bùi Hương 3: mua 1 food, tiền ví còn 32."
+          },
+          {
+            "id": 405,
+            "tick": 48,
+            "type": "sold",
+            "citizenId": 81,
+            "reason": "Đặng Ngọc 3: bán 3 food cho chợ."
+          },
+          {
+            "id": 406,
+            "tick": 48,
+            "type": "foodEaten",
+            "citizenId": 84,
+            "reason": "Lê Thảo 3: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 407,
+            "tick": 48,
+            "type": "departure",
+            "citizenId": 87,
+            "reason": "Lê An 4: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 408,
+            "tick": 48,
+            "type": "bought",
+            "citizenId": 89,
+            "reason": "Hoàng Chi 4: mua 1 food, tiền ví còn 32."
+          },
+          {
+            "id": 409,
+            "tick": 48,
+            "type": "foodEaten",
+            "citizenId": 92,
+            "reason": "Vũ Hà 4: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 410,
+            "tick": 48,
+            "type": "foodEaten",
+            "citizenId": 96,
+            "reason": "Trần Lan 4: ăn 1 food từ túi cá nhân."
+          },
+          {
+            "id": 411,
+            "tick": 48,
+            "type": "bought",
+            "citizenId": 101,
+            "reason": "Lê Ngọc 4: mua 1 food, tiền ví còn 32."
+          },
+          {
+            "id": 412,
+            "tick": 48,
+            "type": "departure",
+            "citizenId": 104,
+            "reason": "Lê Thảo 4: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 413,
+            "tick": 48,
+            "type": "departure",
+            "citizenId": 105,
+            "reason": "Trần Trang 4: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 414,
+            "tick": 48,
+            "type": "departure",
+            "citizenId": 107,
+            "reason": "Hoàng An 5: Trở về nơi nghỉ ngơi."
+          },
+          {
+            "id": 415,
+            "tick": 48,
+            "type": "bought",
+            "citizenId": 112,
+            "reason": "Trần Hà 5: mua 1 food, tiền ví còn 32."
+          },
+          {
+            "id": 416,
+            "tick": 48,
+            "type": "bought",
+            "citizenId": 117,
+            "reason": "Bùi Linh 5: mua 1 food, tiền ví còn 26."
+          },
+          {
+            "id": 417,
+            "tick": 48,
+            "type": "foodEaten",
+            "citizenId": 122,
+            "reason": "Vũ Phúc 5: ăn 1 food từ túi cá nhân."
+          }
+        ],
+        "currency": 12200,
+        "failedActions": 0
+      }
+    ]
+  }
+}

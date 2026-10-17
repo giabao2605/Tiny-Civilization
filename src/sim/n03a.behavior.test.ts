@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { cpus } from 'node:os';
 import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
@@ -132,6 +133,7 @@ function run(scenario: Scenario, profile: boolean) {
   const tickMs: number[] = [];
   const pathCalls: number[] = [];
   const moveCounts: number[] = [];
+  const activityHours: Record<string, number> = {};
   const routeLengths: number[] = [];
   let routeBlocked = 0;
   let goalTransitions = 0;
@@ -149,6 +151,7 @@ function run(scenario: Scenario, profile: boolean) {
     goalTransitions += transitions;
     const moved = world.citizens.filter(c => c.lastMove.length > 1).length;
     moveCounts.push(moved);
+    for (const citizen of world.citizens) activityHours[citizen.activity] = (activityHours[citizen.activity] ?? 0) + 1;
     routeLengths.push(...world.citizens.filter(c => c.route.length > 0).map(c => c.route.length));
     const currentEvents = world.events.filter(e => e.id >= before.nextEventId)
       .map(e => ({ id: e.id, tick: e.tick, type: e.type, citizenId: e.citizenId, reason: e.reason }));
@@ -180,6 +183,7 @@ function run(scenario: Scenario, profile: boolean) {
     checkpoints,
   };
   const pathDurations: number[] = [];
+  let reachableDestinations = 0;
   if (profile) {
     for (let i = 0; i < Math.min(32, world.citizens.length); i++) {
       const c = world.citizens[i]!;
@@ -188,8 +192,10 @@ function run(scenario: Scenario, profile: boolean) {
       findPath(world, c.tile, to);
       pathDurations.push(performance.now() - started);
     }
+    reachableDestinations = world.citizens.filter(c => findPath(world, c.tile, c.destination) !== null).length;
     console.log('N03A_BASELINE=' + JSON.stringify({
-      key: scenario.key, runner: 'GitHub Actions Ubuntu Node 22 (if in CI)',
+      key: scenario.key, environment: process.platform, architecture: process.arch,
+      nodeVersion: process.version, cpuModel: cpus()[0]?.model ?? 'unavailable',
       seed: initial.seed, ticks: 48, population: initial.citizens.length,
       dimensions: [dims.width, dims.height], tickP50Ms: +quantile(tickMs, 0.5).toFixed(3),
       tickP95Ms: +quantile(tickMs, 0.95).toFixed(3),
@@ -198,6 +204,7 @@ function run(scenario: Scenario, profile: boolean) {
       isolatedPathP95Ms: +quantile(pathDurations, 0.95).toFixed(3),
       routeLengthP50: quantile(routeLengths, 0.5), routeLengthP95: quantile(routeLengths, 0.95),
       movingCitizenHours: fixture.checks.movedCitizenHours,
+      activityHours, reachableDestinations, destinationTotal: world.citizens.length,
       totalCitizenHours: 48 * initial.citizens.length,
       failedActionsDelta: world.stats.failedActions - initial.stats.failedActions,
       routeBlocked, goalTransitions, sampleCount: pathDurations.length,
@@ -208,11 +215,14 @@ function run(scenario: Scenario, profile: boolean) {
 }
 
 describe('N03-A immutable behavior and routing baseline (no production rule changes)', () => {
+  it('locks the complete four-row golden manifest before evaluating scenarios', () => {
+    expect(Object.keys(goldens).sort()).toEqual(scenarios.map(s => s.key).sort());
+  });
   for (const scenario of scenarios) {
     it(scenario.key + ': 48-tick golden trace, economy, routes, replay and save/load', () => {
       const { world, fixture } = run(scenario, true);
       console.log('N03A_FIXTURE=' + JSON.stringify({ key: scenario.key, fixture }));
-      if (Object.hasOwn(goldens, scenario.key)) expect(fixture).toEqual(goldens[scenario.key]);
+      expect(fixture).toEqual(goldens[scenario.key]);
       const replay = run(scenario, false);
       expect(replay.fixture).toEqual(fixture);
       expect(replay.world).toEqual(world);
