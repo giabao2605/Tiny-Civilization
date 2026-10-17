@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createWorld96 } from './world96';
 import { advanceOneTick } from './engine';
 import type { WorldState } from './world';
-import { getPathfindingDiagnostics, resetPathfindingDiagnostics } from './pathfinding';
+import { findPath, getPathfindingDiagnostics, resetPathfindingDiagnostics } from './pathfinding';
 import { serializeSave, parseSave } from '../persistence/save';
 
 const percentile = (sorted: number[], fraction: number) =>
@@ -33,6 +33,16 @@ describe('W02-F 96x96 simulation / pathfinding / save profile', () => {
       const parseMs = performance.now() - parseStart;
       expect(loaded).toEqual(world);
       expect(world.tiles).toHaveLength(9216);
+      // Standalone path duration, measured outside simulation state and RNG.
+      const pathDurations: number[] = [];
+      for (let i = 0; i < Math.min(32, world.citizens.length); i++) {
+        const start = world.citizens[i]!.tile;
+        const end = world.sites[i % world.sites.length]!.tile;
+        const t = performance.now();
+        findPath(world, start, end);
+        pathDurations.push(performance.now() - t);
+      }
+      pathDurations.sort((a, b) => a - b);
       times.sort((a, b) => a - b);
       pathCalls.sort((a, b) => a - b);
       console.log('W02-F-NODE-METRICS', JSON.stringify({
@@ -42,6 +52,8 @@ describe('W02-F 96x96 simulation / pathfinding / save profile', () => {
         tickP95Ms: +percentile(times, 0.95).toFixed(3),
         pathCallsP50: percentile(pathCalls, 0.5),
         pathCallsP95: percentile(pathCalls, 0.95),
+        pathDurationP50Ms: +percentile(pathDurations, 0.5).toFixed(3),
+        pathDurationP95Ms: +percentile(pathDurations, 0.95).toFixed(3),
         serializationMs: +serializationMs.toFixed(3),
         parseMs: +parseMs.toFixed(3),
         jsonBytes: Buffer.byteLength(json, 'utf8'),

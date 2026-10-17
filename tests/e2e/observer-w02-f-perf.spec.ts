@@ -6,10 +6,12 @@ test('W02-F: 96x96 actual Phaser scene population / speed / viewport measurement
   test.setTimeout(540_000);
   const failures: string[] = [];
   page.on('pageerror', error => failures.push(error.message));
+  const navigationStartedMs = Date.now();
   await page.goto('/?observerPerf=1');
   const host = page.getByTestId('game-container');
   await expect(host.locator('canvas')).toBeVisible();
   await expect(host).toHaveAttribute('data-map-width', '96');
+  const firstCanvasReadyMs = Date.now() - navigationStartedMs;
   const session = await page.context().newCDPSession(page);
   await session.send('Performance.enable');
   const matrix: Array<Record<string, unknown>> = [];
@@ -61,6 +63,7 @@ test('W02-F: 96x96 actual Phaser scene population / speed / viewport measurement
   expect(failures).toEqual([]);
   const report = { environment: 'headless Chromium, github ubuntu-latest or local runner',
     measurement: 'rAF interval, 450ms per case, approximate only; no GPU hardware certification',
+    firstCanvasReadyMs, // Includes network/script/bootstrap, not pure GPU draw time.
     matrix };
   await writeFile(info.outputPath('w02-f-viewport-matrix.json'), JSON.stringify(report, null, 2));
   console.log('W02-F-BROWSER-METRICS', JSON.stringify(report));
