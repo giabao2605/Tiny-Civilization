@@ -68,3 +68,54 @@ test('W02-F: 96x96 actual Phaser scene population / speed / viewport measurement
   await writeFile(info.outputPath('w02-f-viewport-matrix.json'), JSON.stringify(report, null, 2));
   console.log('W02-F-BROWSER-METRICS', JSON.stringify(report));
 });
+
+test('W02-F: longer 100 NPC / 20x actual Phaser 1920x1080 observation', async ({ page }, info) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  const browserErrors: string[] = [];
+  page.on('pageerror', error => browserErrors.push(error.message));
+  await page.goto('/?observerPerf=1');
+  const host = page.getByTestId('game-container');
+  await expect(host.locator('canvas')).toBeVisible();
+  await page.getByTestId('population-input').selectOption('100');
+  page.once('dialog', dialog => { void dialog.accept(); });
+  await page.getByRole('button', { name: 'Tạo lại', exact: true }).click();
+  await expect(host).toHaveAttribute('data-npc-count', '100');
+  await page.getByRole('button', { name: '20×', exact: true }).click();
+  await page.getByTestId('camera-fit').click();
+  const beforeTick = await page.getByTestId('world-tick').innerText();
+  const metrics = await page.evaluate(async () => {
+    const frames: number[] = [];
+    let previous = performance.now();
+    const begin = previous;
+    await new Promise<void>(resolve => {
+      function frame(now: number) {
+        frames.push(now - previous);
+        previous = now;
+        if (now - begin > 4000 || frames.length >= 250) resolve();
+        else requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    });
+    const elapsedMs = frames.reduce((a, b) => a + b, 0);
+    frames.sort((a, b) => a - b);
+    const percentile = (part: number) => frames[Math.max(0, Math.ceil(part * frames.length) - 1)] ?? null;
+    const element = document.querySelector('[data-testid="game-container"]') as
+      (HTMLElement & { __tcObserverMetrics?: () => {
+        gameObjects: number; textureCount: number
+      } }) | null;
+    return { sampleCount: frames.length, elapsedMs, fps: +(1000 * frames.length / elapsedMs).toFixed(2),
+      frameP50Ms: percentile(0.5), frameP95Ms: percentile(0.95),
+      objects: element?.__tcObserverMetrics?.().gameObjects ?? null,
+      textures: element?.__tcObserverMetrics?.().textureCount ?? null };
+  });
+  expect(metrics.sampleCount).toBeGreaterThan(3);
+  const afterTick = await page.getByTestId('world-tick').innerText();
+  expect(afterTick).not.toBe(beforeTick);
+  expect(browserErrors).toEqual([]);
+  const payload = { environment: 'Linux CI headless Chromium, not Windows PC',
+    seed: 12345, population: 100, speed: 20, viewport: '1920x1080', camera: 'fit',
+    beforeTick, afterTick, ...metrics };
+  console.log('W02-F-EXTENDED', JSON.stringify(payload));
+  await writeFile(info.outputPath('w02-f-extended-100-20x.json'), JSON.stringify(payload, null, 2));
+});

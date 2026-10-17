@@ -1,6 +1,6 @@
 # W02-F — Performance Baseline and Verification
 
-**Status:** Baseline available for W02-E; candidate measurements pending CI. Performance on physical Windows PC: **NOT RUN / PARTIAL**. No 60-FPS certification.
+**Status:** BASELINE & CANDIDATE GitHub Actions CI PASS. Final screenshot-preservation/extended-profile CI remains PENDING. Performance on physical Windows PC: **NOT RUN / PARTIAL**. No 60-FPS certification.
 
 ## Fixed evidence and methodology
 
@@ -31,13 +31,54 @@ Single-tick diagnostic `W02-E-METRICS` was captured for seed 103, Ubuntu Node 22
 
 These are different seeds/iteration lengths from the W02-F 48-tick profile; **do not directly claim speedups between those figures**. Save is well below existing 8 MiB cap in these three samples. W02-F logs also include pathfinding calls/tick and node p50/p95.
 
-## Candidate data and acceptance
+## Reproducible before / after W02-F candidate
 
-- **36-case 5×/small-viewport baseline vs candidate:** PENDING; use logs named `W02-F-BROWSER-METRICS` and corresponding `w02-f-viewport-matrix.json` artifact. Any absent/failed case is explicitly NOT RUN/FAIL, not copied from old V01-E numbers.
-- **Node p50/p95 + path calls/tick:** PENDING; use `W02-F-NODE-METRICS`.
-- **Path BFS A/B parity/timing on same runner process:** PENDING; use `W02-F-PATH-A-B`. Correctness parity is mandatory; speed comparison is a diagnostic, not a hard flaky pass assertion.
-- **Initial rendering/load and texture/GameObjects:** browser artifact + existing creation screenshots; timer-specific initial render instrumentation not yet independently sampled, thus **NOT RUN** as a separate timing metric.
-- **Canvas remount/save/hidden-tab/Follow:** existing V01/V02 Chromium tests mandatory, pending final-HEAD CI.
-- **Windows 60–120 minute soak, GPU perf, physical FPS, memory stability:** NOT RUN. Certification remains PARTIAL regardless of CI success.
+- **Before** `45725a8ca03738f82563948e7aeafce4aa128753`: [CI #38997723836](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38997723836) **PASS** on production-unmodified W02-E with only measurement tests.
+- **After** `33c30011a51041418e1f5c6b905836773cfba1ec`: [candidate CI #38999049391](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38999049391) **PASS**, including 214+ prior tests, frozen v5 SHA/replay, BFS exact route parity, 36 Chromium metric cases, real W02-F visual screenshot tests, full E2E, build, production smoke.
+- Common seed 12345, world 96×96, same browser test and 450ms rAF cap, viewport outside browser content area as labeled, camera Fit. Different GitHub-hosted runs and sequential tick drift. Each 20×/100 NPC capture has only 4–5 frame samples and CANNOT certify PC/GPU FPS. Two small apparent regressions are described below.
 
-Do not interpret single-run changes as proof of Windows FPS. If candidate loses FPS or a determinism test, rollback and leave W02-F PARTIAL. See [handoff](W02_F_HANDOFF.md).
+### Chromium FPS and frame p95, 1920×1080 / Fit
+
+| NPC | Speed | Before FPS | After FPS | Before p95 ms | After p95 ms |
+|---:|---:|---:|---:|---:|---:|
+| 20 | 1× | 21.79 | 21.87 | 83.4 | 83.4 |
+| 20 | 5× | 18.96 | 19.91 | 99.9 | 83.3 |
+| 20 | 20× | 13.52 | 17.58 | 100.1 | 83.4 |
+| 50 | 1× | 21.24 | 21.26 | 100.0 | 83.3 |
+| 50 | 5× | 17.73 | 18.72 | 116.7 | 100.0 |
+| 50 | 20× | 11.55 | 15.02 | 133.3 | 100.1 |
+| 100 | 1× | 18.70 | 20.12 | 133.2 | 100.0 |
+| 100 | 5× | 14.98 | 16.59 | 133.3 | 116.6 |
+| **100** | **20×** | **7.10** | **10.15** | **216.6** | **166.6** |
+
+Of all 36 population × speed × 4 viewport cases, **34 showed a higher measured mean FPS and 2 showed lower**: 100 NPC/1×/2560×1080 went 21.18→19.35 (-8.6%); 100 NPC/5×/1366×768 went 24.38→22.94 (-5.9%). These isolated 450ms CI samples are too noisy to establish a regression conclusively. Re-test on a physical PC and with longer capture before release certification; do not claim across-the-board improvement. The 100 NPC/20×/1920×1080 mean improved ~43% within these samples.
+
+### Object, texture, simulation and save metrics
+
+At Fit, display-list counts before→after: **20 NPC 424→393; 50 NPC 457→426; 100 NPC 512→481**. Texture count: **20 NPC 43→24; 50 NPC 73→24; 100 NPC 123→24**. The ~31 fewer display objects primarily reflect batched entrance marks; delayed ID Text textures account for the population-dependent texture drop. Zoom-in label/re-mount E2E PASS in candidate CI.
+
+At 100 NPC, 48 ticks, seed 12345 (Node CI, same test input):
+
+| Node metric | Before | After |
+|---|---:|---:|
+| Tick p50 ms | 14.196 | 1.557 |
+| Tick p95 ms | 120.824 | 11.861 |
+| Pathfinding calls/tick p50 / p95 | 33 / 101 | 33 / 101 |
+| Map generation ms | 45.661 | 13.605 |
+| Save serialization ms | 16.513 | 7.262 |
+| Save parsing ms | 6.883 | 7.216 |
+| JSON UTF-8 save bytes at tick48 | 329381 | 329381 |
+
+Tick speed and generator results include runtime variance and JIT; do not interpret them as a guaranteed 90% improvement on all hardware. Path route identity is verified directly against frozen old BFS on both v5 48×48 and v6 96×96 with 24 source→destination pairs each; `W02-F-PATH-A-B` on candidate CI logged old/new route search time **18.401/5.057ms (48)** and **31.962/1.573ms (96)** in the single-process diagnostic. Path calls did **not** change, so there is no RNG/behavior shortcut.
+
+CDP JS heap snapshot at 100 NPC/20×/1920×1080: 29,481,872 → 29,871,204 bytes in the short W02-F matrix, not a meaningful leak signal. The earlier W02-E suite sampled 60,465,036 bytes in a separate run; snapshot heap fluctuates substantially and no 60–120-minute Windows soak has been done.
+
+### Remaining measurements and acceptance
+
+- New additional ~4-second 100 NPC/20× 1920×1080 run: **PENDING final-head CI**, because the short 450ms capture is noisy.
+- One-time first canvas-ready wall-clock diagnostic: included in candidate E2E JSON but includes Vite/asset load and layout, not pure renderer GPU time. Must not treat as standalone GPU initial-frame timing.
+- 36-case full JSON: `W02-F-BROWSER-METRICS` in both workflow logs and `w02-f-viewport-matrix.json`; new artifact-preservation step will keep W02-F measurements before production smoke clears `test-results`.
+- Existing camera remount/NPC click/follow, deterministic replay, legacy SHA/save tests: **PASS in candidate CI**; repeat on final HEAD.
+- Physical Windows 60–120-minute soak, sustained GPU/FPS and heap, hardware renderer and manual PC playtest: **NOT RUN / PARTIAL**. No claim of steady 60 FPS. See [Windows smoke protocol](W02_F_WINDOWS_SMOKE.md).
+
+Overall: automated correctness **PASS on candidate**; final-HEAD evidence and hardware acceptance **PARTIAL/PENDING**. Only owner-reviewed, CI-proven W02-F may be merged. Plan 03 N03-A requires owner acceptance of remaining Windows risks.

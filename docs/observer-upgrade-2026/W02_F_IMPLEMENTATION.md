@@ -1,6 +1,6 @@
 # W02-F — Map Density & Performance Implementation
 
-**Scope:** Observer Upgrade 2026 / Plan 02 / W02-F only. **PR:** [#21](https://github.com/giabao2605/Tiny-Civilization/pull/21), branch `feat/w02-f-map-density-performance` from `main@eb0a4d503f0124267e298443d6fd839c5d64de12`. **Status:** QA pending; do not self-merge or mark VERIFIED until final-HEAD CI, browser evidence, and owner review.
+**Scope:** Observer Upgrade 2026 / Plan 02 / W02-F only. **PR:** [#21](https://github.com/giabao2605/Tiny-Civilization/pull/21), branch `feat/w02-f-map-density-performance` from `main@eb0a4d503f0124267e298443d6fd839c5d64de12`. **Status:** candidate GitHub CI PASS; final evidence/Windows QA pending; do not self-merge or mark VERIFIED until final-HEAD CI, browser evidence, and owner review.
 
 ## Entry gate
 
@@ -15,6 +15,15 @@
 3. Every NPC eagerly allocated a Phaser Text texture even when zoom was below the label threshold of 2.4. Labels are now allocated lazily upon first close inspection; normal Fit sessions avoid ~population additional textures while preserving labels/selection when zoomed.
 4. Forest/grass/market sparse decoration is painted as small deterministic ground decals in existing static layout Graphics. Only real non-reserved grass cells are eligible; no road/water/site/entrance/POI/resource collision, no simulation RNG calls, no new economic objects.
 5. `findPath` kept exact BFS N/E/S/W exploration, while replacing per-neighbor position objects and redundant grid dimension validation with numeric neighbor indices. No A*, no path costs, no unbounded route cache. Reference pre-W02-F BFS is preserved in a parity/performance **test only**, not production.
+
+6. W02-F caches the 828-road-cell static hierarchy plus deterministic decor as a single Phaser generated nearest-filtered overlay texture. No repeated live Graphics redraw every frame and no changes to world tiles.
+
+## Current CI evidence
+
+- Pre-optimization W02-E baseline [#38997723836](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38997723836) **PASS**, 36 viewport/population/speed cells.
+- Optimized candidate [candidate CI #38999049391](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38999049391) **PASS**: typecheck, lint, unit/parity, build, real Chromium E2E, production smoke.
+- At 100 NPC/20×/1920×1080 Fit: mean 7.10→10.15 FPS (short CI rAF capture), p95 216.6→166.6ms, GameObjects 512→481, textures 123→24. Node tick p95 120.824→11.861ms on same input. **Not** Windows or long-term 60 FPS certification.
+- Two of 36 short captures show lower FPS; needs long-run/hardware recheck. Final W02-F artifact preservation and long-sample benchmark pending.
 
 ## Tests and limits
 

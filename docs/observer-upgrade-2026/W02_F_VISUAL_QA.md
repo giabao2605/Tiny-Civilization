@@ -1,6 +1,6 @@
 # W02-F — Three-District Visual QA (Real Phaser)
 
-**Status:** W02-E pre-polish screenshots **INSPECTED**; W02-F after-polish screenshots **PENDING**. Not a Windows GPU certification.
+**Status:** W02-E before screenshots **INSPECTED**; W02-F screenshot-generation E2E **PASS** in CI #38999049391 but the images were lost after production smoke, so independent AFTER visual inspection is **PENDING**. Not a Windows GPU certification.
 
 ## Before: real 96×96 app screenshots, seed 12345
 
@@ -18,8 +18,15 @@ Visual judgment is limited to captured frames, not an on-device human playtest. 
 
 Small decorative courtyard flowers/ground patches, civic paving accents and eastern reed tufts are emitted from a stable `visualHash(seed, x, y, 91)` into a single static Graphics layer. Only existing walkable grass is eligible. All functional site tiles, resource tiles, POIs, entrances and road tiles are reserved. No new `Site`, `ResourceNode`, road, path cost or RNG state. Static entrance batching preserves highlights; NPC labels appear only at inspecting zoom.
 
-## After: pending real screenshot matrix
+## After: screenshot retention fix required before visual signoff
 
 `tests/e2e/observer-w02-f-visual.spec.ts` creates actual canvas screenshots (not full-page huge layout or vector generator): `w02-f-96-overview.png`, `w02-f-96-residential.png`, `w02-f-96-civic-market.png`, `w02-f-96-waterfront.png`, `w02-f-96-ultrawide.png`, `w02-f-96-small.png`.
 
 Must inspect corresponding CI artifact, visually compare with the above W02-E frames, verify no overlapping fake road/water/entrance/NPC and check browser console/page errors. **Until artifacts exist and are visually inspected, AFTER QA: NOT RUN**. Manual PC review remains OPEN.
+
+
+## CI artifact issue and correction
+
+Candidate [candidate CI #38999049391](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38999049391) PASS included `observer-w02-f-visual.spec.ts` on actual Phaser Canvas. However, `.github/workflows/ci.yml` originally preserved W02-E images only. Its subsequent `PLAYWRIGHT_PRODUCTION=true` smoke resets `test-results/`, so the candidate artifact **does not** contain `w02-f-*.png`. Treat that as missing evidence, not as proof that the visuals were reviewed. The final CI adds an `observer-w02-f-evidence/` preservation step **before** the production smoke and uploads that directory. Inspect the actual before/after screenshots from that new artifact before marking Visual QA VERIFIED.
+
+After physical Windows local 60–120 minute smoke is still **NOT RUN**. Never substitute W02-D SVG harness for actual Phaser screenshots.

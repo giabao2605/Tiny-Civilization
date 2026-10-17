@@ -8,13 +8,20 @@
 |---|---|
 | W02-E PR #20 merged; final post-merge CI #38995262805 and Pages #38995262917 | PASS |
 | 96×96 seeded production; 20/50/100 and 3 districts/24 POIs/32 entrances | PASS in W02-E main CI |
-| W02-F modified render/perf path with unit/browser test added | IMPLEMENTED / verification pending |
-| W02-F final-HEAD npm ci/typecheck/lint/Vitest/build/E2E/production smoke | PENDING |
-| Legacy frozen v5 48×48 SHA and deterministic 720→816 after candidate | PENDING |
-| v5 migration and v6 save roundtrip after candidate | PENDING |
-| 36 population/speed/viewport frames, new visual screenshots and A/B timing | PENDING |
+| W02-F renderer/BFS optimization and exact route parity, 36-case Chromium matrix | PASS candidate CI #38999049391 |
+| W02-F candidate npm ci/typecheck/lint/Vitest/build/E2E/production smoke | PASS CI #38999049391 |\n| W02-F final-HEAD checks incl. preserved screenshots & 4-second 100NPC/20× | PENDING |
+| Legacy frozen v5 48×48 SHA and deterministic 720→816 on candidate | PASS CI #38999049391 |
+| v5 migration and v6 save roundtrip on candidate | PASS CI #38999049391 |
+| 36 population/speed/viewport matrix and BFS A/B | PASS candidate CI; full JSON logged |\n| W02-F PNG screenshot preservation/visual human inspection | PENDING (current CI artifact lacks W02-F PNGs) |
 | Local Windows PC hardware 60–120 min soak and 60 FPS evidence | NOT RUN / PARTIAL |
 | Manual PC visual/user acceptance | NOT RUN |
+
+## Candidate measured outcome
+
+- Same 1920×1080/Fit, 100 NPC/20×: baseline 7.10 FPS, frame p95 216.6ms → optimized 10.15 FPS, p95 166.6ms (short Chromium runner samples, not hardware guarantees).
+- GameObjects 512→481 and textures 123→24; Node 48-tick p95 120.824→11.861ms; identical path calls p95 101 and exactly equal reference BFS routes for tested v5/v6 endpoints.
+- Of 36 short cases, 34 higher FPS and two lower; treat negative deltas as noisy, not certified reversions.
+- `docs/observer-upgrade-2026/W02_F_WINDOWS_SMOKE.md`: repeatable local Windows testing protocol. Actual Windows status **NOT RUN**.
 
 ## Open risks and exact next gate
 

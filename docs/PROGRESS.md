@@ -1,3 +1,12 @@
+## Observer Plan 02 — W02-F final-performance QA update (2026-10-17)
+
+- **PR:** [#21](https://github.com/giabao2605/Tiny-Civilization/pull/21), draft/unmerged; entry gate W02-E main CI [#38995262805](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38995262805) PASS.
+- W02-F pre-optimization baseline [#38997723836](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38997723836) PASS, optimized candidate [candidate CI #38999049391](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38999049391) PASS, both real Chromium/Node on Linux hosted runner seed 12345.
+- 100 NPC/20×/1920×1080 Fit: 7.10→10.15 mean FPS, frame p95 216.6→166.6ms (noisy 450ms samples); Node tick p95 120.824→11.861ms; GameObjects 512→481, textures 123→24. 34/36 brief scenarios improved; 2 showed slight declines. Exact v5/v6 BFS parity PASS.
+- Static overlay texture, batched entrance marks, lazy labels, visual-only terrain accent, allocation-reduced N/E/S/W BFS. No simulation rules, save schema, A*, weather or audio change.
+- Final evidence preservation and longer performance sample queued for next CI. Physical Windows soak/GPU FPS **NOT RUN/PARTIAL**. Plan 02 hardware QA PARTIAL; **do not start N03-A** until owner accepts final-HEAD correctness and outstanding risk.
+- Evidence: [performance](observer-upgrade-2026/W02_F_PERFORMANCE.md), [visual QA](observer-upgrade-2026/W02_F_VISUAL_QA.md), [implementation](observer-upgrade-2026/W02_F_IMPLEMENTATION.md), [handoff](observer-upgrade-2026/W02_F_HANDOFF.md), [Windows protocol](observer-upgrade-2026/W02_F_WINDOWS_SMOKE.md).
+
 ## Observer Plan 02 — W02-F Density, Performance & Final QA (2026-10-17)
 
 - **Entry gate:** W02-E PR #20 merged into main `eb0a4d50`; *actual post-merge* CI [#38995262805](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38995262805) and Pages [#38995262917](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38995262917) both successful (checks include production smoke).

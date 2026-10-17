@@ -61,6 +61,13 @@ jobs:
           if [ -d test-results ]; then
             find test-results -type f -name 'w02-e-*.png' -exec cp '{}' observer-w02-e-evidence/ ';'
           fi
+      - name: Preserve W02-F real Phaser visual and performance evidence
+        if: always()
+        run: |
+          mkdir -p observer-w02-f-evidence
+          if [ -d test-results ]; then
+            find test-results -type f -name 'w02-f-*' -exec cp '{}' observer-w02-f-evidence/ ';'
+          fi
       - name: Build for GitHub Pages project path
         run: GITHUB_PAGES=true npm run build
       - name: Smoke-test the actual production build
@@ -79,6 +86,7 @@ jobs:
             observer-v01-e-evidence/
             observer-w02-d-evidence/
             observer-w02-e-evidence/
+            observer-w02-f-evidence/
             dist/
           if-no-files-found: ignore
           retention-days: 7
