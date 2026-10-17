@@ -68,6 +68,7 @@ test('V01-E: follow nearest real resident to each map edge and verify centered-w
     return data.world?.citizens?.filter(c => c.alive) ?? [];
   });
   expect(residents.length).toBeGreaterThan(0);
+  const mapPixels = Number(await page.getByTestId('game-container').getAttribute('data-map-width')) * 12;
   const choices = [
     { side: 'left', citizen: residents.reduce((a, b) => a.tile.x <= b.tile.x ? a : b) },
     { side: 'right', citizen: residents.reduce((a, b) => a.tile.x >= b.tile.x ? a : b) },
@@ -93,7 +94,7 @@ test('V01-E: follow nearest real resident to each map edge and verify centered-w
     }));
     const bounds = (viewport: number): [number, number] => {
       const half = viewport / (2 * zoom);
-      return half * 2 >= 576 ? [288, 288] : [half, 576 - half];
+      return half * 2 >= mapPixels ? [mapPixels / 2, mapPixels / 2] : [half, mapPixels - half];
     };
     const [minX, maxX] = bounds(width);
     const [minY, maxY] = bounds(height);
