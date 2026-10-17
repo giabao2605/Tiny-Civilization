@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { advanceOneTick, stateDigest } from '../sim/engine';
 import { type GovernanceCommand } from '../sim/governance';
 import { createWorld, totalCurrency, type WorldState } from '../sim/world';
-import { MAX_SAVE_BYTES, parseSave, serializeSave } from './save';
+import { MAX_SAVE_BYTES, parseLegacySave, parseSave, serializeSave } from './save';
 
 function commandAt(world: WorldState): GovernanceCommand[] {
   const issuedTick = world.tick + 1;
@@ -31,7 +31,7 @@ describe('Phase 06 deterministic persistence', () => {
           leaderId: firstHalf.governance.leaderId ?? 1, requestId: 10001 }];
         const saved = serializeSave(firstHalf, pending, 10002);
         expect(new TextEncoder().encode(saved).byteLength).toBeLessThan(MAX_SAVE_BYTES);
-        const restored = parseSave(saved);
+        const restored = parseLegacySave(saved);
         expect(restored.world).toEqual(firstHalf);
         expect(restored.pending).toEqual(pending);
         expect(restored.nextRequestId).toBe(10002);
