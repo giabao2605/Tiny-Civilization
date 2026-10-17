@@ -10,6 +10,16 @@ import type { CameraMode, CameraSnapshot, WorldCameraControls } from '../camera/
 import { ensureArtKit, imageArt } from '../render/artKit';
 import { drawTerrain } from '../render/terrain';
 import { buildingStyle, visualHash } from '../render/visualHash';
+import type { Poi96Kind } from '../../sim/world96Layout';
+
+const POI_ART: Record<Poi96Kind, 'well' | 'bench' | 'fence' | 'sign' | 'crops' | 'lantern' | 'barrel' | 'crate' | 'oak' | 'pine' | 'shrub' | 'woodpile'> = {
+  garden:'shrub', well:'well', laundry:'fence', fence:'fence', bench:'bench',
+  'vegetable-patch':'crops', lantern:'lantern', courtyard:'bench', stall:'crate',
+  cart:'barrel', 'notice-board':'sign', fountain:'well', 'shade-tree':'oak',
+  'market-sign':'sign', flowerbed:'shrub', flag:'sign', viewpoint:'bench',
+  reeds:'shrub', wildflowers:'shrub', rocks:'woodpile',
+  'fallen-log':'woodpile', birdwatch:'pine',
+};
 
 const PALETTE = [0xbc654f, 0xe2aa5d, 0x6d9bb3, 0x9c82b6, 0x8fad6b, 0xd2888d, 0x64afa0, 0xdbc17b];
 const CENTER = TILE_PIXELS / 2;
@@ -70,6 +80,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     document.addEventListener('visibilitychange', this.onVisibilityChanged);
     this.reset();
     this.paintTerrain();
+    this.paintLayout();
     for (const site of this.world.sites) { this.paintSite(site); this.paintedSites.add(site.id); }
     this.paintConstructions();
     for (const node of this.world.resourceNodes) {
@@ -333,6 +344,8 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.announceCamera();
     }
     if (worldGeometryChanged(before, snapshot.world) ||
+      (before.schemaVersion === 6 && snapshot.world.schemaVersion === 6 &&
+        before.layout !== snapshot.world.layout) ||
       before.seed !== snapshot.world.seed || before.citizens.length !== snapshot.world.citizens.length ||
       before.tick > snapshot.world.tick || (before.tick === snapshot.world.tick && before.citizens !== snapshot.world.citizens)) {
       this.scene.restart();
@@ -493,6 +506,33 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       if (variation % 7 !== 0) continue;
       const kind = variation % 3 === 0 ? 'pine' : variation % 3 === 1 ? 'oak' : 'shrub';
       imageArt(this, kind, xPixel(x), (y + 1) * TILE_PIXELS);
+    }
+  }
+
+  /** Road hierarchy, authentic entrances and inert observer POIs from v6 metadata. */
+  private paintLayout(): void {
+    if (this.world.schemaVersion !== 6 || this.world.map.width !== 96 || !this.world.layout) return;
+    const { roads, entrances, pois } = this.world.layout;
+    const roadColor = { main: 0xb7a17a, side: 0x9d8b6b, footpath: 0x89765b, plaza: 0xc3ae87 } as const;
+    const path = this.add.graphics().setDepth(1);
+    for (const road of roads) {
+      const x = road.tile.x * TILE_PIXELS, y = road.tile.y * TILE_PIXELS;
+      path.fillStyle(roadColor[road.kind], 0.85);
+      path.fillRect(x + 1, y + 1, TILE_PIXELS - 2, TILE_PIXELS - 2);
+      if (road.kind === 'main') {
+        path.fillStyle(0xd9c6a0, 0.7).fillRect(x + 5, y + 5, 2, 2);
+      }
+    }
+    // The existing economic tile remains the NPC destination, not the entrance.
+    for (const entrance of entrances) {
+      const { x, y } = entrance.tile;
+      const marker = this.add.graphics().setDepth(90 + (y + 1) * TILE_PIXELS);
+      marker.fillStyle(0x3e2f28, 0.92).fillRoundedRect(x * TILE_PIXELS + 3, y * TILE_PIXELS + 3, 6, 6, 1);
+      marker.fillStyle(0xf9d18a, 1).fillRect(x * TILE_PIXELS + 5, y * TILE_PIXELS + 5, 2, 2);
+    }
+    for (const poi of pois) {
+      imageArt(this, POI_ART[poi.kind], xPixel(poi.tile.x),
+        (poi.tile.y + 1) * TILE_PIXELS).setDepth(80 + (poi.tile.y + 1) * TILE_PIXELS);
     }
   }
 
