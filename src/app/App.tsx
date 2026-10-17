@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { GameCanvas } from '../game/GameCanvas';
 import type { CameraSnapshot, WorldCameraControls } from '../game/camera/types';
-import { ENGINE_VERSION, LOCAL_SAVE_KEY, MAX_SAVE_BYTES } from '../persistence/save';
+import { V6_ENGINE_VERSION as ENGINE_VERSION, LOCAL_SAVE_KEY, MAX_SAVE_BYTES } from '../persistence/save';
 import { dayOf, hourOf, stateDigest } from '../sim/engine';
 import { foodAidRejection } from '../sim/governance';
 import { dimensionsOf, getSite, housing, totalCurrency, type Activity, type WorldEvent, type EventType } from '../sim/world';
@@ -330,7 +330,7 @@ export function App() {
           <aside className="sidebar" aria-label="Thông tin mô phỏng">
             <section className="side-card">
               <p className="section-kicker">SETTLEMENT OVERVIEW</p>
-              <h3>Nhịp sống của làng</h3>
+              <h3>Nhịp sống của làng</h3><p data-testid="map-dimensions" className="dashboard-note">Bản đồ {world.schemaVersion === 5 ? "48×48" : world.map.width + "×" + world.map.height} · {world.schemaVersion === 5 ? "Legacy v5" : "Save v6"}</p>
               <div className="stat-grid">
                 <div className="stat"><span>Ngày</span><strong data-testid="day-value">{String(day).padStart(2, '0')}</strong></div>
                 <div className="stat"><span>Giờ</span><strong data-testid="hour-value">{String(hour).padStart(2, '0')}:00</strong></div>
