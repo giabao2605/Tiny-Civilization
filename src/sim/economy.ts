@@ -72,7 +72,8 @@ function isFreeSite(world: WorldState, tile: TilePosition): boolean {
     if (!neighbors.some(([dx,dy]) => {
       const x = tile.x + dx!, y = tile.y + dy!;
       return x >= 0 && y >= 0 && x < d.width && y < d.height &&
-        world.tiles[y * d.width + x] === 'road';
+        world.tiles[y * d.width + x] === 'road' &&
+        !layout.entrances.some(entrance => entrance.tile.x === x && entrance.tile.y === y);
     })) return false;
   }
   return walkable(world, tile) &&
