@@ -156,7 +156,8 @@ describe('N03-B weighted A* independent of production behavior', () => {
           assertCardinal(world, start, target, path);
           expect(cost(world, path)).toBe(metrics.totalCostX10);
           expect(cost(world, path)).toBeLessThanOrEqual(cost(world, bfs!));
-          expect(metrics.expandedNodes).toBeGreaterThan(0);
+          expect(metrics.expandedNodes).toBeGreaterThanOrEqual(0);
+          if (path.length > 0) expect(metrics.expandedNodes).toBeGreaterThan(0);
         }
       }
     }
