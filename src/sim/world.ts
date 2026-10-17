@@ -1,6 +1,7 @@
 import { GRID_HEIGHT, GRID_WIDTH, LEGACY_DIMENSIONS, tileIndexAt, type TilePosition, type WorldDimensions } from './grid';
 import { drawInt, normalizeSeed } from './prng';
 import { BALANCE } from './balance';
+import type { World96Layout } from './world96Layout';
 
 export type Terrain = 'grass' | 'forest' | 'water' | 'road';
 export type SiteKind = 'home' | 'work' | 'commons' | 'market';
@@ -76,7 +77,7 @@ export type GovernanceState = {
   shocks: VillageShock[]; lastHarvestEnd: number; lastIllnessEnd: number;
   harvestCount: number; illnessCount: number; illnessAffected: number; illnessRecovered: number;
 };
-export type WorldState = {
+export type LegacyWorldState = {
   schemaVersion: 5; seed: number; rngState: number; tick: number;
   nextEntityId: number; nextEventId: number; tiles: Terrain[]; sites: Site[];
   citizens: Citizen[]; resourceNodes: ResourceNode[];
@@ -86,9 +87,16 @@ export type WorldState = {
   households: Household[]; memorials: Memorial[]; social: SocialStats; governance: GovernanceState;
 };
 
-/** Geometry-only shape for W02-B synthetic tests; WorldState and v5 saves remain schema 5.
- * A future v6 world will own its dimensions in `map`, never in a global variable.
- */
+/** v5 stays an independent, frozen schema. Migrated v6 worlds remain 48×48. */
+export type WorldStateV6 = Omit<LegacyWorldState, 'schemaVersion'> & {
+  schemaVersion: 6;
+  map: WorldDimensions;
+  /** Mandatory for 96×96, absent in migrated 48×48 worlds. */
+  layout?: World96Layout;
+};
+export type WorldState = LegacyWorldState | WorldStateV6;
+
+/** World-aware grid geometry with no mutable global dimension setting. */
 export type WorldGeometry = Readonly<{ schemaVersion: 5; tiles: readonly Terrain[] }> |
   Readonly<{ schemaVersion: 6; map: WorldDimensions; tiles: readonly Terrain[] }>;
 
@@ -141,7 +149,7 @@ export function totalCurrency(world: WorldState): number {
   return world.market.cash + world.citizens.reduce((sum, citizen) => sum + citizen.wallet, 0);
 }
 
-export function createWorld(seed = 12345, population: 20 | 50 | 100 = 20): WorldState {
+export function createWorld(seed = 12345, population: 20 | 50 | 100 = 20): LegacyWorldState {
   if (![20, 50, 100].includes(population)) throw new Error('Population must be 20, 50 or 100');
   let rngState = normalizeSeed(seed);
   const draw = (max: number) => {
