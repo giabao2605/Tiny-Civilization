@@ -1,11 +1,14 @@
 import { BALANCE } from '../sim/balance';
-import { GRID_HEIGHT, GRID_WIDTH, isValidTile } from '../sim/grid';
+import { GRID_HEIGHT, GRID_WIDTH, isValidTileAt, type WorldDimensions } from '../sim/grid';
+import { validateWorld96Layout, type World96LayoutSource } from '../sim/world96Layout';
 import type { GovernanceCommand } from '../sim/governance';
-import type { WorldState } from '../sim/world';
+import type { LegacyWorldState, WorldState } from '../sim/world';
 
 /** Phase 06 saves are explicitly incompatible with other schemas or engine rules. */
 export const SAVE_FORMAT = 1;
 export const ENGINE_VERSION = 'sim-v5-phase06';
+export const V6_SAVE_FORMAT = 2;
+export const V6_ENGINE_VERSION = 'sim-v6-map';
 export const MAX_SAVE_BYTES = 8 * 1024 * 1024;
 export const LOCAL_SAVE_KEY = 'tiny-civilization:world:v1';
 export type RestoredSave = { world: WorldState; pending: GovernanceCommand[]; nextRequestId: number };
@@ -40,14 +43,11 @@ function nonnegative(obj: Record<string, unknown>, keys: string[], path: string)
 function counters(obj: Record<string, unknown>, keys: string[], path: string): void {
   for (const key of keys) number(obj[key], path + '.' + key);
 }
-function position(value: unknown, path: string): void {
+function checkPosition(value: unknown, path: string, dimensions: WorldDimensions): void {
   const p = object(value, path);
-  number(p.x, path + '.x', 0, GRID_WIDTH - 1);
-  number(p.y, path + '.y', 0, GRID_HEIGHT - 1);
-  if (!isValidTile(p as { x: number; y: number })) fail(path, 'tọa độ ngoài bản đồ');
-}
-function positions(value: unknown, path: string, max: number): void {
-  array(value, path, max).forEach((p, i) => position(p, path + '[' + i + ']'));
+  number(p.x, path + '.x', 0, dimensions.width - 1);
+  number(p.y, path + '.y', 0, dimensions.height - 1);
+  if (!isValidTileAt(p as { x: number; y: number }, dimensions)) fail(path, 'tọa độ ngoài bản đồ');
 }
 function goods(value: unknown, path: string): void {
   nonnegative(object(value, path), ['food', 'wood'], path);
@@ -75,14 +75,40 @@ const eventTypes = ['founded', 'departure', 'work', 'gather', 'home', 'routeBloc
 /** Reject malformed and hostile JSON *before* allowing it into the simulation. */
 export function validateWorld(value: unknown): asserts value is WorldState {
   const w = object(value, 'world');
-  if (w.schemaVersion !== 5) fail('world.schemaVersion', 'cần schema v5');
+  if (w.schemaVersion !== 5 && w.schemaVersion !== 6)
+    fail('world.schemaVersion', 'chỉ hỗ trợ schema v5 hoặc v6');
+  const isV6 = w.schemaVersion === 6;
+  let dimensions: WorldDimensions = { width: GRID_WIDTH, height: GRID_HEIGHT };
+  if (isV6) {
+    const map = object(w.map, 'world.map');
+    if (Object.keys(map).some(key => key !== 'width' && key !== 'height')) fail('world.map', 'trường không hỗ trợ');
+    const width = number(map.width, 'world.map.width', 1);
+    const height = number(map.height, 'world.map.height', 1);
+    if (width !== height || (width !== 48 && width !== 96))
+      fail('world.map', 'chỉ hỗ trợ bản đồ vuông 48 hoặc 96');
+    dimensions = { width, height };
+    if (width === 48 && w.layout !== undefined) fail('world.layout', 'legacy 48 không có layout 96');
+    if (width === 96 && w.layout === undefined) fail('world.layout', 'thiếu layout 96');
+  }
+  const position = (value: unknown, path: string): void => {
+    checkPosition(value, path, dimensions);
+    if (isV6) {
+      const p = value as { x: number; y: number };
+      const tiles = w.tiles as unknown[];
+      if (tiles[p.y * dimensions.width + p.x] === 'water') fail(path, 'tọa độ nằm trên nước');
+    }
+  };
+  const positions = (value: unknown, path: string, max: number): void => {
+    array(value, path, max).forEach((p, i) => position(p, path + '[' + i + ']'));
+  };
   number(w.seed, 'world.seed');
   number(w.rngState, 'world.rngState', 1, 0xffffffff);
   const tick = number(w.tick, 'world.tick', 0);
   const nextEntity = number(w.nextEntityId, 'world.nextEntityId', 1);
   const nextEvent = number(w.nextEventId, 'world.nextEventId', 2);
-  const tiles = array(w.tiles, 'world.tiles', GRID_HEIGHT * GRID_WIDTH);
-  if (tiles.length !== GRID_HEIGHT * GRID_WIDTH) fail('world.tiles', 'sai kích thước 48×48');
+  const tileCount = dimensions.width * dimensions.height;
+  const tiles = array(w.tiles, 'world.tiles', tileCount);
+  if (tiles.length !== tileCount) fail('world.tiles', 'sai kích thước bản đồ');
   tiles.forEach((t, i) => oneOf(t, 'world.tiles[' + i + ']', ['grass', 'forest', 'water', 'road']));
 
   const sites = array(w.sites, 'world.sites', 400);
@@ -167,8 +193,8 @@ export function validateWorld(value: unknown): asserts value is WorldState {
     if ((o.health as number) > 100 || (o.hunger as number) > 100 || (o.energy as number) > 100) fail(p, 'nhu cầu vượt 100');
     position(o.tile, p + '.tile');
     position(o.destination, p + '.destination');
-    positions(o.route, p + '.route', GRID_HEIGHT * GRID_WIDTH);
-    positions(o.lastMove, p + '.lastMove', GRID_HEIGHT * GRID_WIDTH);
+    positions(o.route, p + '.route', tileCount);
+    positions(o.lastMove, p + '.lastMove', tileCount);
     const home = nullableId(o.homeId, p + '.homeId');
     const household = nullableId(o.householdId, p + '.householdId');
     const partner = nullableId(o.partnerId, p + '.partnerId');
@@ -286,6 +312,18 @@ export function validateWorld(value: unknown): asserts value is WorldState {
     if (e.cause !== undefined) string(e.cause, p + '.cause', 1200);
     if (e.success !== undefined && typeof e.success !== 'boolean') fail(p + '.success', 'boolean không hợp lệ');
   });
+  if (isV6 && dimensions.width === 96) {
+    const layout = object(w.layout, 'world.layout');
+    array(layout.districts, 'world.layout.districts', 3);
+    array(layout.roads, 'world.layout.roads', 9216);
+    array(layout.entrances, 'world.layout.entrances', 400);
+    array(layout.pois, 'world.layout.pois', 100);
+    try {
+      validateWorld96Layout(w as unknown as World96LayoutSource);
+    } catch (error) {
+      fail('world.layout', error instanceof Error ? error.message : 'metadata không hợp lệ');
+    }
+  }
 }
 function validatePending(value: unknown, tick: number, nextRequestId: number): GovernanceCommand[] {
   const pending = array(value, 'pending', 1);
@@ -300,26 +338,68 @@ function validatePending(value: unknown, tick: number, nextRequestId: number): G
   }
   return pending as GovernanceCommand[];
 }
+/** Exact v5 projection, including original JSON key order, for full-world SHA-256. */
+export function canonicalV5Projection(world: WorldState): LegacyWorldState {
+  if (world.schemaVersion !== 6 || world.map.width !== 48 || world.map.height !== 48)
+    throw new Error('Chỉ world v6 48×48 được chiếu về v5.');
+  const { map: _map, layout: _layout, ...legacy } = world;
+  void _map; void _layout;
+  return { ...legacy, schemaVersion: 5 };
+}
+
+/** Validate before transformation. Never regenerate terrain, IDs or PRNG. */
+export function migrateLegacyWorld(world: LegacyWorldState): WorldState {
+  validateWorld(world);
+  if (world.schemaVersion !== 5) fail('world.schemaVersion', 'chỉ migrate v5');
+  const migrated: WorldState = { ...world, schemaVersion: 6, map: { width: 48, height: 48 } };
+  validateWorld(migrated);
+  return migrated;
+}
+
 export function serializeSave(world: WorldState, pending: GovernanceCommand[] = [], nextRequestId = 1): string {
   validateWorld(world);
   number(nextRequestId, 'nextRequestId', 1);
   validatePending(pending, world.tick, nextRequestId);
-  const json = JSON.stringify({ saveFormat: SAVE_FORMAT, engineVersion: ENGINE_VERSION,
-    world, pending, nextRequestId });
-  if (new TextEncoder().encode(json).byteLength > MAX_SAVE_BYTES) throw new Error('Bản save vượt giới hạn 8 MiB. Hãy xuất dữ liệu trước khi tiếp tục.');
+  const json = JSON.stringify({
+    saveFormat: world.schemaVersion === 5 ? SAVE_FORMAT : V6_SAVE_FORMAT,
+    engineVersion: world.schemaVersion === 5 ? ENGINE_VERSION : V6_ENGINE_VERSION,
+    world, pending, nextRequestId,
+  });
+  if (new TextEncoder().encode(json).byteLength > MAX_SAVE_BYTES)
+    throw new Error('Bản save vượt giới hạn 8 MiB. Hãy xuất dữ liệu trước khi tiếp tục.');
   return json;
 }
-export function parseSave(json: string): RestoredSave {
+
+/** Keep the frozen v5 contract available for golden regression, without migrating. */
+export function parseLegacySave(json: string): RestoredSave & { world: LegacyWorldState } {
+  const parsed = parseEnvelope(json, false);
+  if (parsed.world.schemaVersion !== 5)
+    fail('world.schemaVersion', 'cần save v5');
+  return { ...parsed, world: parsed.world };
+}
+
+function parseEnvelope(json: string, migrate: boolean): RestoredSave {
   if (typeof json !== 'string' || json.length === 0) throw new Error('File lưu trống.');
   if (json.length > MAX_SAVE_BYTES || new TextEncoder().encode(json).byteLength > MAX_SAVE_BYTES)
     throw new Error('File lưu vượt giới hạn 8 MiB.');
   let data: unknown;
-  try { data = JSON.parse(json); } catch { throw new Error('JSON bị hỏng hoặc bị cắt. Thế giới hiện tại được giữ nguyên.'); }
+  try { data = JSON.parse(json); } catch {
+    throw new Error('JSON bị hỏng hoặc bị cắt. Thế giới hiện tại được giữ nguyên.');
+  }
   const envelope = object(data, 'save');
-  if (envelope.saveFormat !== SAVE_FORMAT || envelope.engineVersion !== ENGINE_VERSION)
-    throw new Error('Phiên bản save/engine không tương thích. Cần ' + ENGINE_VERSION + ' / format ' + SAVE_FORMAT + '.');
+  const isLegacy = envelope.saveFormat === SAVE_FORMAT && envelope.engineVersion === ENGINE_VERSION;
+  const isNew = envelope.saveFormat === V6_SAVE_FORMAT && envelope.engineVersion === V6_ENGINE_VERSION;
+  if (!isLegacy && !isNew) throw new Error('Phiên bản save/engine không tương thích.');
   validateWorld(envelope.world);
+  if (isLegacy && envelope.world.schemaVersion !== 5) fail('world.schemaVersion', 'v5 cần schema 5');
+  if (isNew && envelope.world.schemaVersion !== 6) fail('world.schemaVersion', 'v6 cần schema 6');
   const nextRequestId = number(envelope.nextRequestId, 'nextRequestId', 1);
   const pending = validatePending(envelope.pending, envelope.world.tick, nextRequestId);
-  return { world: envelope.world, pending, nextRequestId };
+  const world = isLegacy && migrate ? migrateLegacyWorld(envelope.world as LegacyWorldState) : envelope.world;
+  return { world, pending, nextRequestId };
+}
+
+/** Production import migrates v5 to v6 48×48; v6 imports are validated exactly. */
+export function parseSave(json: string): RestoredSave {
+  return parseEnvelope(json, true);
 }
