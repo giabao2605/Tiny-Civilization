@@ -1,5 +1,7 @@
 import { BALANCE } from './balance';
 import { findPath } from './pathfinding';
+import { dimensionsOf } from './world';
+import { buildWorld96Layout } from './world96Layout';
 import { marketTile, walkable, housing, type Citizen, type Construction, type Good, type WorldState } from './world';
 import type { TilePosition } from './grid';
 
@@ -57,6 +59,22 @@ export function sellToMarket(world: WorldState, citizen: Citizen, good: Good, qu
 }
 
 function isFreeSite(world: WorldState, tile: TilePosition): boolean {
+  const v6large = world.schemaVersion === 6 && world.map.width === 96;
+  if (v6large) {
+    const layout = world.layout;
+    const index = tile.y * 96 + tile.x;
+    if (!layout || world.tiles[index] === 'road' ||
+      layout.pois.some(p => p.tile.x === tile.x && p.tile.y === tile.y) ||
+      layout.entrances.some(p => p.tile.x === tile.x && p.tile.y === tile.y)) return false;
+    // Newly-built houses must be adjacent to an existing road without blocking it.
+    const d = dimensionsOf(world);
+    const neighbors = [[0,-1],[1,0],[0,1],[-1,0]];
+    if (!neighbors.some(([dx,dy]) => {
+      const x = tile.x + dx!, y = tile.y + dy!;
+      return x >= 0 && y >= 0 && x < d.width && y < d.height &&
+        world.tiles[y * d.width + x] === 'road';
+    })) return false;
+  }
   return walkable(world, tile) &&
     !world.sites.some((site) => site.tile.x === tile.x && site.tile.y === tile.y) &&
     !world.resourceNodes.some((node) => node.tile.x === tile.x && node.tile.y === tile.y) &&
@@ -64,6 +82,13 @@ function isFreeSite(world: WorldState, tile: TilePosition): boolean {
     findPath(world, marketTile(world), tile) !== null;
 }
 function constructionTile(world: WorldState): TilePosition | null {
+  if (world.schemaVersion === 6 && world.map.width === 96) {
+    for (let y = 16; y <= 78; y += 1) for (let x = 12; x <= 83; x += 1) {
+      const tile = { x, y };
+      if (isFreeSite(world, tile)) return tile;
+    }
+    return null;
+  }
   // Stable, finite plots adjacent to the existing settlement. No overlapping sites.
   for (const y of [15, 19, 26, 31, 35, 22, 28]) {
     for (const x of [14, 19, 24, 29, 34]) {
@@ -101,6 +126,11 @@ export function buildOneHour(world: WorldState, citizen: Citizen, construction: 
     const house = { id: world.nextEntityId++, kind: 'home' as const,
       name: 'Nhà mới ' + construction.id, tile: { ...construction.tile }, capacity: BALANCE.houseCapacity };
     world.sites.push(house);
+    if (world.schemaVersion === 6 && world.map.width === 96) {
+      // Update serialized entrances/POIs only after a house is completed.
+      // Road treatment is seed-stable and cannot mint economic goods.
+      world.layout = buildWorld96Layout(world.seed, world.tiles, world.sites, world.resourceNodes);
+    }
     let remaining: number = house.capacity;
     for (const resident of world.citizens) {
       if (remaining === 0) break;
