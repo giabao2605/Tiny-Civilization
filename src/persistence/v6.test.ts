@@ -4,7 +4,7 @@ import { gunzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { createLivingCoordinator } from '../app/livingCoordinator';
 import { advanceOneTick, advanceTicks } from '../sim/engine';
-import { totalCurrency } from '../sim/world';
+import { createWorld, totalCurrency } from '../sim/world';
 import { createWorld96, validateWorld96 } from '../sim/world96';
 import {
   MAX_SAVE_BYTES, V6_ENGINE_VERSION, V6_SAVE_FORMAT, canonicalV5Projection,
@@ -59,6 +59,21 @@ describe('W02-E strict migration and real multi-size runtime', () => {
       expect(replay.citizens.every(c => c.wallet >= 0 && c.inventory.food >= 0 && c.inventory.wood >= 0)).toBe(true);
     }, 120000);
   }
+
+  it('never silently rejects old validator-accepted 48×48 routes during migration', () => {
+    const v5 = createWorld(97, 20);
+    const index = v5.tiles.indexOf('water');
+    expect(index).toBeGreaterThanOrEqual(0);
+    const oldRoute = { x: index % 48, y: Math.floor(index / 48) };
+    v5.citizens[0]!.route = [oldRoute];
+    const legacy = serializeSave(v5);
+    const migrated = parseSave(legacy);
+    expect(migrated.world.schemaVersion).toBe(6);
+    if (migrated.world.schemaVersion !== 6) throw new Error('expected v6');
+    expect(migrated.world.map).toEqual({ width: 48, height: 48 });
+    expect(canonicalV5Projection(migrated.world)).toEqual(v5);
+    expect(parseSave(serializeSave(migrated.world)).world).toEqual(migrated.world);
+  });
 
   for (const population of [20, 50, 100] as const) {
     it('96×96 sustained 240-hour economy/social/governance continuation for ' + population + ' NPC', () => {
