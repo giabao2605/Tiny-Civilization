@@ -96,7 +96,7 @@ test('V01-D: AFK idle deadline, activity, hidden tab, scene rotation and reduced
     width: Number(el.getAttribute('data-viewport-width')),
     height: Number(el.getAttribute('data-viewport-height')),
   }));
-  const fit = Math.min(3, Math.max(0.1, viewport.width / footprint, viewport.height / footprint));
+  const fit = Math.max(0.1, Math.min(3, viewport.width / footprint, viewport.height / footprint));
   await expect.poll(async () => Number(await status(page).getAttribute('data-zoom')), {
     timeout: 8_000,
   }).toBeGreaterThan(fit * 1.2);
