@@ -215,7 +215,7 @@ describe('N03-C deterministic routing integration and legacy compatibility', () 
     let before: WorldState = createWorld96(12345, 50);
     let checked = 0, improvement = 0;
     for (let t = 0; t < 48; t++) {
-      const after = advanceOneTick(before);
+      const after: WorldState = advanceOneTick(before);
       for (const actor of after.citizens) {
         const prior = before.citizens.find(c => c.id === actor.id);
         if (!prior || !prior.alive || !actor.alive ||
