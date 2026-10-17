@@ -1,0 +1,121 @@
+import { writeFile } from 'node:fs/promises';
+import { expect, test } from '@playwright/test';
+
+/** W02-F paired baseline/candidate headless data; do not extrapolate to Windows hardware. */
+test('W02-F: 96x96 actual Phaser scene population / speed / viewport measurements', async ({ page }, info) => {
+  test.setTimeout(540_000);
+  const failures: string[] = [];
+  page.on('pageerror', error => failures.push(error.message));
+  const navigationStartedMs = Date.now();
+  await page.goto('/?observerPerf=1');
+  const host = page.getByTestId('game-container');
+  await expect(host.locator('canvas')).toBeVisible();
+  await expect(host).toHaveAttribute('data-map-width', '96');
+  const firstCanvasReadyMs = Date.now() - navigationStartedMs;
+  const session = await page.context().newCDPSession(page);
+  await session.send('Performance.enable');
+  const matrix: Array<Record<string, unknown>> = [];
+  for (const population of [20, 50, 100] as const) {
+    for (const speed of [1, 5, 20] as const) {
+      await page.getByTestId('population-input').selectOption(String(population));
+      page.once('dialog', dialog => { void dialog.accept(); });
+      await page.getByRole('button', { name: 'Tạo lại', exact: true }).click();
+      await expect(host).toHaveAttribute('data-npc-count', String(population));
+      await page.getByRole('button', { name: speed + '×', exact: true }).click();
+      for (const [width, height] of [[1366, 768], [1920, 1080], [2560, 1080], [900, 650]] as const) {
+        await page.setViewportSize({ width, height });
+        await page.getByTestId('camera-fit').click();
+        const tickBefore = await page.getByTestId('world-tick').innerText();
+        const value = await page.evaluate(async () => {
+          const samples: number[] = [];
+          let previous = performance.now();
+          const start = previous;
+          await new Promise<void>(resolve => {
+            function frame(now: number) {
+              samples.push(now - previous);
+              previous = now;
+              if (now - start >= 450 || samples.length >= 60) resolve();
+              else requestAnimationFrame(frame);
+            }
+            requestAnimationFrame(frame);
+          });
+          samples.sort((a, b) => a - b);
+          const sum = samples.reduce((a, b) => a + b, 0);
+          const pct = (n: number) => samples[Math.max(0, Math.ceil(samples.length * n) - 1)] ?? null;
+          const element = document.querySelector('[data-testid="game-container"]') as
+            (HTMLElement & { __tcObserverMetrics?: () => { gameObjects: number; textureCount: number; rendererType: number } }) | null;
+          return { sampleCount: samples.length, fps: sum ? +(1000 * samples.length / sum).toFixed(2) : null,
+            frameP50Ms: pct(0.5), frameP95Ms: pct(0.95), canvasCount: element?.querySelectorAll('canvas').length ?? 0,
+            gameObjects: element?.__tcObserverMetrics?.().gameObjects ?? null,
+            textureCount: element?.__tcObserverMetrics?.().textureCount ?? null };
+        });
+        const raw = await session.send('Performance.getMetrics');
+        const jsHeapBytes = raw.metrics.find(metric => metric.name === 'JSHeapUsedSize')?.value ?? null;
+        matrix.push({ seed: 12345, population, speed, viewport: width + 'x' + height,
+          camera: 'fit', tickBefore, tickAfter: await page.getByTestId('world-tick').innerText(),
+          jsHeapBytes, ...value });
+        expect(value.canvasCount).toBe(1);
+        expect(value.sampleCount).toBeGreaterThan(1);
+      }
+    }
+  }
+  expect(matrix).toHaveLength(36);
+  expect(failures).toEqual([]);
+  const report = { environment: 'headless Chromium, github ubuntu-latest or local runner',
+    measurement: 'rAF interval, 450ms per case, approximate only; no GPU hardware certification',
+    firstCanvasReadyMs, // Includes network/script/bootstrap, not pure GPU draw time.
+    matrix };
+  await writeFile(info.outputPath('w02-f-viewport-matrix.json'), JSON.stringify(report, null, 2));
+  console.log('W02-F-BROWSER-METRICS', JSON.stringify(report));
+});
+
+test('W02-F: longer 100 NPC / 20x actual Phaser 1920x1080 observation', async ({ page }, info) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  const browserErrors: string[] = [];
+  page.on('pageerror', error => browserErrors.push(error.message));
+  await page.goto('/?observerPerf=1');
+  const host = page.getByTestId('game-container');
+  await expect(host.locator('canvas')).toBeVisible();
+  await page.getByTestId('population-input').selectOption('100');
+  page.once('dialog', dialog => { void dialog.accept(); });
+  await page.getByRole('button', { name: 'Tạo lại', exact: true }).click();
+  await expect(host).toHaveAttribute('data-npc-count', '100');
+  await page.getByRole('button', { name: '20×', exact: true }).click();
+  await page.getByTestId('camera-fit').click();
+  const beforeTick = await page.getByTestId('world-tick').innerText();
+  const metrics = await page.evaluate(async () => {
+    const frames: number[] = [];
+    let previous = performance.now();
+    const begin = previous;
+    await new Promise<void>(resolve => {
+      function frame(now: number) {
+        frames.push(now - previous);
+        previous = now;
+        if (now - begin > 4000 || frames.length >= 250) resolve();
+        else requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    });
+    const elapsedMs = frames.reduce((a, b) => a + b, 0);
+    frames.sort((a, b) => a - b);
+    const percentile = (part: number) => frames[Math.max(0, Math.ceil(part * frames.length) - 1)] ?? null;
+    const element = document.querySelector('[data-testid="game-container"]') as
+      (HTMLElement & { __tcObserverMetrics?: () => {
+        gameObjects: number; textureCount: number
+      } }) | null;
+    return { sampleCount: frames.length, elapsedMs, fps: +(1000 * frames.length / elapsedMs).toFixed(2),
+      frameP50Ms: percentile(0.5), frameP95Ms: percentile(0.95),
+      objects: element?.__tcObserverMetrics?.().gameObjects ?? null,
+      textures: element?.__tcObserverMetrics?.().textureCount ?? null };
+  });
+  expect(metrics.sampleCount).toBeGreaterThan(3);
+  const afterTick = await page.getByTestId('world-tick').innerText();
+  expect(afterTick).not.toBe(beforeTick);
+  expect(browserErrors).toEqual([]);
+  const payload = { environment: 'Linux CI headless Chromium, not Windows PC',
+    seed: 12345, population: 100, speed: 20, viewport: '1920x1080', camera: 'fit',
+    beforeTick, afterTick, ...metrics };
+  console.log('W02-F-EXTENDED', JSON.stringify(payload));
+  await writeFile(info.outputPath('w02-f-extended-100-20x.json'), JSON.stringify(payload, null, 2));
+});

@@ -523,12 +523,46 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
         path.fillStyle(0xd9c6a0, 0.7).fillRect(x + 5, y + 5, 2, 2);
       }
     }
-    // The existing economic tile remains the NPC destination, not the entrance.
+
+    // Static, noninteractive district detail. Only real grass cells are painted;
+    // no decorative tile becomes a road or economic site.
+    const reserved = new Set<number>([
+      ...this.world.sites.map(s => s.tile.y * 96 + s.tile.x),
+      ...this.world.resourceNodes.map(n => n.tile.y * 96 + n.tile.x),
+      ...roads.map(r => r.tile.y * 96 + r.tile.x),
+      ...entrances.map(e => e.tile.y * 96 + e.tile.x),
+      ...pois.map(p => p.tile.y * 96 + p.tile.x),
+    ]);
+    for (let y = 0; y < 96; y++) for (let x = 0; x < 96; x++) {
+      const index = y * 96 + x;
+      if (this.world.tiles[index] !== 'grass' || reserved.has(index)) continue;
+      const h = visualHash(this.world.seed, x, y, 91);
+      const px = x * TILE_PIXELS, py = y * TILE_PIXELS;
+      if (x >= 10 && x <= 40 && y >= 14 && y <= 76 && h % 19 === 0) {
+        path.fillStyle(0x967f5f, 0.65).fillRect(px + 4, py + 8, 4, 2);
+        path.fillStyle(h & 1 ? 0xe1bd73 : 0xcf8e89, 0.95).fillRect(px + 5, py + 5, 2, 2);
+      } else if (x >= 41 && x <= 70 && y >= 31 && y <= 62 && h % 17 === 0) {
+        path.fillStyle(0x8e9574, 0.55).fillRect(px + 2, py + 8, 3, 2);
+        path.fillStyle(0xe1c58a, 0.85).fillRect(px + 8, py + 4, 2, 2);
+      } else if (x >= 71 && h % 13 === 0) {
+        path.fillStyle(0x426d52, 0.8).fillRect(px + 4, py + 5, 1, 5);
+        path.fillStyle(0x9ba96a, 0.9).fillRect(px + 7, py + 4, 1, 4);
+      }
+    }
+    // Metadata roads and decoration never animate. Rasterize them once rather
+    // than asking WebGL to tessellate hundreds of tiny Graphics shapes/frame.
+    const overlayKey = 'tc-w02f-road-overlay';
+    if (this.textures.exists(overlayKey)) this.textures.remove(overlayKey);
+    path.generateTexture(overlayKey, this.worldWidth, this.worldHeight);
+    path.destroy();
+    this.textures.get(overlayKey).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    this.add.image(0, 0, overlayKey).setOrigin(0, 0).setDepth(1);
+    // Batch static ground-level entrance marks; NPC sprites remain above them.
+    const entranceMarks = this.add.graphics().setDepth(80);
     for (const entrance of entrances) {
       const { x, y } = entrance.tile;
-      const marker = this.add.graphics().setDepth(90 + (y + 1) * TILE_PIXELS);
-      marker.fillStyle(0x3e2f28, 0.92).fillRoundedRect(x * TILE_PIXELS + 3, y * TILE_PIXELS + 3, 6, 6, 1);
-      marker.fillStyle(0xf9d18a, 1).fillRect(x * TILE_PIXELS + 5, y * TILE_PIXELS + 5, 2, 2);
+      entranceMarks.fillStyle(0x3e2f28, 0.92).fillRoundedRect(x * TILE_PIXELS + 3, y * TILE_PIXELS + 3, 6, 6, 1);
+      entranceMarks.fillStyle(0xf9d18a, 1).fillRect(x * TILE_PIXELS + 5, y * TILE_PIXELS + 5, 2, 2);
     }
     for (const poi of pois) {
       imageArt(this, POI_ART[poi.kind], xPixel(poi.tile.x),
@@ -625,7 +659,19 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     const show = this.cameras.main.zoom >= 2.4;
     if (this.labelsShown === show) return;
     this.labelsShown = show;
-    for (const label of this.citizenLabels.values()) label.setVisible(show);
+    // Text textures are expensive: create them only when inspecting close-up.
+    for (const [id, sprite] of this.sprites) {
+      let label = this.citizenLabels.get(id);
+      if (show && !label) {
+        label = this.add.text(0, -12, String(id - 26), {
+          fontFamily: 'monospace', fontSize: '6px', color: '#fff6db',
+          backgroundColor: '#152b23aa',
+        }).setOrigin(0.5, 1);
+        sprite.add(label);
+        this.citizenLabels.set(id, label);
+      }
+      label?.setVisible(show);
+    }
   }
 
   private paintCitizen(citizen: Citizen): Phaser.GameObjects.Container {
@@ -637,9 +683,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     body.fillStyle(0xf2ca9e).fillRect(-3, -7, 6, 5);
     body.fillStyle(citizen.appearance % 2 ? 0x403329 : 0x6c4d2f).fillRect(-3, -8, 6, 2);
     body.fillStyle(0x1b2922).fillRect(-2, -5, 1, 1).fillRect(1, -5, 1, 1);
-    const label = this.add.text(0, -12, String(citizen.id - 26), { fontFamily: 'monospace', fontSize: '6px', color: '#fff6db', backgroundColor: '#152b23aa' }).setOrigin(0.5, 1);
-    this.citizenLabels.set(citizen.id, label);
-    const sprite = this.add.container(xPixel(citizen.tile.x), yPixel(citizen.tile.y), [body, label]).setDepth(this.citizenDepth(xPixel(citizen.tile.x), yPixel(citizen.tile.y)));
+    const sprite = this.add.container(xPixel(citizen.tile.x), yPixel(citizen.tile.y), [body]).setDepth(this.citizenDepth(xPixel(citizen.tile.x), yPixel(citizen.tile.y)));
     sprite.setData('citizenId', citizen.id);
     return sprite;
   }
