@@ -157,7 +157,7 @@ function simulate(size: 48 | 96, count: 20 | 50 | 100, seed: number,
       if (citizen.activity === 'atWork' || citizen.activity === 'building') workHours += 1;
       if (citizen.activity.startsWith('travel')) travelHours += 1;
       if (citizen.route.length) lengths.push(citizen.route.length);
-      goalChanges += +(old.get(citizen.id)?.goal !== undefined && old.get(citizen.id)?.goal !== citizen.goal);
+      if (old.has(citizen.id) && old.get(citizen.id)!.goal !== citizen.goal) goalChanges += 1;
       for (const tile of citizen.lastMove.slice(1)) {
         travelTiles += 1;
         totalCost += travelCost(tile);
