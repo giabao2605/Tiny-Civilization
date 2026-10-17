@@ -1,3 +1,13 @@
+## Observer Plan 02 — W02-F Density, Performance & Final QA (2026-10-17)
+
+- **Entry gate:** W02-E PR #20 merged into main `eb0a4d50`; *actual post-merge* CI [#38995262805](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38995262805) and Pages [#38995262917](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38995262917) both successful (checks include production smoke).
+- **Branch/PR:** `feat/w02-f-map-density-performance` / [#21](https://github.com/giabao2605/Tiny-Civilization/pull/21), DRAFT. No self-merge.
+- **Baseline:** 96×96 main seed12345, Chromium headless at 100 NPC/20×/1920×1080/Fit: 5.63 FPS mean, frame p95 300 ms, 512 GameObjects, 123 textures, one heap snapshot 60.5 MB, from **post-merge** CI. Not a Windows benchmark, never claim 60 FPS.
+- **W02-F scope:** static grass detailing across three districts without sites/roads/POI changes; batch 32 entrance markers, lazy NPC Text labels, optimize BFS numeric neighbors preserving original N/E/S/W order and legacy route outputs. No schema/gameplay RNG/clock/Plan 03+ changes.
+- **Proof:** new Node 48-tick + path diagnostics, frozen old-vs-new BFS parity, 36 headless Chromium 20/50/100 × 1×/5×/20× × 4 viewports, real Phaser screenshots; all legacy save/E2E tests retained. First baseline run [#38997723836](https://github.com/giabao2605/Tiny-Civilization/actions/runs/38997723836) is from production code **unchanged** with measurement tests only.
+- **Status:** W02-F candidate CI and post-optimization benchmark **PENDING**, so **NOT VERIFIED**. Windows local 60–120 minute soak, real GPU/FPS and manual PC playtest **NOT RUN / PARTIAL**. Plan 02 final physical-PC gate remains PARTIAL, do not start N03-A until owner accepts the documented risks and W02-F correctness is verified and merged.
+- **Docs:** [implementation](observer-upgrade-2026/W02_F_IMPLEMENTATION.md), [performance](observer-upgrade-2026/W02_F_PERFORMANCE.md), [visual QA](observer-upgrade-2026/W02_F_VISUAL_QA.md), [handoff](observer-upgrade-2026/W02_F_HANDOFF.md).
+
 ## Observer Plan 02 — W02-D road hierarchy, entrances and POIs (2026-10-16)
 
 - **Branch / PR:** feat/w02-d-road-entrances-pois / [#19](https://github.com/giabao2605/Tiny-Civilization/pull/19), draft, do not self-merge. Base main W02-C merge 5c6a9d4e.
