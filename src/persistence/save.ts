@@ -195,6 +195,17 @@ export function validateWorld(value: unknown): asserts value is WorldState {
     position(o.destination, p + '.destination');
     positions(o.route, p + '.route', tileCount);
     positions(o.lastMove, p + '.lastMove', tileCount);
+    if (isV6) {
+      // Each route step must be cardinal-adjacent; reject forged teleport paths.
+      const step = (a: { x: number; y: number }, b: { x: number; y: number }) =>
+        Math.abs(a.x - b.x) + Math.abs(a.y - b.y) <= 1;
+      const route = o.route as Array<{ x: number; y: number }>;
+      const lastMove = o.lastMove as Array<{ x: number; y: number }>;
+      if (route.some((point, n) => !step(n ? route[n - 1]! : o.tile as { x: number; y: number }, point)))
+        fail(p + '.route', 'đường đi không liền kề');
+      if (lastMove.some((point, n) => n > 0 && !step(lastMove[n - 1]!, point)))
+        fail(p + '.lastMove', 'đường đã đi không liền kề');
+    }
     const home = nullableId(o.homeId, p + '.homeId');
     const household = nullableId(o.householdId, p + '.householdId');
     const partner = nullableId(o.partnerId, p + '.partnerId');
