@@ -2,6 +2,7 @@ import type { TilePosition } from './grid';
 import { BALANCE, clampNeed } from './balance';
 import { buyFromMarket, sellToMarket, startConstruction, buildOneHour, assignBuilder } from './economy';
 import { findPath } from './pathfinding';
+import { chooseLeisurePoi, continuingLeisure, poiAt } from './leisure';
 import { defaultRoutingStrategy, resolvePath, type RoutingStrategy } from './routing';
 import { nextRandom } from './prng';
 import { advanceSocial, cleanupDeath, type ScarcityWitness } from './social';
@@ -24,15 +25,21 @@ function actionFor(goal: Goal, traveling: boolean): Activity {
   if (goal === 'sell') return traveling ? 'travelToMarket' : 'trading';
   if (goal === 'build') return traveling ? 'travelToBuild' : 'building';
   if (goal === 'commons') return traveling ? 'travelToCommons' : 'socialIdle';
+  if (goal === 'leisure') return traveling ? 'travelToLeisure' : 'leisureIdle';
   return traveling ? 'travelHome' : 'rest';
 }
-function goalReason(goal: Goal, traveling: boolean, citizen: Citizen): string {
+function goalReason(goal: Goal, traveling: boolean, citizen: Citizen, world: WorldState): string {
   if (goal === 'food') return traveling ? 'Đói, đến chợ để mua food bằng tiền thật.' : 'Tìm hoặc ăn food đang sở hữu.';
   if (goal === 'sell') return traveling ? 'Mang sản phẩm do mình sở hữu đến chợ.' : 'Bán hàng để kiếm thu nhập, nếu chợ còn quỹ/chỗ.';
   if (goal === 'build') return traveling ? 'Di chuyển đến công trình đã cấp gỗ.' : 'Xây nhà theo giờ và nhận lương từ ngân quỹ hữu hạn.';
   if (goal === 'work') return traveling ? 'Đi đến nguồn tài nguyên có thể khai thác.' :
     citizen.job === 'farmer' ? 'Thu hoạch ruộng thật, rồi tự mang hàng đi bán.' : 'Khai thác rừng thật, rồi tự mang gỗ đi bán.';
   if (goal === 'commons') return traveling ? 'Đi đến quảng trường.' : 'Giao lưu sau giờ làm.';
+  if (goal === 'leisure') {
+    const label = poiAt(world, citizen.destination)?.label ?? 'điểm sinh hoạt';
+    return traveling ? 'Sau giờ làm, ghé ' + label + ' để thư giãn; về trước 21:00, ưu tiên nhu cầu cấp thiết.' :
+      'Đang nghỉ tại ' + label + '; kết thúc trước 21:00 hoặc khi phải ăn/nghỉ/làm việc.';
+  }
   if (citizen.health <= BALANCE.criticalHealthThreshold) return traveling ? 'Sức khỏe nguy hiểm, về nhà điều dưỡng.' : 'Nghỉ để phục hồi sức khỏe.';
   return traveling ? 'Trở về nơi nghỉ ngơi.' : 'Ngủ hoặc hồi phục năng lượng.';
 }
@@ -214,6 +221,17 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
         hour >= 6 && hour < 20) requested = 'build';
     else requested = citizen.job === 'builder' && scheduledGoal(hour) === 'work' ? 'commons' : scheduledGoal(hour);
 
+    // Leisure is subordinate to every emergency and economic obligation above.
+    // Historic 48x48 worlds cannot select or continue new routines.
+    // The ordinary home schedule begins at 20:00. An already-started visit may
+    // finish this last hour, unless an actual rest/food/guardian duty supersedes it.
+    const continueWindow = requested === 'commons' ||
+      (hour === 20 && requested === 'home' && citizen.needMode === null &&
+        !guardiansWithHungryDependents.has(citizen.id));
+    const leisurePoi = continueWindow && continuingLeisure(citizen, tick, hour)
+      ? poiAt(world, citizen.destination)
+      : requested === 'commons' ? chooseLeisurePoi(world, citizen, tick, hour) : null;
+    if (leisurePoi) requested = 'leisure';
     if (citizen.blockedGoal !== requested) citizen.blockedGoal = null;
     let desired = citizen.blockedGoal === requested && tick < citizen.retryAfterTick ? 'home' as Goal : requested;
     const commons = world.sites.find((s) => s.kind === 'commons')!.tile;
@@ -221,6 +239,7 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
       ? (citizen.inventory.food > 0 ? citizen.tile : marketTile(world))
       : desired === 'sell' ? marketTile(world)
       : desired === 'commons' ? commons
+      : desired === 'leisure' && leisurePoi ? leisurePoi.tile
       : desired === 'build' && construction ? construction.tile
       : desired === 'home' ? localHome(world, citizen)
       : getSite(world, citizen.workId).tile;
@@ -271,9 +290,9 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
         citizen.workHours = 0;
         citizen.workNodeId = desired === 'work' ? node?.id ?? null : null;
         citizen.activity = actionFor(desired, path.length > 0);
-        citizen.reason = goalReason(desired, path.length > 0, citizen);
+        citizen.reason = goalReason(desired, path.length > 0, citizen, world);
         decision(citizen.activity, citizen.reason);
-        if (path.length && (tick % 12 === 0 || desired === 'build')) announce('departure', citizen, citizen.name + ': ' + citizen.reason);
+        if (path.length && (tick % 12 === 0 || desired === 'build' || desired === 'leisure')) announce('departure', citizen, citizen.name + ': ' + citizen.reason);
       }
     }
     if (citizen.route.some((point) => !walkable(world, point))) {
@@ -300,7 +319,7 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
     const nextActivity = actionFor(citizen.goal, !arrived);
     if (citizen.activity !== nextActivity) {
       citizen.activity = nextActivity;
-      citizen.reason = goalReason(citizen.goal, !arrived, citizen);
+      citizen.reason = goalReason(citizen.goal, !arrived, citizen, world);
       decision(nextActivity, citizen.reason);
       if (arrived && citizen.goal === 'commons') announce('gather', citizen, citizen.name + ' đã đến quảng trường.');
       if (arrived && citizen.goal === 'work') announce('work', citizen, citizen.name + ' bắt đầu ca làm.');
@@ -413,6 +432,10 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
       citizen.energy = clampNeed(citizen.energy +
         (hour >= 20 || hour < 6 ? BALANCE.energySleepRecovery : BALANCE.energyDayRestRecovery));
     } else if (arrived && citizen.goal === 'commons') citizen.energy = clampNeed(citizen.energy + BALANCE.energySocialRecovery);
+    else if (arrived && citizen.goal === 'leisure') {
+      citizen.actionDuration = 1;
+      citizen.energy = clampNeed(citizen.energy + BALANCE.energySocialRecovery);
+    }
     else citizen.energy = clampNeed(citizen.energy - BALANCE.energyIdlePerHour);
 
     if (citizen.hunger <= BALANCE.criticalHunger) citizen.starvationHours += 1;

@@ -13,6 +13,8 @@ const ACTIVITY: Record<Activity, string> = {
   atWork: 'Đang làm việc (theo lịch)',
   travelToCommons: 'Đến quảng trường',
   socialIdle: 'Giao lưu ở quảng trường',
+  travelToLeisure: 'Đang ghé điểm sinh hoạt',
+  leisureIdle: 'Đang nghỉ tại điểm sinh hoạt',
   travelHome: 'Trở về nhà',
   travelToFood: 'Đi lấy thức ăn',
   eating: 'Đang ăn',
@@ -75,7 +77,7 @@ export function App() {
   const coordinator = useMemo(() => {
     const fixture = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('fixture') : null;
     return createLivingCoordinator(12345, 20, fixture === 'governance-food-shortage' ||
-      fixture === 'governance-empty-reserve' ? fixture : undefined);
+      fixture === 'governance-empty-reserve' || fixture === 'n03d-leisure-poi' ? fixture : undefined);
   }, []);
   const snapshot = useSyncExternalStore(coordinator.subscribe, coordinator.getUiSnapshot);
   const [canvasVersion, setCanvasVersion] = useState(0);
@@ -463,9 +465,9 @@ export function App() {
                       <dt>Túi đồ</dt><dd data-testid="citizen-inventory">Food {citizen.inventory.food} · Wood {citizen.inventory.wood}</dd>
                       <dt>Giao dịch gần đây</dt><dd>{market.trades.filter((trade) => trade.citizenId === citizen.id).slice(-1).map((t) => t.direction === 'buy' ? 'Mua ' + t.quantity + ' ' + t.good : 'Bán ' + t.quantity + ' ' + t.good).join('') || 'Chưa có'}</dd>
                       <dt>Nơi làm việc</dt><dd>{citizen.workNodeId !== null ? (() => { const node = world.resourceNodes.find((item) => item.id === citizen.workNodeId); return node ? (node.kind === 'field' ? 'Ruộng' : 'Rừng') + ' #' + node.id + ' (' + node.tile.x + ', ' + node.tile.y + ')' : 'Không có'; })() : getSite(world, citizen.workId).name}</dd>
-                      <dt>Mục tiêu</dt><dd>{citizen.goal === 'food' ? 'Mua / ăn food' : citizen.goal === 'sell' ? 'Bán sản phẩm' : citizen.goal === 'build' ? 'Xây dựng' : citizen.goal === 'home' ? 'Trở về nhà' : citizen.goal === 'work' ? 'Đi làm' : 'Gặp gỡ cộng đồng'}</dd>
+                      <dt>Mục tiêu</dt><dd>{citizen.goal === 'food' ? 'Mua / ăn food' : citizen.goal === 'sell' ? 'Bán sản phẩm' : citizen.goal === 'build' ? 'Xây dựng' : citizen.goal === 'home' ? 'Trở về nhà' : citizen.goal === 'work' ? 'Đi làm' : citizen.goal === 'leisure' ? 'Ghé điểm sinh hoạt' : 'Gặp gỡ cộng đồng'}</dd>
                       <dt>Thời gian hành động</dt><dd>{citizen.actionDuration ? citizen.actionDuration + ' giờ; tiến độ ' + citizen.workHours + ' giờ' : 'Không có'}</dd>
-                      <dt>Điểm đến</dt><dd>({citizen.destination.x}, {citizen.destination.y})</dd>
+                      <dt>Điểm đến</dt><dd>({citizen.destination.x}, {citizen.destination.y}){citizen.goal === 'leisure' && world.schemaVersion === 6 ? ' · ' + (world.layout?.pois.find(p => p.role === 'event' && p.tile.x === citizen.destination.x && p.tile.y === citizen.destination.y)?.label ?? 'POI') : ''}</dd>
                     </dl>
                     <div className="social-panel" data-testid="social-inspector">
                       <p className="recent-title">Quan hệ nổi bật</p>

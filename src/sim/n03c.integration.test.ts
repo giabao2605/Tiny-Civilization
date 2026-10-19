@@ -111,6 +111,7 @@ type Sample = {
   deaths: number; starving: number; averageHunger: number;
   marketCash: number; marketFood: number; marketWood: number;
   blockedEvents: number; goalChanges: number; rngState: number;
+  leisureStarts: number; leisureIdleHours: number;
 };
 function simulate(size: 48 | 96, count: 20 | 50 | 100, seed: number,
   strategy: RoutingStrategy): { world: WorldState; sample: Sample } {
@@ -135,7 +136,7 @@ function simulate(size: 48 | 96, count: 20 | 50 | 100, seed: number,
     return terrain === 'road' ? roadCosts.get(index) ?? 10 : terrain === 'forest' ? 25 : 20;
   };
   let travelTiles = 0, totalCost = 0, blockedEvents = 0, goalChanges = 0;
-  let workHours = 0, travelHours = 0;
+  let workHours = 0, travelHours = 0, leisureStarts = 0, leisureIdleHours = 0;
   const started = performance.now();
   for (let step = 0; step < 720; step++) {
     const before = world;
@@ -146,6 +147,8 @@ function simulate(size: 48 | 96, count: 20 | 50 | 100, seed: number,
     const old = new Map(before.citizens.map(c => [c.id, c]));
     for (const citizen of world.citizens) {
       if (citizen.activity === 'atWork' || citizen.activity === 'building') workHours += 1;
+      if (citizen.goal === 'leisure' && old.get(citizen.id)?.goal !== 'leisure') leisureStarts += 1;
+      if (citizen.activity === 'leisureIdle') leisureIdleHours += 1;
       if (citizen.activity.startsWith('travel')) travelHours += 1;
       if (citizen.route.length) lengths.push(citizen.route.length);
       if (old.has(citizen.id) && old.get(citizen.id)!.goal !== citizen.goal) goalChanges += 1;
@@ -177,7 +180,7 @@ function simulate(size: 48 | 96, count: 20 | 50 | 100, seed: number,
     deaths: world.stats.deaths, starving: alive.filter(c => c.hunger <= BALANCE.criticalHunger).length,
     averageHunger: fixed(alive.reduce((n, c) => n + c.hunger, 0) / Math.max(1, alive.length)),
     marketCash: world.market.cash, marketFood: world.inventory.food, marketWood: world.inventory.wood,
-    blockedEvents, goalChanges, rngState: world.rngState,
+    blockedEvents, goalChanges, rngState: world.rngState, leisureStarts, leisureIdleHours,
   };
   console.log('N03C_SIM_BENCH', JSON.stringify({
     ...sample, node: process.version, platform: process.platform, cpu: cpus()[0]?.model ?? 'unknown',
