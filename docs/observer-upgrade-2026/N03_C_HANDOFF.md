@@ -15,3 +15,6 @@ N03-B PR #24 merged as `main@a95dc075`, post-merge [CI #39018629697](https://git
 
 ## N03-D scope, when accepted
 Readable leisure/social routines and purposeful visits using existing POIs; retain emergency needs, work/economy priority and actual social-interaction triggers. Add seed-stable route/replay QA for new routines; do not extend N03-C routing into weather, shelter or path-recovery feature scope.
+
+## Critical corrective gate, 2026-10-19
+The initially green PR #25 full CI did **not** establish gameplay readiness. Pure terrain-optimal A* increased deaths and reduced trade/food production in a 720-hour real simulation. N03-C now uses shortest **simulated travel time** (minimum number of steps at unchanged 4 tiles/hour), breaking shortest-path ties by terrain cost. Original N03-B `findWeightedPath` is unchanged at its public interface. The new QA asserts no worsening deaths, food production, or market trades across nine 96×96 paired 720-hour scenarios, plus independent lexicographic Dijkstra correctness. **Do not hand off to N03-D or merge** without green final HEAD CI and inspected paired benchmark logs.
