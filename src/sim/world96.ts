@@ -8,6 +8,7 @@ import { BALANCE } from './balance';
 import { isValidTileAt, tileIndexAt, type TilePosition, type WorldDimensions } from './grid';
 import { findPath, getPathfindingDiagnostics } from './pathfinding';
 import { drawInt, normalizeSeed } from './prng';
+import { createWeather } from './weather';
 import {
   buildWorld96Layout, validateWorld96Layout, ROAD_BACKUP_CASES, type World96Layout,
 } from './world96Layout';
@@ -173,7 +174,7 @@ export function createWorld96(seed: number, population: World96Population): Worl
 
   const layout = buildWorld96Layout(seed, tiles, sites, resourceNodes);
   const world: World96State = {
-    ...initial, schemaVersion: 6, map: WORLD96_DIMENSIONS, layout, rngState, nextEntityId,
+    ...initial, schemaVersion: 6, map: WORLD96_DIMENSIONS, layout, weather: createWeather(seed), rngState, nextEntityId,
     tiles, sites, resourceNodes, households, citizens,
   };
   validateWorld96(world);

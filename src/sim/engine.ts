@@ -5,6 +5,7 @@ import { findPath } from './pathfinding';
 import { chooseLeisurePoi, continuingLeisure, poiAt } from './leisure';
 import { defaultRoutingStrategy, resolvePath, type RoutingStrategy } from './routing';
 import { nextRandom } from './prng';
+import { advanceWeather } from './weather';
 import { advanceSocial, cleanupDeath, type ScarcityWitness } from './social';
 import { beginGovernanceTick, advanceGovernanceAfterCitizens, applyFoodAid, applyIllnessHealth,
   affectedIllness, harvestYield, harvestRegeneration, illnessPausesWork, type GovernanceCommand } from './governance';
@@ -123,6 +124,10 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
       policy: { ...previous.governance.policy, lastRecipients: previous.governance.policy.lastRecipients.slice() },
       shocks: previous.governance.shocks.map(shock => ({ ...shock, affectedIds: shock.affectedIds.slice() })) },
   };
+  // Historical v5 stays byte-for-byte frozen for golden replay; v6 owns weather.
+  // Clone before advancing to avoid mutating a previously published snapshot.
+  if (world.schemaVersion === 6 && previous.schemaVersion === 6)
+    world.weather = advanceWeather({ ...previous.weather }, tick);
   const announce = (type: EventType, citizen: Citizen | null, reason: string, extra: Partial<WorldEvent> = {}) => {
     const event: WorldEvent = { ...extra, id: world.nextEventId++, tick, type,
       citizenId: citizen?.id ?? null, reason };

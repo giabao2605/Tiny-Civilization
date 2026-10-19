@@ -1,3 +1,11 @@
+## Observer Plan 04 — E04-C Deterministic Weather State & Save Compatibility (2026-10-19)
+
+- **Preflight verified:** PR #30 E04-B merged to `main@6483ae97f2e409184548285c18ba077be3a9d9b1`; [post-merge Fast CI #39216281181](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39216281181) SUCCESS with matching `head_sha`.
+- **Branch:** `feat/e04-c-weather-state`. Authoritative clear/cloudy/rain/fog with independent seeded weather RNG, bounded 24–72 game-hour dwell and canonical tick transitions. E04-C ONLY: no graphics, NPC effects, clock or economic RNG changes.
+- **Save decision:** freeze legacy v5 48×48 bytes/replay; v6 48/96 runtime holds weather. New format 3 `sim-v6-weather` requires strictly validated weather; historical format 1 and format 2 are read and hydrated at the saved tick, without past-tick replay or lost commands. Canonical v5 projection strips weather for old golden SHA stability.
+- Unit, paired deterministic 48×48 continuation, 96×96 save-split/replay (20/50/100 NPC), malformed state/import and boundary tests added. Frozen fixtures unchanged; inherited Fast CI must be checked on **final PR SHA** before calling PASS. Local npm and optional E2E unavailable here, hardware performance/FPS **NOT MEASURED**.
+- [Weather ADR](observer-upgrade-2026/E04_C_WEATHER_ADR.md) · [Implementation](observer-upgrade-2026/E04_C_IMPLEMENTATION.md) · [Migration QA](observer-upgrade-2026/E04_C_MIGRATION_QA.md) · [Handoff to E04-D](observer-upgrade-2026/E04_C_HANDOFF.md). Do not merge without owner request.
+
 ## Observer Plan 04 — E04-B Day/Night Lighting & Windows/Street Lights (2026-10-19)
 
 - **Preflight PASS:** PR #29 E04-A merged to `main@90fe91292d4a20f6f747928f5ab81ec9422cccfb`; [post-merge Fast CI #39213160232](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39213160232) SUCCESS on that exact SHA.

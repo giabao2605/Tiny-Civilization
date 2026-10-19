@@ -2,6 +2,7 @@ import { GRID_HEIGHT, GRID_WIDTH, LEGACY_DIMENSIONS, tileIndexAt, type TilePosit
 import { drawInt, normalizeSeed } from './prng';
 import { BALANCE } from './balance';
 import type { World96Layout } from './world96Layout';
+import type { WeatherState } from './weather';
 
 export type Terrain = 'grass' | 'forest' | 'water' | 'road';
 export type SiteKind = 'home' | 'work' | 'commons' | 'market';
@@ -91,6 +92,8 @@ export type LegacyWorldState = {
 /** v5 stays an independent, frozen schema. Migrated v6 worlds remain 48×48. */
 export type WorldStateV6 = Omit<LegacyWorldState, 'schemaVersion'> & {
   schemaVersion: 6;
+  /** Authoritative weather; absent only in historical pre-E04-C save bytes. */
+  weather: WeatherState;
   map: WorldDimensions;
   /** Mandatory for 96×96, absent in migrated 48×48 worlds. */
   layout?: World96Layout;
