@@ -6,7 +6,7 @@ import { getPathfindingDiagnostics, resetPathfindingDiagnostics, findPath } from
 import {
   defaultRoutingStrategy, getRoutingDiagnostics, resetRoutingDiagnostics, type RoutingStrategy,
 } from './routing';
-import { getWeightedPathDiagnostics, resetWeightedPathDiagnostics, findWeightedPath,
+import { getWeightedPathDiagnostics, resetWeightedPathDiagnostics, findTimeFirstWeightedPath,
   traversalCostX10 } from './weightedPathfinding';
 import { dimensionsOf, createWorld, marketTile, totalCurrency, walkable, type WorldState } from './world';
 import { createWorld96 } from './world96';
@@ -201,7 +201,7 @@ describe('N03-C deterministic routing integration and legacy compatibility', () 
     expect(automatic).toEqual(advanceTicks(createWorld96(12345, 20), 24, 'weighted'));
   }, 120000);
 
-  it('actually follows the weighted optimum in a production NPC departure', () => {
+  it('uses weighted lowest-cost paths among time-safe shortest NPC departures', () => {
     let before: WorldState = createWorld96(12345, 50);
     let checked = 0, improvement = 0;
     for (let t = 0; t < 48; t++) {
@@ -211,11 +211,12 @@ describe('N03-C deterministic routing integration and legacy compatibility', () 
         if (!prior || !prior.alive || !actor.alive ||
           same(prior.destination, actor.destination) && prior.goal === actor.goal ||
           actor.route.length + actor.lastMove.length <= 1) continue;
-        const weighted = findWeightedPath(before, prior.tile, actor.destination);
+        const weighted = findTimeFirstWeightedPath(before, prior.tile, actor.destination);
         const bfs = findPath(before, prior.tile, actor.destination);
         if (!weighted || !bfs) continue;
         // The first four steps are already consumed by the authoritative tick.
         expect([...actor.lastMove.slice(1), ...actor.route]).toEqual(weighted);
+        expect(weighted.length).toBe(bfs.length);
         const weightedCost = weighted.reduce((n, p) => n + traversalCostX10(before, p)!, 0);
         const bfsCost = bfs.reduce((n, p) => n + traversalCostX10(before, p)!, 0);
         expect(weightedCost).toBeLessThanOrEqual(bfsCost);
@@ -266,8 +267,12 @@ describe('N03-C 30-game-day multiseed matrix with paired BFS comparison', () => 
         expect(candidate.sample.weightedCalls).toBeGreaterThan(0);
         expect(candidate.sample.routeRequests).toBeGreaterThan(0);
         expect(totalCurrency(candidate.world)).toBe(totalCurrency(baseline.world));
-        // Economic totals and deaths need NOT be identical when routes differ.
-        // Differences are logged for paired investigation, not silently retuned.
+        // Identical shortest-route duration should preserve the timing of
+        // economic/survival actions despite selecting different equal-length tiles.
+        expect(candidate.sample.deaths).toBeLessThanOrEqual(baseline.sample.deaths);
+        expect(candidate.sample.producedFood).toBeGreaterThanOrEqual(baseline.sample.producedFood);
+        expect(candidate.sample.trades).toBeGreaterThanOrEqual(baseline.sample.trades);
+        // Log any remaining divergence instead of hiding a starvation regression.
         console.log('N03C_PAIRED_IMPACT', JSON.stringify({
           size, count, seed,
           tickP95DeltaMs: fixed(candidate.sample.tickP95Ms - baseline.sample.tickP95Ms),
