@@ -5,7 +5,7 @@
 - Code: bounded reachable home/commons recovery; isolated honest waiting activity/retry; in-flight path validation; Inspector Vietnamese diagnostics; deterministic optional `ShelterRequest`.
 - New QA: `src/sim/n03e.recovery.test.ts`. Frozen N03-A fixtures, N03-C strict economic gates, N03-D POI scheduling and v5/v6 save rules must remain intact.
 - **CI policy is newly changed:** standard `Tiny Civilization CI / checks` runs no Chromium, only npm ci/audit/typecheck/lint/Vitest/build. Full E2E is a *different manual-only* workflow and Pages is a manual-only deploy. **N03-F MUST NOT put Chromium, production Playwright smoke or screenshots back into push/PR jobs.** See [workflow guide](CI_FAST_AND_MANUAL_E2E.md).
-- Fast CI actual run and manual Full E2E status: see [QA](N03_E_RECOVERY_QA.md) and PR #27; no claim of E2E verification without an actual run.
+- Source commit `80003379` Fast CI [#39196924014](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39196924014) **PASS**: 270/270 tests in 33 files, audit/typecheck/lint/build; job duration **2m54s**. N03-D final vs N03-E all 27 normal-world 720h metric records match in economy/gameplay and route counters; hosted Node tick p95 can be higher, see [performance](N03_E_PERFORMANCE.md). **Full manual E2E NOT RUN**, Windows QA NOT RUN. Documentation-only follow-up commits need final-HEAD CI. No claim of Chromium verification without actual run.
 
 ## Recommended N03-F execution
 1. Confirm N03-E final commit, PR and owner-approved merge; confirm Fast CI PASS and no survival/economy regression.

@@ -15,7 +15,8 @@
 Unmodified regression gates: `n03a.behavior.test.ts` + frozen goldens, `n03a.blocked.test.ts`, `n03c.integration.test.ts` 720h matrix for seed 101/107/12345 × population 20/50/100 × 48/96 world, `n03d.routines.test.ts`, economy/social/governance/save/invariants.
 
 ## QA status (updated 2026-10-19)
-- Fast CI PR #27: **PENDING** final-HEAD verification at documentation authoring; report actual run conclusion, count and duration separately.
+- **Source code commit `800033790e5f28f67b63a055b351dd71ccb428ac`: Fast CI [#39196924014](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39196924014) PASS**. npm ci, production audit (0 production vulnerabilities), TypeScript, lint, **33/33 Vitest files and 270/270 cases**, and Vite/TypeScript build all PASS. The hosted job started 03:56:11 UTC, completed 03:59:05 UTC: **2m54s job duration**; queued scheduling time excluded.
+- This record certifies source commit `80003379`. Any subsequent documentation-only commit must also receive its own final-HEAD Fast CI PASS; do not silently transfer run attribution.
 - Full E2E on final commit: **NOT RUN**. Manual GitHub Actions dispatch is required; `workflow_dispatch` may not be registered in Actions before the workflow reaches the default branch. This is a limitation, not a browser PASS.
 - Chromium visual blocked-Inspector, camera Follow, render/console and production smoke: **NOT VERIFIED** in N03-E (existing E2E retained, manual run required).
 - Physical Windows local-play smoke, frame-time/FPS, 60–120-minute soak: **NOT RUN**.
