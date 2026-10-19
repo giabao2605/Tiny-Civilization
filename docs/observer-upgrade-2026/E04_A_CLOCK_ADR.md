@@ -38,7 +38,7 @@ Counts for windows are ideal rates (not promised exact integer boundaries); actu
 
 ## Evidence and verification boundary
 
-Required automated matrix: 24-tick/day, six-mode state/digest equivalence, paused/hidden and no catch-up, switch transitions and actual contiguous traced moves, v6 save/replay, all frozen N03-A/N03-C/economy/survival/social/governance suites. Record final-head Fast CI outcome in E04-A handoff/PR.
+Required automated matrix: 24-tick/day, six-mode state/digest equivalence with the same ordered emergency-food policy command, paused/hidden and no catch-up, switch transitions and actual contiguous traced moves, v6 save/replay, all frozen N03-A/N03-C/economy/survival/social/governance suites. Pre-final implementation run [#39211980594](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39211980594) PASS on `519f29ee`: 36 test files / 290 tests, audit production 0, typecheck/lint/build. The subsequent documentation+command-test commit requires its **own exact-head Fast CI**; look at PR #29 for the final-head run.
 
 **Not yet demonstrated:** local-PC 30s and 5min real observation at every option; actual FPS/CPU/heap; animation smoothness when switching during a tween; screenshots; ambient diversity; physical input behavior. Chromium E2E is manual-only and not required. Do not mark visual/watchability PASS without human evidence.
 

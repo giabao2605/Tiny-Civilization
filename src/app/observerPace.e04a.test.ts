@@ -15,7 +15,14 @@ const modes: Mode[] = [
 
 function run24(mode: Mode): WorldState {
   let world: WorldState = createWorld(2605, 20);
-  const clock = createClock(() => { world = advanceOneTick(world); });
+  const clock = createClock(() => {
+    // Send the same real ordered world command on hour eight at every runtime pace.
+    const commands = world.tick === 7 && world.governance.leaderId !== null
+      ? [{ type: 'emergency-food' as const, leaderId: world.governance.leaderId,
+        issuedTick: world.tick + 1, requestId: 1 }]
+      : [];
+    world = advanceOneTick(world, commands);
+  });
   clock.setSpeed(mode.speed);
   if (mode.observer !== null) clock.setObserverPaceMinutes(mode.observer);
   let slices = 0;
@@ -37,8 +44,9 @@ describe('E04-A canonical clock / observer integration', () => {
     expect(world.stats.day).toBeGreaterThanOrEqual(1);
   });
 
-  it('same seed and 24 ticks give exactly the same full state at all six presentation paces', () => {
+  it('same seed, ordered policy command and 24 ticks give the same state at all six paces', () => {
     const baseline = run24(modes[0]!);
+    expect(baseline.governance.policy.successes + baseline.governance.policy.failures).toBeGreaterThan(0);
     for (const mode of modes.slice(1)) {
       const candidate = run24(mode);
       expect(stateDigest(candidate)).toBe(stateDigest(baseline));

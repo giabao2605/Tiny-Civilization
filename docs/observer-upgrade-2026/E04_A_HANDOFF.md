@@ -10,7 +10,7 @@ Branch: `feat/e04-a-clock-observer-pace`. Baseline `main` = `aa9de47cdd7cfab1e87
 
 ## Verification
 - Automated test coverage introduced for 24-tick day, seed+N tick digest equality across all six modes, runtime pause/hidden, transitions, true path adjacency, save/replay.
-- Final PR-head GitHub Fast CI: **PENDING**, must inspect the run `head_sha` before changing to PASS.
+- Pre-final code-head [Fast CI #39211980594](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39211980594) **PASS** at `519f29ee`: 36 test files / 290 tests, 0 production audit vulnerabilities, typecheck/lint/build PASS. **This is not a PASS of the subsequent documentation+ordered-command-test commit; verify final exact-HEAD run in PR #29.**
 - Local `npm ci`, audit, typecheck, lint, Vitest, build: **NOT RUN** in isolated execution container (GitHub/npm DNS unavailable).
 - Optional Chromium/Playwright and physical PC 30s/5min experiments: **NOT RUN**. Do not present computed values as measured observations.
 - Watchability status: **PARTIAL / not accepted**. A 450-ms render tween with 12.5/25/37.5-second gaps is likely too sparse; visual smoothness when switching mid-tween unverified. Observer mode remains opt-in, never default.
