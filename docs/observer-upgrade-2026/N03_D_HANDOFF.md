@@ -20,3 +20,7 @@
 ## N03-E boundary
 
 After the above gates and owner approval/merge, N03-E may focus on bounded blocked-path recovery and weather shelter **interface only**. Do not prematurely implement weather, Plan 04, replace save schema, remove guarded hourly routing checkpoints or turn decorative POIs into economic sites. The owner must separately request merging N03-D into `main`.
+
+## Regression-driven handoff note (2026-10-19)
+
+The attempted expansion into decorative scenic stops was fully rolled back, because it broke an N03-A 96×96 golden and increased 100-NPC seed12345 deaths (0→2), with food falling 2511→2464 over 720h. Final scope remains **only event-role POIs**. The accepted N03-C guard and historic fixtures must continue to PASS. Ordinary-world event-POI visits are sparse (0–3 visits/720h in intermediate event-only samples); address density and observability through separate evidence-led work, never by sacrificing food, travel safety or altering frozen fixtures. The next handoff is conditioned on green final-HEAD CI, real Chromium screenshot, and measured before/after performance; status stays **PARTIAL** until verified.

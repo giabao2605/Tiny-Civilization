@@ -26,3 +26,11 @@ The 720h suite runs its existing per-tick conservation, ownership, trade, no-wat
 ## Manual limitations and honest status
 
 GitHub Actions N03-C merge run [#39187351220](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39187351220) was still **in_progress** at initial audit, not previously certified PASS. Do not waive that prerequisite. Tests and visual outcomes are **NOT yet claimed PASS** from writing source alone. Physical Windows GPU/FPS, a 60–120 minute soak and manual playability on target PC remain **PARTIAL / NOT RUN**.
+
+## Corrective QA findings (actual hosted GitHub Actions, 2026-10-19)
+
+- N03-C main run [#39187351220](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39187351220) **PASS** and provides the accepted paired 720h baseline.
+- N03-D event-only candidate [#39188711226](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39188711226) passed **259/260 Vitest tests** including the frozen N03-A golden tests and 720-hour paired economy/survival invariants. Its one failed test found an early 20:00 home transition; fix committed at `f7355ff3`. On [#39189042120](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39189042120), typecheck, lint, unit/integration and build **PASS**; Playwright run was cancelled by a later revision, so not valid final E2E evidence.
+- An experimental expansion to decorative scenic POIs [#39189642231](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39189642231) **FAILED** the immutable `v6-96-p100-seed12345-t0` N03-A golden case (259/260 Vitest), and regressed production food/deaths at 100 NPC seed12345 over 720h. This branch revision was fully **reverted**. No golden fixtures were rewritten or thresholds relaxed.
+- The rejected scenic version increased deaths **0→2** and reduced food production **2511→2464** at 100 NPC, seed12345. The event-only candidate avoided that death regression and preserved the frozen golden in the previous successful sub-suite.
+- **Final rollback HEAD CI/Chromium: PENDING** until the run on the final commit completes. The simulation's normal-world event visits were only 0–3 per 720h in tested event-only samples: this is an important observer-frequency limitation, not proof of immersive normal play. Purposefully staged Playwright fixture must demonstrate observation.
