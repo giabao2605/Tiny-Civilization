@@ -21,7 +21,7 @@ export type LivingCommand =
   | { type: 'trigger-food-aid' };
 
 export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 20 | 50 | 100 = 20,
-  fixture?: 'governance-food-shortage' | 'governance-empty-reserve') {
+  fixture?: 'governance-food-shortage' | 'governance-empty-reserve' | 'n03d-leisure-poi') {
   let presetPopulation = initialPopulation;
   // Explicit development/test scenario, not a player command or an engine shortcut.
   const initialWorld: WorldState = fixture ? createWorld(initialSeed, initialPopulation) : createWorld96(initialSeed, initialPopulation);
@@ -30,6 +30,20 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
     for (const c of initialWorld.citizens.slice(0, 6)) {
       c.hunger = 5;
       c.inventory.food = 0;
+    }
+  }
+  if (fixture === 'n03d-leisure-poi' && initialWorld.schemaVersion === 6 && initialWorld.layout) {
+    // DEV-only browser fixture: real engine still decides all routines and interactions.
+    initialWorld.tick = 17;
+    const poi = initialWorld.layout.pois.find(p => p.role === 'event')!;
+    for (const c of initialWorld.citizens.filter(c => c.id % 2 === 0).slice(0, 2)) {
+      c.job = 'other';
+      c.tile = { ...poi.tile };
+      c.destination = { ...poi.tile };
+      c.route = [];
+      c.lastMove = [{ ...poi.tile }];
+      c.hunger = 96; c.energy = 96; c.health = 96;
+      c.needMode = null;
     }
   }
   let snapshot: LivingSnapshot = { world: initialWorld, selectedCitizenId: null, speed: 1,

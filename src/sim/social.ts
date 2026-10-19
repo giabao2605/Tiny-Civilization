@@ -1,4 +1,5 @@
 import { BALANCE, clampNeed } from './balance';
+import { poiAt } from './leisure';
 import { drawInt } from './prng';
 import { getSite, housing, type Citizen, type EventType, type Relationship, type WorldEvent, type WorldState } from './world';
 
@@ -54,10 +55,14 @@ export function applyInteraction(world: WorldState, actorId: number, targetId: n
   let cause: string;
   if (kind === 'chat') {
     const commons = world.sites.find((s) => s.kind === 'commons');
-    if (!commons || actor.tile.x !== commons.tile.x || actor.tile.y !== commons.tile.y ||
-      actor.goal !== 'commons' || target.goal !== 'commons') return false;
+    const atCommons = !!commons && actor.tile.x === commons.tile.x && actor.tile.y === commons.tile.y &&
+      actor.goal === 'commons' && target.goal === 'commons';
+    const eventPoi = actor.goal === 'leisure' && target.goal === 'leisure'
+      ? poiAt(world, actor.tile) : null;
+    if (!atCommons && !eventPoi) return false;
     change = BALANCE.socialPositiveChat;
-    cause = 'Trò chuyện trực tiếp tại quảng trường.';
+    cause = eventPoi ? 'Trò chuyện trực tiếp tại ' + eventPoi.label + '.' :
+      'Trò chuyện trực tiếp tại quảng trường.';
   } else if (kind === 'housing') {
     const commons = world.sites.find((s) => s.kind === 'commons');
     if (!commons || actor.homeId !== null || target.homeId !== null ||
@@ -256,7 +261,7 @@ export function advanceSocial(world: WorldState, emit: Emit, scarcity: ScarcityW
   const groups = new Map<string, Citizen[]>();
   for (const citizen of world.citizens) {
     if (!adult(citizen) || citizen.lastMove.length > 1 || used.has(citizen.id)) continue;
-    if (citizen.goal !== 'commons' && citizen.goal !== 'work' && citizen.homeId !== null) continue;
+    if (citizen.goal !== 'commons' && citizen.goal !== 'work' && citizen.goal !== 'leisure' && citizen.homeId !== null) continue;
     const key = citizen.tile.x + ':' + citizen.tile.y;
     const members = groups.get(key) ?? [];
     members.push(citizen); groups.set(key, members);
@@ -296,8 +301,9 @@ export function advanceSocial(world: WorldState, emit: Emit, scarcity: ScarcityW
       if (actor.homeId === null && other.homeId === null &&
         actor.tile.x === commons.tile.x && actor.tile.y === commons.tile.y &&
         housing(world).capacity < world.citizens.filter((c) => c.alive).length) kind = 'housing';
-      else if (actor.goal === 'commons' && other.goal === 'commons' &&
-        actor.tile.x === commons.tile.x && actor.tile.y === commons.tile.y) kind = 'chat';
+      else if ((actor.goal === 'commons' && other.goal === 'commons' &&
+        actor.tile.x === commons.tile.x && actor.tile.y === commons.tile.y) ||
+        (actor.goal === 'leisure' && other.goal === 'leisure' && poiAt(world, actor.tile))) kind = 'chat';
       else {
         const node = world.resourceNodes.find((n) => actor.workNodeId === n.id && other.workNodeId === n.id &&
           n.stock > 0 && n.tile.x === actor.tile.x && n.tile.y === actor.tile.y);

@@ -1,3 +1,10 @@
+## Observer Plan 03 — N03-D readable routines / POI (2026-10-19)
+
+- **Branch:** `feat/n03-d-readable-routines`, based on N03-C merge `f6e9a54b`. **PR/CI: PENDING; DO NOT MERGE** until branch final-head checks and post-merge N03-C gate are green.
+- 96×96 event-POI evening micro-visits only: real short routes, deterministic alternate-day cooldown, two-move reachability budget and 18:00–21:00 bounded visits; food/rest/trade/build stay higher priority. Historic 48×48 replay unaffected.
+- Existing social contact rules remain authoritative; leisure chat is possible only for two stationary, co-located adults at the same `role: event` POI, using existing affinity/cooldown/interaction budget. No decoration-only economic site or ghost conversation.
+- More details: [N03-D implementation](observer-upgrade-2026/N03_D_IMPLEMENTATION.md), [behavior QA](observer-upgrade-2026/N03_D_BEHAVIOR_QA.md), [performance](observer-upgrade-2026/N03_D_PERFORMANCE.md), [handoff](observer-upgrade-2026/N03_D_HANDOFF.md). Physical Windows FPS/soak remains **PARTIAL**.
+
 ## N03-C second regression correction: preserve NPC hourly positions (2026-10-19)
 
 - [CI #39184285575](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39184285575) **FAILED strict newly-added gameplay tests**: even minimum-length weighted A* altered intermediate positions under hunger/rest preemption (96×96/50/seed101 deaths BFS 6 vs weighted 15).

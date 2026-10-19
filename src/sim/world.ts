@@ -5,9 +5,10 @@ import type { World96Layout } from './world96Layout';
 
 export type Terrain = 'grass' | 'forest' | 'water' | 'road';
 export type SiteKind = 'home' | 'work' | 'commons' | 'market';
-export type Goal = 'home' | 'work' | 'commons' | 'food' | 'sell' | 'build';
+export type Goal = 'home' | 'work' | 'commons' | 'food' | 'sell' | 'build' | 'leisure';
 export type Activity = 'rest' | 'travelToWork' | 'atWork' | 'travelToCommons' | 'socialIdle'
   | 'travelHome' | 'travelToFood' | 'eating' | 'waitingForFood' | 'dead'
+  | 'travelToLeisure' | 'leisureIdle'
   | 'travelToMarket' | 'trading' | 'travelToBuild' | 'building';
 export type EventType = 'founded' | 'departure' | 'work' | 'gather' | 'home' | 'routeBlocked'
   | 'foodProduced' | 'woodProduced' | 'foodEaten' | 'shortage' | 'depleted' | 'recovery'
