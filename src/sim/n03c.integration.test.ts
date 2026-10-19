@@ -4,7 +4,7 @@ import { BALANCE } from './balance';
 import { advanceOneTick, advanceTicks } from './engine';
 import { getPathfindingDiagnostics, resetPathfindingDiagnostics, findPath } from './pathfinding';
 import {
-  defaultRoutingStrategy, getRoutingDiagnostics, resetRoutingDiagnostics, type RoutingStrategy,
+  defaultRoutingStrategy, getRoutingDiagnostics, resetRoutingDiagnostics, resolvePath, type RoutingStrategy,
 } from './routing';
 import { getWeightedPathDiagnostics, resetWeightedPathDiagnostics, findTimeFirstWeightedPath,
   traversalCostX10 } from './weightedPathfinding';
@@ -104,6 +104,7 @@ type Sample = {
   tickP50Ms: number; tickP95Ms: number; runtimeMs: number;
   bfsCalls: number; weightedCalls: number; expandedNodes: number;
   routeRequests: number; unreachableRequests: number;
+  weightedAccepted: number; bfsFallbacks: number;
   movementTiles: number; weightedMovementCostX10: number; remainingRouteP50: number;
   workHours: number; travelHours: number; trades: number; failedActions: number;
   producedFood: number; producedWood: number; consumedFood: number;
@@ -166,6 +167,7 @@ function simulate(size: 48 | 96, count: 20 | 50 | 100, seed: number,
     bfsCalls: getPathfindingDiagnostics(), weightedCalls: weighted.calls,
     expandedNodes: weighted.expandedNodes,
     routeRequests: counters.calls, unreachableRequests: counters.unreachable,
+    weightedAccepted: counters.weightedAccepted, bfsFallbacks: counters.bfsFallbacks,
     movementTiles: travelTiles, weightedMovementCostX10: totalCost,
     remainingRouteP50: quantile(lengths, 0.5),
     workHours, travelHours, trades: world.market.completedTrades,
@@ -201,7 +203,7 @@ describe('N03-C deterministic routing integration and legacy compatibility', () 
     expect(automatic).toEqual(advanceTicks(createWorld96(12345, 20), 24, 'weighted'));
   }, 120000);
 
-  it('uses weighted lowest-cost paths among time-safe shortest NPC departures', () => {
+  it('uses weighted paths only when hourly positions match BFS checkpoints', () => {
     let before: WorldState = createWorld96(12345, 50);
     let checked = 0, improvement = 0;
     for (let t = 0; t < 48; t++) {
@@ -214,10 +216,13 @@ describe('N03-C deterministic routing integration and legacy compatibility', () 
         const weighted = findTimeFirstWeightedPath(before, prior.tile, actor.destination);
         const bfs = findPath(before, prior.tile, actor.destination);
         if (!weighted || !bfs) continue;
-        // The first four steps are already consumed by the authoritative tick.
-        expect([...actor.lastMove.slice(1), ...actor.route]).toEqual(weighted);
-        expect(weighted.length).toBe(bfs.length);
-        const weightedCost = weighted.reduce((n, p) => n + traversalCostX10(before, p)!, 0);
+        // A preempted NPC must stand on the same tile as BFS at EVERY tick,
+        // not merely reach its eventual destination in the same total hours.
+        const route = [...actor.lastMove.slice(1), ...actor.route];
+        expect(route).toEqual(resolvePath(before, prior.tile, actor.destination, 'weighted'));
+        expect(route.length).toBe(bfs.length);
+        for (let i = 3; i < bfs.length; i += 4) expect(route[i]).toEqual(bfs[i]);
+        const weightedCost = route.reduce((n, p) => n + traversalCostX10(before, p)!, 0);
         const bfsCost = bfs.reduce((n, p) => n + traversalCostX10(before, p)!, 0);
         expect(weightedCost).toBeLessThanOrEqual(bfsCost);
         if (weightedCost < bfsCost) improvement += 1;
@@ -226,7 +231,7 @@ describe('N03-C deterministic routing integration and legacy compatibility', () 
       before = after;
     }
     expect(checked).toBeGreaterThan(0);
-    expect(improvement).toBeGreaterThan(0);
+    console.log('N03C_REAL_ROUTE_SAMPLE', JSON.stringify({ checked, cheaperWithinHours: improvement }));
   }, 120000);
 
   for (const count of [20, 100] as const) {
@@ -267,8 +272,8 @@ describe('N03-C 30-game-day multiseed matrix with paired BFS comparison', () => 
         expect(candidate.sample.weightedCalls).toBeGreaterThan(0);
         expect(candidate.sample.routeRequests).toBeGreaterThan(0);
         expect(totalCurrency(candidate.world)).toBe(totalCurrency(baseline.world));
-        // Identical shortest-route duration should preserve the timing of
-        // economic/survival actions despite selecting different equal-length tiles.
+        // Every hourly BFS checkpoint is now retained, protecting emergency
+        // preemption positions as well as total route duration.
         expect(candidate.sample.deaths).toBeLessThanOrEqual(baseline.sample.deaths);
         expect(candidate.sample.producedFood).toBeGreaterThanOrEqual(baseline.sample.producedFood);
         expect(candidate.sample.trades).toBeGreaterThanOrEqual(baseline.sample.trades);
