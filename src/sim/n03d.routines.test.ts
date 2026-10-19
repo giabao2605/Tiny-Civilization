@@ -5,7 +5,7 @@ import { BALANCE } from './balance';
 import { findPath } from './pathfinding';
 import { applyInteraction } from './social';
 import { parseSave, serializeSave } from '../persistence/save';
-import { createWorld } from './world';
+import { createWorld, type WorldStateV6 } from './world';
 import { createWorld96 } from './world96';
 
 function setup() {
@@ -123,7 +123,7 @@ describe('N03-D purposeful POI routines and causal observation', () => {
   });
 
   it('same seed/input reproduces all state, while v5 and migrated 48x48 remain unchanged', () => {
-    let a = createWorld96(107, 20), b = createWorld96(107, 20);
+    let a: WorldStateV6 = createWorld96(107, 20), b: WorldStateV6 = createWorld96(107, 20);
     for (let i = 0; i < 72; i++) { a = advanceOneTick(a); b = advanceOneTick(b); }
     expect(stateDigest(a)).toBe(stateDigest(b));
     expect(a.rngState).toBe(b.rngState);
