@@ -34,6 +34,22 @@ describe('V01-D camera-only director', () => {
     expect(idleReady(true, false, false, 9_000, 10_000, 45_000)).toBe(false);
     expect(AFK_SCENE_COOLDOWN_MS).toBeGreaterThan(4_000);
   });
+  it('prioritizes actual producers and traders over generic travel and excludes dead actors', () => {
+    const world = createWorld(107, 20);
+    const [working, trading, commuter, dead] = world.citizens;
+    working!.activity = 'atWork';
+    trading!.activity = 'trading';
+    commuter!.activity = 'travelToWork';
+    dead!.alive = false;
+    dead!.activity = 'dead';
+    const digest = stateDigest(world);
+    const interests = cameraInterests(world, null);
+    expect(interests[0]?.key).toBe('npc:' + working!.id);
+    expect(interests[1]?.key).toBe('npc:' + trading!.id);
+    expect(interests.every(item => item.key !== 'npc:' + dead!.id)).toBe(true);
+    expect(interests.some(item => item.key === 'npc:' + commuter!.id)).toBe(true);
+    expect(stateDigest(world)).toBe(digest);
+  });
   it('selects only actual interests deterministically and without modifying world digest', () => {
     const world = createWorld(12345, 100);
     const before = stateDigest(world);
