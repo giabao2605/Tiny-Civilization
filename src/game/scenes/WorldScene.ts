@@ -12,6 +12,7 @@ import { drawTerrain } from '../render/terrain';
 import { approachLighting, lightingAtTick, streetLightsForWorld, windowLightsForWorld,
   type LightingState } from '../render/lighting';
 import { buildingStyle, visualHash } from '../render/visualHash';
+import { WeatherLayer } from '../render/weatherLayer';
 import type { Poi96Kind } from '../../sim/world96Layout';
 
 const POI_ART: Record<Poi96Kind, 'well' | 'bench' | 'fence' | 'sign' | 'crops' | 'lantern' | 'barrel' | 'crate' | 'oak' | 'pine' | 'shrub' | 'woodpile'> = {
@@ -60,6 +61,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private wasPaused = false;
   private lightingCurrent = lightingAtTick(0);
   private lightingTarget = lightingAtTick(0);
+  private weatherLayer?: WeatherLayer;
   private ambientShade?: Phaser.GameObjects.Rectangle;
   private windowLightLayer?: Phaser.GameObjects.Image;
   private streetLightLayer?: Phaser.GameObjects.Image;
@@ -108,6 +110,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.highlighter.lineStyle(1.5, 0xffe7a3).strokeCircle(0, -2, 9);
     this.highlighter.fillStyle(0xffe7a3, 0.9).fillTriangle(-3, -15, 3, -15, 0, -11);
     this.paintLighting();
+    this.weatherLayer = new WeatherLayer(this, this.world);
     this.input.on(Phaser.Input.Events.POINTER_DOWN, this.onDown);
     this.input.on(Phaser.Input.Events.POINTER_MOVE, this.onMove);
     this.input.on(Phaser.Input.Events.POINTER_UP, this.onUp);
@@ -135,6 +138,8 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.labelsShown = null;
       this.movementTweens.clear();
       this.highlighter = undefined;
+      this.weatherLayer?.destroy();
+      this.weatherLayer = undefined;
       this.ambientShade?.destroy();
       this.windowLightLayer?.destroy();
       this.streetLightLayer?.destroy();
@@ -202,6 +207,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.lastActivityMs = performance.now();
     if (document.hidden) {
       this.setLightingInstant(this.lightingTarget);
+      this.weatherLayer?.snap();
       this.clearAfkTimer();
       if (this.cameraMode === 'afk') {
         this.cameraMode = 'manual';
@@ -373,6 +379,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     // seed/save restarts the scene and constructs the same target directly.
     this.lightingTarget = lightingAtTick(snapshot.world.tick);
     if (snapshot.paused || document.hidden) this.setLightingInstant(this.lightingTarget);
+    this.weatherLayer?.setWeather(snapshot.world, snapshot.paused || document.hidden);
     if (!this.sys.isActive() || !this.sprites.size) return;
     // Changing selection while following switches targets directly, without locking
     // the camera to a stale person or requiring another toolbar click.
@@ -475,6 +482,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     if (this.selectedId !== null) this.redrawHighlight();
     if (document.hidden) return;
     this.updateLighting(delta);
+    this.weatherLayer?.update(delta, this.cameras.main, this.wasPaused, this.isReducedMotion());
     const now = performance.now();
     if (now - this.lastMotionPollMs >= 250) {
       this.lastMotionPollMs = now;
@@ -538,6 +546,11 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     graphics.destroy();
     this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
     return this.add.image(0, 0, key).setOrigin(0, 0).setDepth(depth);
+  }
+
+  /** Local QA toggle: turning rain particles off preserves wet ground/weather grading. */
+  setWeatherParticlesEnabled(enabled: boolean): void {
+    this.weatherLayer?.setParticlesEnabled(enabled);
   }
 
   private paintLighting(): void {
