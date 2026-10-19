@@ -21,3 +21,10 @@
 - The real path cost example proves route choice, not a global promise that all paths are physically shorter. Weighted can use **more** tiles.
 - Final-HEAD Vitest/E2E and production smoke: **PENDING evidence**. Do not promote to PASS without successful CI.
 - Manual physical Windows PC, 60–120 minute soak, GPU/FPS measurement: **PARTIAL / NOT RUN**.
+
+## N03-C corrective gate (2026-10-19)
+- Independent small-grid lexicographic Dijkstra oracle added to `weightedPathfinding.test.ts` to verify smallest step count and cheapest terrain among shortest paths.
+- A contrived longer road detour demonstrates that original `findWeightedPath` remains globally terrain-optimal while production `findTimeFirstWeightedPath` refuses to lengthen an NPC's travel time.
+- Real production `lastMove + route` compares to **time-first** A* and is required to use exactly as many steps as BFS; weighted cost must be ≤ BFS on those shortest paths.
+- The 720-tick paired simulation now explicitly **fails** if weighted time-first increases deaths, decreases produced food, or decreases market trades versus BFS. Any failure needs a source-grounded fix, not a new golden baseline.
+- Frozen four N03-A BFS golden traces and v5 save fixtures remain unchanged.
