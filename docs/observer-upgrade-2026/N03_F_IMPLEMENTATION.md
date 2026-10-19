@@ -17,3 +17,8 @@ The new assertions are diagnostic or contract-based. **Never** loosen N03-A gold
 
 ## Execution environment limitation
 The isolated local runtime cannot resolve `github.com` to clone or `npm ci`; benchmark measurements in docs must come from GitHub Actions logs linked to the tested commit. Local Node/Windows frame-rate and long-soak are **NOT RUN**. GitHub connector offers repository writes and Actions result reads, but no manual workflow dispatch action; manual Full E2E cannot be certified unless a run is actually observed.
+
+## Verified N03-F source code gate
+[Fast CI #39199969967](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39199969967) on `b41ede71c0f9888b6d0dc0cf5d645a321c83b45b` **PASS**: npm ci, 0-production-vulnerability audit, typecheck, ESLint, **278/278 tests in 34 files** and production build. Three source/test fix iterations were needed: an initial inferred `World96State` TypeScript mismatch was corrected, then a global blocked-notice assertion was replaced with a stricter same-goal cooldown invariant because distinct scheduled goals can independently become blocked. Neither engine nor golden fixtures were modified.
+
+CI benchmark: 27×720h gameplay/route samples and 18×72h watchability samples recorded. N03-F exposes an opening 96×96 travel-heavy pattern and no natural event-POI idle in the three first-72h 100-NPC seeds. See [performance](N03_F_PERFORMANCE.md). This is **not a sign-off for overall watchability**. Manual Chromium and real Windows validation still NOT RUN.
