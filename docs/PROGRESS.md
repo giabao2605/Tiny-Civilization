@@ -1,3 +1,10 @@
+## N03-C second regression correction: preserve NPC hourly positions (2026-10-19)
+
+- [CI #39184285575](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39184285575) **FAILED strict newly-added gameplay tests**: even minimum-length weighted A* altered intermediate positions under hunger/rest preemption (96×96/50/seed101 deaths BFS 6 vs weighted 15).
+- **Updated** `routing.ts`: propose time-first A*, but only accept if every 4-tile hourly waypoint matches the BFS route; otherwise fallback BFS. Same hourly coordinates, same goal timing, unchanged survival/economy/game speed; cosmetic road preference within an hour where safe.
+- **New test:** `src/sim/routing.test.ts` covers acceptance of cheaper safe 4-step path, rejection of unsafe checkpoint divergence, unreachable/same tile/BFS. 720-hour matrix still fails if deaths, trades or food production worsen. N03-B original terrain-optimal path API and N03-A goldens untouched.
+- **Final corrected HEAD CI:** PENDING (must include typecheck, lint, Vitest 720-tick matrix, build, Chromium E2E and production smoke). Never mark N03-C done or merge while strict gameplay checks fail. Physical Windows GPU/FPS/soak remains PARTIAL.
+
 ## N03-C corrective QA gate (2026-10-19)
 
 - Initial full GitHub Actions [#39020811689](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39020811689) **PASS** typecheck/lint/Vitest/Chromium E2E/production smoke, but **failed gameplay acceptance** in measured 720-hour comparisons. Terrain-only optimum on 96×96 / 50 NPC / seed 101: BFS deaths 6, trades 702, food 1131; weighted deaths 20, trades 554, food 834. This regression must not be shipped just because CI was green.
