@@ -8,7 +8,7 @@ Status: IMPLEMENTED ON BRANCH; acceptance PENDING CI + LIVE QA.
 - The shelter request sits below food/trading/construction/urgent rest/active harvest. Participating residents reuse **home** goal, existing route/search, actual home ownership and recovery/backoff. The reason begins with `Trú mưa` and is shown in the inspector. There is no teleport, free food, construction material, new inventory or new state field.
 - Existing external ShelterRequest adapter remains supported.
 - Rain ends at the canonical weather transition; the normal goal scheduler becomes active again. Reason clears when no rain shelter remains. Deterministic selection per seed/NPC and weather state prevents reroute oscillation on every tick.
-- For backward compatibility with the frozen v5 gameplay projection, automatic shelter decisions are currently **restricted to authored 96×96 layouts**. Historical v5 and v6 migrated 48×48 games still have weather visuals/audio but unchanged NPC behavior. This is a documented gap versus Plan 04 full coverage, not a silent PASS.
+- Historical schema-v5 states remain byte-for-byte frozen, including their original tick replay and fixture. Both authored v6 96×96 worlds and migrated v6 48×48 worlds react to weather. Post-migration v6 48×48 trajectories may legitimately diverge from historical v5 outcomes. A targeted E04-C test now retains frozen v5 identity while requiring deterministic v6 save/replay, money conservation and valid weather transitions.
 - The same 1 tick/hour, clock modes, pausing, entity IDs, survival, ownership and save representation remain. No schema/format migration is introduced.
 
 ## Audio
