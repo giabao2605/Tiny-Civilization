@@ -9,8 +9,8 @@ Branch: `feat/e04-e-weather-reactions-audio` from E04-D merged main `d099c8650fd
 - Procedural outdoor/rain ambience in `src/game/audio/weatherAudio.ts`, with lazy unlock, ramps and dispose.
 - Automated pure/engine tests: `src/sim/weatherShelter.test.ts`, `src/game/audio/weatherAudio.test.ts`.
 
-## Key limitation
-Rain shelter applies only on authored v6 96×96 worlds while migrated 48×48 keeps its frozen gameplay behavior. This prevents accidental divergence from historical v5 golden tests but is **not complete 48×48 behavior parity**.
+## Compatibility
+Automatic shelter runs on both v6 48×48 migrated worlds and authored v6 96×96 worlds. Raw historical v5 replay and fixtures remain unchanged. Migrated v6 may have legitimately different later NPC/social/economic trajectories after rain events; the migration test verifies exact initial projection, deterministic future continuation and money conservation instead of pretending v5 and v6 rules remain equivalent forever.
 
 All simulation changes remain deterministic and tick-owned. Weather audio/visuals never mutate world snapshots, inventory, RNG or save format. Browser volume changes are preferences outside authoritative state.
 
