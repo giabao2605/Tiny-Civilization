@@ -19,6 +19,7 @@ const ACTIVITY: Record<Activity, string> = {
   travelToFood: 'Đi lấy thức ăn',
   eating: 'Đang ăn',
   waitingForFood: 'Đợi thức ăn',
+  waitingForRoute: 'Chờ đường thông',
   dead: 'Đã chết',
   travelToMarket: 'Đang đến chợ', trading: 'Đang giao dịch',
   travelToBuild: 'Đến công trình', building: 'Đang xây dựng',
@@ -456,7 +457,7 @@ export function App() {
                       <dt>Nhân khẩu</dt><dd>{citizen.age < 18 ? 'Trẻ phụ thuộc' : citizen.age >= 68 ? 'Nghỉ lao động' : 'Trưởng thành'}</dd>
                       <dt>Nghề</dt><dd data-testid="citizen-job">{jobNames[citizen.job]}</dd>
                       <dt>Đang làm</dt><dd>{ACTIVITY[citizen.activity]}</dd>
-                       <dt>Trạng thái đường đi</dt><dd>{citizen.route.length ? citizen.route.length + ' ô còn lại' : 'Không có tuyến đang đi'} · {citizen.alive ? citizen.reason : 'Đã kết thúc hoạt động'}</dd>
+                       <dt>Trạng thái đường đi</dt><dd data-testid="citizen-route-status">{citizen.route.length ? citizen.route.length + ' ô còn lại' : 'Không có tuyến đang đi'} · {citizen.alive ? citizen.reason : 'Đã kết thúc hoạt động'}{citizen.alive && citizen.blockedGoal !== null ? ' · Mục tiêu ' + citizen.blockedGoal + ' bị chặn; ' + (citizen.retryAfterTick > world.tick ? 'thử lại sau ' + (citizen.retryAfterTick - world.tick) + ' giờ' : 'đang thử lại') : ''}</dd>
                       <dt>Vị trí</dt><dd>({citizen.tile.x}, {citizen.tile.y})</dd>
                       <dt>Nhà</dt><dd>{citizen.homeId === null ? 'Chưa có nhà' : getSite(world, citizen.homeId).name}</dd>
                       <dt>Hộ gia đình</dt><dd data-testid="citizen-household">{selectedHousehold ? '#' + selectedHousehold.id + ' · ' + selectedHousehold.members.length + ' người' : 'Chưa có hộ'}</dd>

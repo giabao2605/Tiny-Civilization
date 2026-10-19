@@ -12,8 +12,9 @@ permissions:
 jobs:
   checks:
     runs-on: ubuntu-latest
-    # Fast deterministic checks only; browser verification is manual in full-e2e.yml.
-    timeout-minutes: 20
+    # 96x96 Chromium stress and production smoke can exceed the old 20-minute cap on hosted runners.
+    # Keep every check; extend only the wall-clock allowance for the full verification gate.
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,3 +27,66 @@ jobs:
       - run: npm run lint
       - run: npm run test
       - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      # Production smoke wipes test-results/. Preserve each observer evidence generation.
+      - name: Preserve observer V01-A/B/C and V01-D camera evidence
+        if: always()
+        run: |
+          mkdir -p observer-v01-a-evidence observer-v01-b-evidence observer-v01-c-evidence observer-v01-d-evidence
+          if [ -d test-results ]; then
+            find test-results -type f -name 'v01-a-*' -exec cp '{}' observer-v01-a-evidence/ ';'
+            find test-results -type f -name 'v01-b-*' -exec cp '{}' observer-v01-b-evidence/ ';'
+            find test-results -type f -name 'v01-c-*' -exec cp '{}' observer-v01-c-evidence/ ';'
+            find test-results -type f -name 'v01-d-*' -exec cp '{}' observer-v01-d-evidence/ ';'
+          fi
+      - name: Preserve V01-E benchmark and screenshot evidence
+        if: always()
+        run: |
+          mkdir -p observer-v01-e-evidence
+          if [ -d test-results ]; then
+            find test-results -type f -name 'v01-e-*' -exec cp '{}' observer-v01-e-evidence/ ';'
+          fi
+      - name: Preserve W02-D isolated 96x96 map harness screenshots
+        if: always()
+        run: |
+          mkdir -p observer-w02-d-evidence
+          if [ -d test-results ]; then
+            find test-results -type f -name 'w02-d-*.png' -exec cp '{}' observer-w02-d-evidence/ ';'
+          fi
+      - name: Preserve W02-E production Phaser world screenshots
+        if: always()
+        run: |
+          mkdir -p observer-w02-e-evidence
+          if [ -d test-results ]; then
+            find test-results -type f -name 'w02-e-*.png' -exec cp '{}' observer-w02-e-evidence/ ';'
+          fi
+      - name: Preserve W02-F real Phaser visual and performance evidence
+        if: always()
+        run: |
+          mkdir -p observer-w02-f-evidence
+          if [ -d test-results ]; then
+            find test-results -type f -name 'w02-f-*' -exec cp '{}' observer-w02-f-evidence/ ';'
+          fi
+      - name: Build for GitHub Pages project path
+        run: GITHUB_PAGES=true npm run build
+      - name: Smoke-test the actual production build
+        run: PLAYWRIGHT_PRODUCTION=true npm run test:e2e -- tests/e2e/release.spec.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase-07-release-evidence
+          path: |
+            test-results/
+            playwright-report/
+            observer-v01-a-evidence/
+            observer-v01-b-evidence/
+            observer-v01-c-evidence/
+            observer-v01-d-evidence/
+            observer-v01-e-evidence/
+            observer-w02-d-evidence/
+            observer-w02-e-evidence/
+            observer-w02-f-evidence/
+            dist/
+          if-no-files-found: ignore
+          retention-days: 7

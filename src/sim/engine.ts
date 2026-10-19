@@ -47,6 +47,26 @@ function localHome(world: WorldState, citizen: Citizen): TilePosition {
   return citizen.homeId === null ? getSite(world, world.sites.find((s) => s.kind === 'commons')!.id).tile :
     getSite(world, citizen.homeId).tile;
 }
+/** Recovery is reached only after a real route failure. Never teleport or infer arrival. */
+function reachableFallback(world: WorldState, citizen: Citizen, strategy: RoutingStrategy): {
+  goal: 'home' | 'commons'; target: TilePosition; route: TilePosition[]; stranded: boolean;
+} {
+  const home = localHome(world, citizen);
+  const commons = world.sites.find((site) => site.kind === 'commons')!.tile;
+  const targets = [{ goal: 'home' as const, target: home }, { goal: 'commons' as const, target: commons }];
+  for (const candidate of targets) {
+    if (!walkable(world, candidate.target)) continue;
+    const route = resolvePath(world, citizen.tile, candidate.target, strategy);
+    if (route !== null) return { ...candidate, route, stranded: false };
+  }
+  // The current legal walkable tile is the nearest genuinely reachable safe tile.
+  // With no such tile (e.g. an artificial flood over the NPC), remain in place.
+  return { goal: 'home', target: { ...citizen.tile }, route: [], stranded: true };
+}
+
+/** Future weather adapter. This is an explicit deterministic tick input, not world weather state. */
+export type ShelterRequest = Readonly<{ citizenIds: readonly number[] }>;
+
 function availableNode(world: WorldState, citizen: Citizen, occupancy: Map<number, number>): ResourceNode | null {
   const kind = citizen.job === 'farmer' ? 'field' : citizen.job === 'woodcutter' ? 'forest' : null;
   if (!kind) return null;
@@ -73,11 +93,11 @@ function availableNode(world: WorldState, citizen: Citizen, occupancy: Map<numbe
 }
 
 // Preserve static v5 return types for frozen historical tests and independent v6 worlds.
-export function advanceOneTick(previous: LegacyWorldState, commands?: GovernanceCommand[], strategy?: RoutingStrategy): LegacyWorldState;
-export function advanceOneTick(previous: WorldStateV6, commands?: GovernanceCommand[], strategy?: RoutingStrategy): WorldStateV6;
-export function advanceOneTick(previous: WorldState, commands?: GovernanceCommand[], strategy?: RoutingStrategy): WorldState;
+export function advanceOneTick(previous: LegacyWorldState, commands?: GovernanceCommand[], strategy?: RoutingStrategy, shelter?: ShelterRequest): LegacyWorldState;
+export function advanceOneTick(previous: WorldStateV6, commands?: GovernanceCommand[], strategy?: RoutingStrategy, shelter?: ShelterRequest): WorldStateV6;
+export function advanceOneTick(previous: WorldState, commands?: GovernanceCommand[], strategy?: RoutingStrategy, shelter?: ShelterRequest): WorldState;
 export function advanceOneTick(previous: WorldState, commands: GovernanceCommand[] = [],
-  strategy: RoutingStrategy = defaultRoutingStrategy(previous)): WorldState {
+  strategy: RoutingStrategy = defaultRoutingStrategy(previous), shelter?: ShelterRequest): WorldState {
   const tick = previous.tick + 1;
   const day = dayOf(tick);
   const hour = hourOf(tick);
@@ -221,19 +241,27 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
         hour >= 6 && hour < 20) requested = 'build';
     else requested = citizen.job === 'builder' && scheduledGoal(hour) === 'work' ? 'commons' : scheduledGoal(hour);
 
+    // A future weather system may request shelter only during optional/social
+    // time (or non-producing staff hours). Never interrupt meals, trades,
+    // harvesting, construction, illness care or urgent rest.
+    const shelterWanted = shelter?.citizenIds.includes(citizen.id) === true && citizen.needMode === null &&
+      (requested === 'commons' || (requested === 'work' && citizen.job === 'other'));
+    if (shelterWanted) requested = 'home';
     // Leisure is subordinate to every emergency and economic obligation above.
     // Historic 48x48 worlds cannot select or continue new routines.
     // The ordinary home schedule begins at 20:00. An already-started visit may
     // finish this last hour, unless an actual rest/food/guardian duty supersedes it.
-    const continueWindow = requested === 'commons' ||
+    const continueWindow = !shelterWanted && (requested === 'commons' ||
       (hour === 20 && requested === 'home' && citizen.needMode === null &&
-        !guardiansWithHungryDependents.has(citizen.id));
+        !guardiansWithHungryDependents.has(citizen.id)));
     const leisurePoi = continueWindow && continuingLeisure(citizen, tick, hour)
       ? poiAt(world, citizen.destination)
       : requested === 'commons' ? chooseLeisurePoi(world, citizen, tick, hour) : null;
     if (leisurePoi) requested = 'leisure';
     if (citizen.blockedGoal !== requested) citizen.blockedGoal = null;
-    let desired = citizen.blockedGoal === requested && tick < citizen.retryAfterTick ? 'home' as Goal : requested;
+    const coolingDown = citizen.blockedGoal === requested && tick < citizen.retryAfterTick;
+    let stranded = coolingDown && citizen.activity === 'waitingForRoute';
+    let desired = coolingDown ? 'home' as Goal : requested;
     const commons = world.sites.find((s) => s.kind === 'commons')!.tile;
     let target: TilePosition = desired === 'food'
       ? (citizen.inventory.food > 0 ? citizen.tile : marketTile(world))
@@ -243,6 +271,26 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
       : desired === 'build' && construction ? construction.tile
       : desired === 'home' ? localHome(world, citizen)
       : getSite(world, citizen.workId).tile;
+    // An isolated NPC must not re-probe unreachable home/commons each cooldown tick.
+    if (stranded) target = { ...citizen.tile };
+    const recover = (cause: string) => {
+      const shouldReport = citizen.blockedGoal !== requested || tick >= citizen.retryAfterTick;
+      citizen.blockedGoal = requested;
+      if (shouldReport) citizen.retryAfterTick = tick + BALANCE.retryBlockedAfterHours;
+      const fallback = reachableFallback(world, citizen, strategy);
+      citizen.goal = fallback.goal;
+      citizen.destination = { ...fallback.target };
+      citizen.route = fallback.route;
+      citizen.workNodeId = null;
+      citizen.workHours = 0;
+      stranded = fallback.stranded;
+      citizen.activity = stranded ? 'waitingForRoute' : actionFor(fallback.goal, fallback.route.length > 0);
+      citizen.reason = stranded
+        ? cause + ' Bị cô lập, đứng yên chờ đường thông; thử lại ở tick ' + citizen.retryAfterTick + '.'
+        : cause + (fallback.goal === 'home' ? ' Tạm về nhà an toàn.' : ' Tạm đến quảng trường an toàn.');
+      decision(citizen.activity, citizen.reason);
+      if (shouldReport) announce('routeBlocked', citizen, citizen.name + ': ' + citizen.reason);
+    };
     let node: ResourceNode | null = null;
     if (desired === 'work') {
       const good: Good = citizen.job === 'woodcutter' ? 'wood' : 'food';
@@ -269,22 +317,13 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
         }
       }
     }
-    if (citizen.goal !== desired || !same(citizen.destination, target)) {
+    if (citizen.goal !== desired || !same(citizen.destination, target) ||
+      (!coolingDown && citizen.route.length === 0 && !same(citizen.tile, target))) {
       citizen.goal = desired;
       citizen.destination = { ...target };
       const path = resolvePath(world, citizen.tile, target, strategy);
       if (path === null) {
-        citizen.blockedGoal = requested;
-        citizen.retryAfterTick = tick + BALANCE.retryBlockedAfterHours;
-        citizen.goal = 'home';
-        citizen.destination = { ...localHome(world, citizen) };
-        citizen.route = resolvePath(world, citizen.tile, citizen.destination, strategy) ?? [];
-        citizen.workNodeId = null;
-        citizen.workHours = 0;
-        citizen.reason = 'Không thể tới mục tiêu, quay về nơi an toàn.';
-        citizen.activity = citizen.route.length ? 'travelHome' : 'rest';
-        decision(citizen.activity, citizen.reason);
-        announce('routeBlocked', citizen, citizen.name + ': ' + citizen.reason);
+        recover('Không thể tiếp cận mục tiêu.');
       } else {
         citizen.route = path;
         citizen.workHours = 0;
@@ -295,28 +334,20 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
         if (path.length && (tick % 12 === 0 || desired === 'build' || desired === 'leisure')) announce('departure', citizen, citizen.name + ': ' + citizen.reason);
       }
     }
-    if (citizen.route.some((point) => !walkable(world, point))) {
-      citizen.blockedGoal = requested;
-      citizen.retryAfterTick = tick + BALANCE.retryBlockedAfterHours;
-      citizen.goal = 'home';
-      citizen.destination = { ...localHome(world, citizen) };
-      citizen.route = resolvePath(world, citizen.tile, citizen.destination, strategy) ?? [];
-      citizen.workNodeId = null;
-      citizen.workHours = 0;
-      citizen.reason = 'Đường đi bị chặn; tìm tuyến về nơi nghỉ.';
-      citizen.activity = citizen.route.length ? 'travelHome' : 'rest';
-      decision(citizen.activity, citizen.reason);
-      announce('routeBlocked', citizen, citizen.name + ': ' + citizen.reason);
+    if (!walkable(world, citizen.tile) || citizen.route.some((point, index) => !walkable(world, point) ||
+      (index === 0 && Math.abs(point.x - citizen.tile.x) + Math.abs(point.y - citizen.tile.y) !== 1))) {
+      recover('Đường đang đi bị chặn hoặc không còn hợp lệ.');
     }
     for (let step = 0; step < BALANCE.moveTilesPerHour && citizen.route.length; step += 1) {
       const next = citizen.route.shift()!;
-      if (!walkable(world, next)) break;
+      if (!walkable(world, next) ||
+        Math.abs(next.x - citizen.tile.x) + Math.abs(next.y - citizen.tile.y) !== 1) break;
       citizen.tile = next;
       citizen.lastMove.push({ ...next });
     }
     const moved = citizen.lastMove.length > 1;
     const arrived = same(citizen.tile, citizen.destination);
-    const nextActivity = actionFor(citizen.goal, !arrived);
+    const nextActivity = stranded ? 'waitingForRoute' : actionFor(citizen.goal, !arrived);
     if (citizen.activity !== nextActivity) {
       citizen.activity = nextActivity;
       citizen.reason = goalReason(citizen.goal, !arrived, citizen, world);
@@ -427,7 +458,7 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
         citizen.workHours = 0;
         citizen.energy = clampNeed(citizen.energy - BALANCE.energyIdlePerHour);
       }
-    } else if (arrived && citizen.goal === 'home') {
+    } else if (!stranded && arrived && citizen.goal === 'home') {
       citizen.actionDuration = 1;
       citizen.energy = clampNeed(citizen.energy +
         (hour >= 20 || hour < 6 ? BALANCE.energySleepRecovery : BALANCE.energyDayRestRecovery));
@@ -457,6 +488,7 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
         : 'Tử vong sau ' + citizen.starvationHours + ' giờ đói nguy kịch.';
       citizen.route = [];
       citizen.workHours = 0; citizen.workNodeId = null; citizen.needMode = null; citizen.actionDuration = 0;
+      citizen.blockedGoal = null; citizen.retryAfterTick = 0;
       world.stats.deaths += 1;
       decision('dead', citizen.reason);
       cleanupDeath(world, citizen);

@@ -1,5 +1,7 @@
 name: Tiny Civilization Pages
 on:
+  push:
+    branches: [main, feat/phase-07-release]
   workflow_dispatch:
 permissions:
   contents: read
