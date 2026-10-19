@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { advanceOneTick } from './engine';
+import { BALANCE } from './balance';
 import { tileIndexAt } from './grid';
 import { totalCurrency } from './world';
 import { parseSave, serializeSave } from '../persistence/save';
@@ -83,7 +84,7 @@ describe('E04-E deterministic rain shelter', () => {
     expect(updated.goal).toBe('home');
     expect(updated.destination).toEqual(home);
     expect(updated.reason).toContain('Trú mưa');
-    expect(updated.lastMove.length).toBeLessThanOrEqual(3);
+    expect(updated.lastMove.length).toBeLessThanOrEqual(1 + BALANCE.moveTilesPerHour);
     for (let i = 1; i < updated.lastMove.length; i++) {
       const a = updated.lastMove[i - 1]!, b = updated.lastMove[i]!;
       expect(Math.abs(a.x - b.x) + Math.abs(a.y - b.y)).toBe(1);
