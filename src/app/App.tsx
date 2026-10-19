@@ -3,6 +3,7 @@ import { GameCanvas } from '../game/GameCanvas';
 import type { CameraSnapshot, WorldCameraControls } from '../game/camera/types';
 import { V6_ENGINE_VERSION as ENGINE_VERSION, LOCAL_SAVE_KEY, MAX_SAVE_BYTES } from '../persistence/save';
 import { dayOf, hourOf, stateDigest } from '../sim/engine';
+import { poiAt } from '../sim/leisure';
 import { foodAidRejection } from '../sim/governance';
 import { dimensionsOf, getSite, housing, totalCurrency, type Activity, type WorldEvent, type EventType } from '../sim/world';
 import { createLivingCoordinator } from './livingCoordinator';
@@ -467,7 +468,7 @@ export function App() {
                       <dt>Nơi làm việc</dt><dd>{citizen.workNodeId !== null ? (() => { const node = world.resourceNodes.find((item) => item.id === citizen.workNodeId); return node ? (node.kind === 'field' ? 'Ruộng' : 'Rừng') + ' #' + node.id + ' (' + node.tile.x + ', ' + node.tile.y + ')' : 'Không có'; })() : getSite(world, citizen.workId).name}</dd>
                       <dt>Mục tiêu</dt><dd>{citizen.goal === 'food' ? 'Mua / ăn food' : citizen.goal === 'sell' ? 'Bán sản phẩm' : citizen.goal === 'build' ? 'Xây dựng' : citizen.goal === 'home' ? 'Trở về nhà' : citizen.goal === 'work' ? 'Đi làm' : citizen.goal === 'leisure' ? 'Ghé điểm sinh hoạt' : 'Gặp gỡ cộng đồng'}</dd>
                       <dt>Thời gian hành động</dt><dd>{citizen.actionDuration ? citizen.actionDuration + ' giờ; tiến độ ' + citizen.workHours + ' giờ' : 'Không có'}</dd>
-                      <dt>Điểm đến</dt><dd>({citizen.destination.x}, {citizen.destination.y}){citizen.goal === 'leisure' && world.schemaVersion === 6 ? ' · ' + (world.layout?.pois.find(p => p.role === 'event' && p.tile.x === citizen.destination.x && p.tile.y === citizen.destination.y)?.label ?? 'POI') : ''}</dd>
+                      <dt>Điểm đến</dt><dd>({citizen.destination.x}, {citizen.destination.y}){citizen.goal === 'leisure' ? ' · ' + (poiAt(world, citizen.destination)?.label ?? 'POI') : ''}</dd>
                     </dl>
                     <div className="social-panel" data-testid="social-inspector">
                       <p className="recent-title">Quan hệ nổi bật</p>

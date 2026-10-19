@@ -5,7 +5,7 @@
 | Gate | Coverage | Status |
 |---|---|---|
 | Eligibility, safe food/rest/work preemption | `src/sim/n03d.routines.test.ts` | PENDING final-head CI |
-| Event POI only, walkability, ≤8-step reachable path, bounded duration/cooldown | same | PENDING |
+| Eligible event/scenic POIs, excluded unusable props, walkability, ≤8-step reachable path, bounded duration/cooldown | same | PENDING |
 | No water, teleport, >4 tiles/hour, consistent selected POI | same and inherited `n03c.integration.test.ts` | PENDING |
 | Direct non-phantom social chat and cooldown at event POI | `n03d.routines.test.ts`; existing `social.test.ts` | PENDING |
 | Dead actor inert, v5 BFS unaffected, deterministic seed replay | `n03d.routines.test.ts`, existing N03-A golden matrix | PENDING |
