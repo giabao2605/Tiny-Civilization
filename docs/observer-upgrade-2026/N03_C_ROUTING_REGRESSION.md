@@ -28,3 +28,6 @@
 - Real production `lastMove + route` compares to **time-first** A* and is required to use exactly as many steps as BFS; weighted cost must be ≤ BFS on those shortest paths.
 - The 720-tick paired simulation now explicitly **fails** if weighted time-first increases deaths, decreases produced food, or decreases market trades versus BFS. Any failure needs a source-grounded fix, not a new golden baseline.
 - Frozen four N03-A BFS golden traces and v5 save fixtures remain unchanged.
+
+## Hourly-checkpoint acceptance test added
+New `src/sim/routing.test.ts` proves: a cheaper 4-step alternative is selected within one game hour; a globally cheaper same-step route with a different position at hour 1 is rejected in favor of BFS; invalid, same-tile and explicit BFS remain stable. `n03c.integration.test.ts` checks every fourth movement step equals BFS for real 96×96 NPC departures and still asserts deaths/food/trades cannot worsen in all nine paired 720-hour scenarios. The previous time-first-only correction was insufficient, as CI #39184285575 found; do not loosen this gate.
