@@ -146,14 +146,23 @@ describe('N03-F deterministic observer validation', () => {
       world.tiles[index] = 'water';
     }
     let blockedEvents = 0, waitingHours = 0, retryChanges = 0;
+    const notices: { tick: number; goal: string | null }[] = [];
     let lastRetry = 0;
     const hours = BALANCE.retryBlockedAfterHours * 2 + 1;
     for (let i = 0; i < hours; i++) {
       const previous = world;
       world = advanceOneTick(world);
       const actor = world.citizens.find(v => v.id === c.id)!;
-      blockedEvents += world.events.filter(e => e.id >= previous.nextEventId &&
-        e.type === 'routeBlocked' && e.citizenId === c.id).length;
+      const newNotices = world.events.filter(e => e.id >= previous.nextEventId &&
+        e.type === 'routeBlocked' && e.citizenId === c.id);
+      blockedEvents += newNotices.length;
+      for (const event of newNotices) notices.push({ tick: event.tick, goal: actor.blockedGoal });
+      const earlier = previous.citizens.find(v => v.id === c.id)!;
+      // A new requested goal (work -> commons -> home) may legitimately
+      // report a distinct blockage. The invariant is zero repeat reports
+      // while the SAME blocked goal's cooldown is still active.
+      if (earlier.blockedGoal !== null && earlier.blockedGoal === actor.blockedGoal &&
+          world.tick < earlier.retryAfterTick) expect(newNotices).toHaveLength(0);
       if (actor.retryAfterTick !== lastRetry && actor.retryAfterTick > 0) retryChanges++;
       lastRetry = actor.retryAfterTick;
       if (actor.activity === 'waitingForRoute') waitingHours++;
@@ -163,10 +172,10 @@ describe('N03-F deterministic observer validation', () => {
     }
     console.log('N03F_BLOCKED_SOAK', JSON.stringify({
       elapsedHours: hours, blockedEvents, waitingHours, retryChanges,
-      retryCooldown: BALANCE.retryBlockedAfterHours,
+      retryCooldown: BALANCE.retryBlockedAfterHours, notices,
       note: 'Synthetic isolated island; not a valid production save',
     }));
-    expect(blockedEvents).toBeLessThanOrEqual(1 + Math.ceil(hours / BALANCE.retryBlockedAfterHours));
+    expect(blockedEvents).toBeGreaterThan(0);
     expect(waitingHours).toBeGreaterThan(0);
   }, 120000);
 });
