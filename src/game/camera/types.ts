@@ -17,6 +17,7 @@ export interface WorldCameraControls {
   reset(): void;
   zoomBy(factor: number, screenPoint?: { x: number; y: number }): void;
   followNpc(id: number): boolean;
+  startHighlightsTour(): void;
   setAfkEnabled(enabled: boolean): void;
   setAfkTimeoutMs(timeoutMs: number): void;
   noteActivity(): void;

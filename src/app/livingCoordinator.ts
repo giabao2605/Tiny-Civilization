@@ -3,10 +3,14 @@ import { advanceOneTick } from '../sim/engine';
 import { foodAidRejection, type GovernanceCommand } from '../sim/governance';
 import { createWorld, type WorldState } from '../sim/world';
 import { createWorld96 } from '../sim/world96';
+import { recordMovement, takeMovement, type MovementTrace } from './movementTrace';
+import type { TilePosition } from '../sim/grid';
 import { parseSave, serializeSave } from '../persistence/save';
 
 export type LivingSnapshot = Readonly<{
   world: WorldState;
+  /** Actual intermediate hourly steps, presentation-only between UI paints. */
+  renderPaths?: ReadonlyMap<number, readonly TilePosition[]>;
   selectedCitizenId: number | null;
   speed: Speed;
   paused: boolean;
@@ -57,17 +61,21 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
   // The engine always advances each hour. The expensive observer UI can present
   // coherent snapshots less often at 5×/20× without altering the world or RNG.
   let uiSnapshot = snapshot;
+  const pendingVisualMoves: MovementTrace = new Map();
   let pending: GovernanceCommand[] = [];
   let nextRequestId = 1;
   const listeners = new Set<() => void>();
   let timer: ReturnType<typeof setInterval> | null = null;
   let lastMs = 0;
   const notify = () => {
-    uiSnapshot = snapshot;
+    const renderPaths = takeMovement(pendingVisualMoves);
+    uiSnapshot = renderPaths.size ? { ...snapshot, renderPaths } : snapshot;
     for (const listener of listeners) listener();
   };
   const clock = createClock(() => {
     const world = advanceOneTick(snapshot.world, pending);
+    // At 1× every published world contains the entire hourly lastMove already.
+    if (snapshot.speed !== 1) recordMovement(pendingVisualMoves, world);
     pending = [];
     const policyEvent = world.events.slice().reverse().find(event => event.tick === world.tick &&
       (event.type === 'foodAid' || event.type === 'foodAidDenied'));
@@ -108,6 +116,7 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
     /** Validation finishes before any active state, timer or queued command is touched. */
     importSave: (json: string): void => {
       const restored = parseSave(json);
+      pendingVisualMoves.clear();
       pending = restored.pending;
       nextRequestId = restored.nextRequestId;
       const count = restored.world.citizens.length;
@@ -146,6 +155,7 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
         if (!Number.isSafeInteger(command.seed) || (command.population !== undefined && ![20, 50, 100].includes(command.population))) return false;
         presetPopulation = command.population ?? presetPopulation;
         pending = []; nextRequestId = 1;
+        pendingVisualMoves.clear();
         snapshot = { ...snapshot, world: createWorld96(command.seed, presetPopulation), selectedCitizenId: null, lastPolicyMessage: '' };
         clock.reset();
       }

@@ -217,6 +217,17 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.announceCamera();
     return true;
   }
+  /** Immediate optional observer tour; no idle timer and no change to simulation. */
+  startHighlightsTour(): void {
+    if (!this.sys.isActive() || this.isReducedMotion()) return;
+    this.cancelAutomatic();
+    this.afkEnabled = false;
+    this.cameraMode = 'afk';
+    this.lastShotMs = 0;
+    this.shotRotation = 0;
+    this.shot = null;
+    this.announceCamera();
+  }
   setAfkEnabled(enabled: boolean): void {
     if (!this.sys.isActive()) return;
     this.cancelAutomatic();
@@ -378,20 +389,26 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
           sprite.setVisible(false);
           continue;
         }
-        if (skippedTicks) {
-          this.movementTweens.get(citizen.id)?.stop();
-          this.movementTweens.delete(citizen.id);
-          sprite.setPosition(xPixel(citizen.tile.x), yPixel(citizen.tile.y));
-          sprite.setDepth(this.citizenDepth(sprite.x, sprite.y));
+        // UI snapshots may represent 2 or 4 true game-hours at 5×/20×.
+        // Animate every actual intermediate step collected by the coordinator;
+        // jumping to the final tile made movement look like teleportation.
+        const path = snapshot.renderPaths?.get(citizen.id) ??
+          (skippedTicks ? null : citizen.lastMove);
+        if (!path || path.length < 2) {
+          if (skippedTicks) {
+            this.movementTweens.get(citizen.id)?.stop();
+            this.movementTweens.delete(citizen.id);
+            sprite.setPosition(xPixel(citizen.tile.x), yPixel(citizen.tile.y));
+            sprite.setDepth(this.citizenDepth(sprite.x, sprite.y));
+          }
           continue;
         }
-        if (citizen.lastMove.length < 2) continue;
         this.movementTweens.get(citizen.id)?.stop();
-        const path = citizen.lastMove;
         const steps = path.length - 1;
+        const paintedHours = Math.max(1, snapshot.world.tick - before.tick);
         const tween = this.tweens.addCounter({
           from: 0, to: steps,
-          duration: Math.max(18, 420 / this.speed),
+          duration: Math.max(18, Math.min(450, 450 * paintedHours / this.speed)),
           onUpdate: (tween) => {
             const progress = Math.min(steps, tween.getValue() ?? steps);
             const start = Math.min(steps - 1, Math.floor(progress));

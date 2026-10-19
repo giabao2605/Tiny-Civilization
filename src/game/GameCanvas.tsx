@@ -42,6 +42,7 @@ export function GameCanvas({ snapshot, onCitizenSelected, onCameraReady, onCamer
           reset: () => { if (liveRef.current === live) live.scene.reset(); },
           zoomBy: (factor, point) => { if (liveRef.current === live) live.scene.zoomBy(factor, point); },
           followNpc: id => liveRef.current === live && live.scene.followNpc(id),
+          startHighlightsTour: () => { if (liveRef.current === live) live.scene.startHighlightsTour(); },
           setAfkEnabled: enabled => { if (liveRef.current === live) live.scene.setAfkEnabled(enabled); },
           setAfkTimeoutMs: timeout => { if (liveRef.current === live) live.scene.setAfkTimeoutMs(timeout); },
           noteActivity: () => { if (liveRef.current === live) live.scene.noteActivity(); },

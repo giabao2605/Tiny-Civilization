@@ -75,7 +75,7 @@ Road subtype có thể lấy từ map metadata Plan 02; với legacy 48, dùng m
 ### N03-F — Performance và watchability validation
 
 **Làm:** profile path calls per tick, tick p50/p95, route length/cost, failedActions/routeBlocked frequency, movement density; so sánh 48 vs 96, 20/50/100 NPC.  
-**Test:** unit + integration + Playwright screenshot/video follow NPC, deterministic replay 100–1000 ticks (mức cụ thể ghi trong PR), 200 NPC synthetic stress nếu có harness.  
+**Test bắt buộc:** unit + integration + 720h seeded performance/economy matrix và deterministic replay 100–1000 ticks (mức cụ thể ghi trong PR), 200 NPC synthetic stress nếu có harness. **Playwright Chromium screenshot/video Follow NPC chỉ là tùy chọn chạy thủ công**, theo chính sách Fast CI từ N03-E; không được biến thành điều kiện chặn merge.  
 **DoD:** pathfinding không làm UI đứng; nếu quá tải, cache/queue/budget sau khi có profile, không dùng worker như phản xạ.
 
 ## 5. Sơ đồ xử lý ưu tiên
