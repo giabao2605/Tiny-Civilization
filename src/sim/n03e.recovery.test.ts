@@ -10,6 +10,8 @@ import { parseSave, serializeSave } from '../persistence/save';
 
 function isolatedResident() {
   const world = createWorld96(101, 20);
+  // Navigation recovery fixture tests a dry baseline, not weather shelter.
+  world.weather = { ...world.weather, kind: 'clear', intensity: 0 };
   const citizen = world.citizens.find(c => c.job === 'farmer')!;
   const tile = { ...marketTile(world) };
   const dimensions = dimensionsOf(world);
@@ -136,6 +138,8 @@ describe('N03-E blocked goal recovery and future shelter adapter', () => {
 
   it('shelter is explicit, deterministic and restricted to noncritical optional activity', () => {
     const world = createWorld96(101, 20), c = world.citizens[0]!;
+    // Explicit adapter must be distinguishable from automatic rain behavior.
+    world.weather = { ...world.weather, kind: 'clear', intensity: 0 };
     world.tick = 17;
     c.job = 'other'; c.hunger = 98; c.energy = 98; c.health = 100;
     c.needMode = null; c.inventory.food = 0; c.inventory.wood = 0;
