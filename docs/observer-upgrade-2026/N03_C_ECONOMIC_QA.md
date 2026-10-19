@@ -20,3 +20,8 @@ Legacy 48×48 20/50/100 × three seeds × 720 ticks is separately guarded in the
 
 ## Interpretation gate
 Results from the N03-C branch **PENDING** until CI logs are available. Any substantial starvation/death, trade or performance regression requires a specific seed, population, observed numbers and an explained decision to retain or roll back weighted routing. The mechanism is not accepted merely because invariants pass.
+
+## Regression discovered after previously green CI, 2026-10-19
+[CI #39020811689](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39020811689) passed the previous suite but contained **material gameplay regressions** under unconstrained terrain-only A*: at 96×96/50 NPC/seed 101, deaths 6→20, trades 702→554 and food production 1131→834; at 96×96/100 NPC for seeds 101,107,12345, deaths 2→6, 1→4, and 0→8 respectively. This was **not** a financial-conservation bug. Different route lengths consumed more simulated travel hours, delaying arrival-based transactions and feeding.
+
+Corrective approach is **route selection only**. Gameplay time is governed by cardinal tile count and `BALANCE.moveTilesPerHour = 4`, not by terrain weights. Production weighted A* now minimizes steps first and terrain cost second. New assertions compare paired 720-tick deaths, produced food, and trade counts and reject worsening outcomes. This is a deliberately stricter rule than purely keeping currency and food conservation. Results remain **unverified until the corrective branch HEAD CI completes**.
