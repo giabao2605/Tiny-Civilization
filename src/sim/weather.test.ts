@@ -104,7 +104,11 @@ describe('E04-C weather integration and save compatibility', () => {
       const fromSave = advanceTicks(parseSave(serializeSave(restored)).world, 420);
       expect(migrated).toEqual(fromSave);
       expect(migrated.tick).toBe(720);
-      expect(migrated.citizens.map(c => c.id)).toEqual(original.citizens.map(c => c.id));
+      const migratedIds = migrated.citizens.map(c => c.id);
+      expect(new Set(migratedIds).size).toBe(migratedIds.length);
+      // Existing identities persist; post-migration births are allowed to differ
+      // because rain can alter adult co-location and social opportunities.
+      expect(preWeather.citizens.every(c => migratedIds.includes(c.id))).toBe(true);
       expect(totalCurrency(migrated)).toBe(totalCurrency(preWeather));
       expect(migrated.weather.weatherRngState).toBe(forecastAfter(restored.weather, 420, 300).weatherRngState);
     }, 120000);
