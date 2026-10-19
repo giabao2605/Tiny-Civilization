@@ -217,6 +217,17 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.announceCamera();
     return true;
   }
+  /** Immediate optional observer tour; no idle timer and no change to simulation. */
+  startHighlightsTour(): void {
+    if (!this.sys.isActive() || this.isReducedMotion()) return;
+    this.cancelAutomatic();
+    this.afkEnabled = false;
+    this.cameraMode = 'afk';
+    this.lastShotMs = 0;
+    this.shotRotation = 0;
+    this.shot = null;
+    this.announceCamera();
+  }
   setAfkEnabled(enabled: boolean): void {
     if (!this.sys.isActive()) return;
     this.cancelAutomatic();
