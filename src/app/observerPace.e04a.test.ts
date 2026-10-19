@@ -48,7 +48,7 @@ describe('E04-A canonical clock / observer integration', () => {
 
   it('keeps saved world and deterministic replay unchanged when pace is runtime-only', () => {
     const seed = 71;
-    let uninterrupted = createWorld96(seed, 20);
+    let uninterrupted: WorldState = createWorld96(seed, 20);
     for (let n = 0; n < 24; n++) uninterrupted = advanceOneTick(uninterrupted);
     let resumed: WorldState = createWorld96(seed, 20);
     for (let n = 0; n < 12; n++) resumed = advanceOneTick(resumed);
