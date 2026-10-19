@@ -1,3 +1,11 @@
+## Observer Plan 04 — E04-D Weather Visual Map Response (2026-10-19)
+
+- Preflight: E04-C PR #31 merged into main at 972bf33b41cfa855fb79f1fd13bffd56d624d996, post-merge Fast CI #39220531182 success on exact SHA.
+- Branch feat/e04-d-weather-visuals: render-only clear/cloudy/rain/fog, cloud shadows, stratified fog, world-space wet roads/puddles/ripples and bounded 112-descriptor camera-visible rain. No simulation, economic/weather RNG, clock, save or NPC changes.
+- Automated regression and new visual tests require final PR-head Fast CI verification before PASS can be claimed.
+- **Mandatory visual QA: PARTIAL / NOT VERIFIED.** Live screenshots and real-PC FPS/GPU/heap were unavailable in this environment. **Do not auto-merge** without visual acceptance even if CI passes; no Full E2E or Pages workflow dispatch.
+- Docs: [Visual ADR](observer-upgrade-2026/E04_D_VISUAL_ADR.md) · [Implementation](observer-upgrade-2026/E04_D_IMPLEMENTATION.md) · [Visual QA](observer-upgrade-2026/E04_D_VISUAL_QA.md) · [Handoff](observer-upgrade-2026/E04_D_HANDOFF.md).
+
 ## Observer Plan 04 — E04-C Deterministic Weather State & Save Compatibility (2026-10-19)
 
 - **Preflight verified:** PR #30 E04-B merged to `main@6483ae97f2e409184548285c18ba077be3a9d9b1`; [post-merge Fast CI #39216281181](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39216281181) SUCCESS with matching `head_sha`.
