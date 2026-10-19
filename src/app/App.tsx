@@ -90,7 +90,7 @@ export function App() {
   const [populationInput, setPopulationInput] = useState<20 | 50 | 100>(20);
   const [saveMessage, setSaveMessage] = useState('Chưa lưu trong phiên này. File JSON có thể sao lưu sang thiết bị khác.');
   const [saveTick, setSaveTick] = useState<number | null>(null);
-  const { world, selectedCitizenId, paused, speed } = snapshot;
+  const { world, selectedCitizenId, paused, speed, observerPaceMinutes } = snapshot;
   const governance = world.governance;
   const leader = world.citizens.find(c => c.id === governance.leaderId);
   const aidReason = foodAidRejection({ ...world, tick: world.tick + 1 }, governance.leaderId ?? -1, world.tick + 1);
@@ -379,9 +379,22 @@ export function App() {
               <div className="time-controls" aria-label="Điều khiển thời gian">
                 <button type="button" className={paused ? 'control active' : 'control'} onClick={() => coordinator.dispatch({ type: 'set-paused', paused: !paused })} aria-label={paused ? 'Tiếp tục' : 'Tạm dừng'}>{paused ? '▶ Tiếp tục' : 'Ⅱ Tạm dừng'}</button>
                 {([1, 5, 20] as const).map((value) => (
-                  <button key={value} type="button" className={speed === value ? 'control active' : 'control'} onClick={() => coordinator.dispatch({ type: 'set-speed', speed: value })} aria-pressed={speed === value}>{value}×</button>
+                  <button key={value} type="button" className={observerPaceMinutes === null && speed === value ? 'control active' : 'control'} onClick={() => coordinator.dispatch({ type: 'set-speed', speed: value })} aria-pressed={observerPaceMinutes === null && speed === value}>{value}×</button>
                 ))}
+                <label htmlFor="observer-pace">Observer Pace (thử nghiệm)</label>
+                <select id="observer-pace" aria-label="Observer Pace thử nghiệm" value={observerPaceMinutes ?? ''}
+                  onChange={(event) => {
+                    const minutes = Number(event.target.value);
+                    coordinator.dispatch({ type: 'set-observer-pace',
+                      minutesPerDay: minutes === 5 || minutes === 10 || minutes === 15 ? minutes : null });
+                  }}>
+                  <option value="">Tắt</option>
+                  <option value="5">5 phút/ngày</option>
+                  <option value="10">10 phút/ngày</option>
+                  <option value="15">15 phút/ngày</option>
+                </select>
               </div>
+              <p className="dashboard-note">Observer Pace chỉ là thử nghiệm. Một tick vẫn là một giờ; không tạo chuyển động liên tục giữa các giờ.</p>
               <div className="seed-controls">
                 <label htmlFor="seed-input">Seed thế giới</label>
                 <div>

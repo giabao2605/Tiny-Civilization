@@ -335,7 +335,8 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   setSnapshot(snapshot: LivingSnapshot): void {
     const previouslySelectedId = this.selectedId;
     this.selectedId = snapshot.selectedCitizenId;
-    this.speed = snapshot.speed;
+    // Observer pacing must not inherit the previously selected 5×/20× tween multiplier.
+    this.speed = snapshot.observerPaceMinutes === null ? snapshot.speed : 1;
     // Pause changes are rare; iterating every tween on every simulation tick is unnecessary.
     if (snapshot.paused !== this.wasPaused) {
       for (const tween of this.movementTweens.values()) {
