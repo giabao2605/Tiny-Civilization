@@ -334,8 +334,8 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
         if (path.length && (tick % 12 === 0 || desired === 'build' || desired === 'leisure')) announce('departure', citizen, citizen.name + ': ' + citizen.reason);
       }
     }
-    if (!walkable(world, citizen.tile) || citizen.route.some((point, index) => !walkable(world, point) ||
-      (index === 0 && Math.abs(point.x - citizen.tile.x) + Math.abs(point.y - citizen.tile.y) !== 1))) {
+    if (!stranded && (!walkable(world, citizen.tile) || citizen.route.some((point, index) => !walkable(world, point) ||
+      (index === 0 && Math.abs(point.x - citizen.tile.x) + Math.abs(point.y - citizen.tile.y) !== 1)))) {
       recover('Đường đang đi bị chặn hoặc không còn hợp lệ.');
     }
     for (let step = 0; step < BALANCE.moveTilesPerHour && citizen.route.length; step += 1) {
