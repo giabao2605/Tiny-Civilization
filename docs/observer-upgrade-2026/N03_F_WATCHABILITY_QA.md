@@ -29,3 +29,11 @@ On 96×96 with 100 NPCs and seeds 101, 107, 12345, first 72 hours recorded **80.
 Synthetic island run: `waitingForRoute` for 23 of 25 hours; five routeBlocked events across distinct schedule goals or retry transitions, no repeated event while the same blocked goal cooldown remained active; movement never left its isolated tile. The earlier aggregate bound of four events across a changing day/night schedule was incorrect and was replaced with the stricter, causally correct *same-active-goal cooldown* assertion, not skipped.
 
 **Current merge gate: PARTIAL / NOT MERGE-READY.** No manual Full E2E run was dispatched by the available connector; no real Chromium screenshots/video/trace were captured and visually examined in this phase. Windows physical 20× FPS, GPU jitter and long soak remain NOT RUN. A headless Node PASS must not be presented as a player experience acceptance.
+
+## N03-F follow-up: screenshot gate for presentational fixes
+
+New rendering paths and instant activity tour require `tests/e2e/n03f-watchability.spec.ts` to capture `n03f-follow-before.png`, `n03f-follow-after-72h.png`, `n03f-fit-overview.png`, `n03f-activity-tour.png` and JSON observer metrics on the **final PR HEAD**. Validate that live animated 5×/20× motion has no visually apparent multi-tick teleport, no terrain crossing, no jitter/crashed canvas, and that highlighted activity comes from real NPC state. The `WorldScene` change is presentation-only, and the deterministic engine lastMove invariants are still authoritative.
+
+`src/app/movementTrace.test.ts` verifies the actual sequential path over 24 engine ticks without altering simulation digest; `src/game/camera/afkDirector.test.ts` verifies action-first camera targeting and no dead interests. These unit checks are not a substitute for actual Phaser screenshot/video and physical Windows GPU checks.
+
+**Until browser artifacts have been captured and read, maintain PARTIAL and NOT MERGE-READY.**
