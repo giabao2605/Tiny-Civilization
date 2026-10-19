@@ -10,6 +10,8 @@ import { createWorld96 } from './world96';
 
 function setup() {
   const world = createWorld96(101, 20);
+  // Isolate existing leisure contracts from the new canonical rain shelter decision.
+  world.weather = { ...world.weather, kind: 'clear', intensity: 0 };
   const citizen = world.citizens.find(c => c.id % 2 === 0)!;
   const poi = world.layout.pois.find(p => p.role === 'event')!;
   world.tick = 17;
