@@ -70,7 +70,7 @@ function observe(size: 48 | 96, count: 20 | 50 | 100, seed: number) {
         if (olderGoal.get(citizen.id) === citizen.goal) abaOscillations++;
       }
       olderGoal.set(citizen.id, before.goal);
-      if (before.blockedGoal !== null && previous.tick < before.retryAfterTick &&
+      if (before.blockedGoal !== null && previous.tick + 1 < before.retryAfterTick &&
           citizen.blockedGoal === before.blockedGoal && citizen.retryAfterTick !== before.retryAfterTick)
         throw new Error('retry cooldown changed early: ' + citizen.id);
       if (before.blockedGoal !== null && previous.tick + 1 >= before.retryAfterTick)
