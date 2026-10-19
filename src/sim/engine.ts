@@ -6,6 +6,7 @@ import { chooseLeisurePoi, continuingLeisure, poiAt } from './leisure';
 import { defaultRoutingStrategy, resolvePath, type RoutingStrategy } from './routing';
 import { nextRandom } from './prng';
 import { advanceWeather } from './weather';
+import { shouldShelterFromRain } from './weatherShelter';
 import { advanceSocial, cleanupDeath, type ScarcityWitness } from './social';
 import { beginGovernanceTick, advanceGovernanceAfterCitizens, applyFoodAid, applyIllnessHealth,
   affectedIllness, harvestYield, harvestRegeneration, illnessPausesWork, type GovernanceCommand } from './governance';
@@ -249,9 +250,15 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
     // A future weather system may request shelter only during optional/social
     // time (or non-producing staff hours). Never interrupt meals, trades,
     // harvesting, construction, illness care or urgent rest.
-    const shelterWanted = shelter?.citizenIds.includes(citizen.id) === true && citizen.needMode === null &&
-      (requested === 'commons' || (requested === 'work' && citizen.job === 'other'));
+    const rainShelter = shouldShelterFromRain(world, citizen, requested);
+    const shelterWanted = rainShelter || (shelter?.citizenIds.includes(citizen.id) === true &&
+      citizen.needMode === null &&
+      (requested === 'commons' || (requested === 'work' && citizen.job === 'other')));
     if (shelterWanted) requested = 'home';
+    const reasonFor = (traveling: boolean): string => rainShelter && citizen.goal === 'home'
+      ? traveling ? 'Trú mưa: đang về nhà có mái che; vẫn ưu tiên ăn và hồi phục khi cần.'
+        : 'Trú mưa trong nhà mình; sẽ tiếp tục sinh hoạt sau khi trời tạnh.'
+      : goalReason(citizen.goal, traveling, citizen, world);
     // Leisure is subordinate to every emergency and economic obligation above.
     // Historic 48x48 worlds cannot select or continue new routines.
     // The ordinary home schedule begins at 20:00. An already-started visit may
@@ -339,7 +346,7 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
         citizen.workHours = 0;
         citizen.workNodeId = desired === 'work' ? node?.id ?? null : null;
         citizen.activity = actionFor(desired, path.length > 0);
-        citizen.reason = goalReason(desired, path.length > 0, citizen, world);
+        citizen.reason = reasonFor(path.length > 0);
         decision(citizen.activity, citizen.reason);
         if (path.length && (tick % 12 === 0 || desired === 'build' || desired === 'leisure')) announce('departure', citizen, citizen.name + ': ' + citizen.reason);
       }
@@ -361,10 +368,18 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
     if (citizen.activity !== nextActivity) {
       citizen.activity = nextActivity;
       // Arrival must not overwrite a same-hour blocked-route recovery diagnosis.
-      if (!recoveryThisTick) citizen.reason = goalReason(citizen.goal, !arrived, citizen, world);
+      if (!recoveryThisTick) citizen.reason = reasonFor(!arrived);
       decision(nextActivity, citizen.reason);
       if (arrived && citizen.goal === 'commons') announce('gather', citizen, citizen.name + ' đã đến quảng trường.');
       if (arrived && citizen.goal === 'work') announce('work', citizen, citizen.name + ' bắt đầu ca làm.');
+    }
+
+    // When the rain clears while an NPC is already home, do not retain a stale
+    // shelter explanation forever. Keep the legacy activity enum/save shape.
+    if (!recoveryThisTick && citizen.goal === 'home' &&
+      citizen.reason.startsWith('Trú mưa') !== reasonFor(!arrived).startsWith('Trú mưa')) {
+      citizen.reason = reasonFor(!arrived);
+      decision(citizen.activity, citizen.reason);
     }
 
     citizen.actionDuration = 0;
