@@ -118,7 +118,7 @@ describe('N03-D purposeful POI routines and causal observation', () => {
     other.tile = { ...decoration.tile }; citizen.tile = { ...decoration.tile };
     world.tick += BALANCE.socialCooldown;
     expect(applyInteraction(world, citizen.id, other.id, 'chat', emit)).toBe(false);
-    other.tile.x += 1;
+    other.tile = { ...other.tile, x: other.tile.x + 1 };
     expect(applyInteraction(world, citizen.id, other.id, 'chat', emit)).toBe(false);
   });
 
