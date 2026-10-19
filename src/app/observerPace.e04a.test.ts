@@ -50,7 +50,7 @@ describe('E04-A canonical clock / observer integration', () => {
     const seed = 71;
     let uninterrupted = createWorld96(seed, 20);
     for (let n = 0; n < 24; n++) uninterrupted = advanceOneTick(uninterrupted);
-    let resumed = createWorld96(seed, 20);
+    let resumed: WorldState = createWorld96(seed, 20);
     for (let n = 0; n < 12; n++) resumed = advanceOneTick(resumed);
     resumed = parseSave(serializeSave(resumed)).world;
     for (let n = 0; n < 12; n++) resumed = advanceOneTick(resumed);
@@ -156,11 +156,11 @@ describe('E04-A canonical clock / observer integration', () => {
     drive(20);
     expect(coordinator.getSnapshot().world.tick).toBe(3);
     visibility.visibilityState = 'hidden';
-    onVisibility?.();
+    (onVisibility as (() => void) | null)?.();
     drive(2400);
     expect(coordinator.getSnapshot().world.tick).toBe(3);
     visibility.visibilityState = 'visible';
-    onVisibility?.();
+    (onVisibility as (() => void) | null)?.();
     drive(20);
     expect(coordinator.getSnapshot().world.tick).toBe(4);
     stop();
