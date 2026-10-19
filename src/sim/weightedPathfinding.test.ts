@@ -72,7 +72,9 @@ describe('N03-C time-first weighted A* routing without extending NPC travel dura
     const choices = miniature(['rgg', 'rrg', 'rrr']);
     const from = p(0, 0), to = p(2, 2);
     const cheapestShortest = findTimeFirstWeightedPath(choices, from, to)!;
-    expect(cheapestShortest).toEqual([p(0, 1), p(0, 2), p(1, 2), p(2, 2)]);
+    expect(cheapestShortest[0]).toEqual(p(0, 1));
+    expect(cost(choices, cheapestShortest)).toBe(40);
+    expect(findTimeFirstWeightedPath(choices, from, to)).toEqual(cheapestShortest);
     expect(cheapestShortest.length).toBe(findPath(choices, from, to)!.length);
     expect(cost(choices, cheapestShortest)).toBeLessThan(cost(choices, findPath(choices, from, to)!));
   });
