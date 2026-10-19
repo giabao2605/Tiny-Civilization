@@ -1,3 +1,11 @@
+## Observer Plan 03 — N03-F Performance & Watchability (2026-10-19)
+
+- **N03-E baseline verified:** PR #27 merged as `4b815aff5b3859ea8a47f682fbdc2a44552067ab`; [post-merge Fast CI #39198471157](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39198471157) completed **SUCCESS** on that SHA. This is not a N03-F PASS.
+- **Branch:** `feat/n03-f-performance-watchability` from exact N03-E merge. N03-F remains **IN PROGRESS**, **do not merge** without explicit owner approval.
+- Added 18-seed/size/population 72-hour observer counters and invariants (`N03F_WATCHABILITY`), v6 1,000-hour replay (`N03F_REPLAY`), synthetic 2-cooldown recovery soak (`N03F_BLOCKED_SOAK`); inherited 27-scenario 720h `N03C_SIM_BENCH` remains unchanged. No engine/PRNG/schema rewrite, no speculative optimization.
+- Added manual Chromium 100 NPC / 20× / tick≥72 Phaser Follow/Inspector screenshots and console check; manual `full-e2e.yml` preserves `observer-n03-f-evidence`. Automatic Fast CI YAML and Pages workflow unchanged.
+- **Verification at authoring:** N03-F final HEAD Fast CI **PENDING**, manual Full E2E **NOT RUN**, Windows GPU/FPS/long soak **NOT RUN**. Local runner cannot resolve GitHub/npm for checkout/installation. No results claimed without Actions evidence. [Implementation](observer-upgrade-2026/N03_F_IMPLEMENTATION.md) · [Performance](observer-upgrade-2026/N03_F_PERFORMANCE.md) · [Watchability QA](observer-upgrade-2026/N03_F_WATCHABILITY_QA.md) · [Plan 04 handoff](observer-upgrade-2026/N03_F_HANDOFF.md).
+
 ## Observer Plan 03 — N03-E Path Recovery / Fast CI (2026-10-19)
 
 - **Branch:** `feat/n03-e-path-recovery-fast-ci`, base `main@7e8c49bb` (N03-D PR #26 merged). PR #27 is a draft until final-head QA. **No automatic merge.**
