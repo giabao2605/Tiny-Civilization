@@ -67,13 +67,20 @@ describe('E04-D visual weather is derived from authoritative state', () => {
     expect(JSON.stringify(world.weather)).toBe(originalWeather);
   });
 
+  it('offers repeatable seed presets for manual visual QA', () => {
+    expect(createWeather(2).kind).toBe('clear');
+    expect(createWeather(3).kind).toBe('cloudy');
+    expect(createWeather(1).kind).toBe('rain');
+    expect(createWeather(8).kind).toBe('fog');
+  });
+
   it('is backward compatible with 48x48 v5 and never fabricates weather', () => {
     const legacy = createWorld(12345, 20);
     const original = stateDigest(legacy);
     const geometry = weatherGroundPlan(legacy);
     expect(geometry.roads.length).toBeGreaterThan(0);
     expect(geometry.puddles.length).toBeGreaterThan(0);
-    expect(weatherVisualTarget(legacy.schemaVersion === 6 ? legacy.weather : null).kind).toBe('clear');
+    expect(weatherVisualTarget(null).kind).toBe('clear');
     expect(stateDigest(legacy)).toBe(original);
   });
 

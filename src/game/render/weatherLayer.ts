@@ -28,7 +28,7 @@ export class WeatherLayer {
   private particlesEnabled = true;
   private dropsDrawn = false;
 
-  constructor(private readonly scene: Phaser.Scene, world: WorldState) {
+  constructor(scene: Phaser.Scene, world: WorldState) {
     const { width, height } = dimensionsOf(world);
     const w = width * TILE_PIXELS, h = height * TILE_PIXELS;
     this.current = this.target = weatherVisualTarget(world.schemaVersion === 6 ? world.weather : null);
@@ -140,11 +140,12 @@ export class WeatherLayer {
   }
 
   private apply(): void {
-    this.wet.setAlpha(this.current.wetAlpha);
-    this.ripple.setAlpha(this.current.rippleAlpha);
-    this.shadows.setAlpha(this.current.cloudAlpha);
-    this.grade.setFillStyle(this.current.shadeTint, this.current.shadeAlpha);
-    this.fog.setAlpha(this.current.fogAlpha);
+    this.wet.setVisible(this.current.wetAlpha > 0.005).setAlpha(this.current.wetAlpha);
+    this.ripple.setVisible(this.current.rippleAlpha > 0.005).setAlpha(this.current.rippleAlpha);
+    this.shadows.setVisible(this.current.cloudAlpha > 0.005).setAlpha(this.current.cloudAlpha);
+    this.grade.setVisible(this.current.shadeAlpha > 0.005)
+      .setFillStyle(this.current.shadeTint, this.current.shadeAlpha);
+    this.fog.setVisible(this.current.fogAlpha > 0.005).setAlpha(this.current.fogAlpha);
   }
 
   destroy(): void {
