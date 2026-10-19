@@ -3,12 +3,15 @@ import { GRID_HEIGHT, GRID_WIDTH, isValidTileAt, type WorldDimensions } from '..
 import { validateWorld96Layout, type World96LayoutSource } from '../sim/world96Layout';
 import type { GovernanceCommand } from '../sim/governance';
 import type { LegacyWorldState, WorldState } from '../sim/world';
+import { createWeather, validateWeather } from '../sim/weather';
 
 /** Phase 06 saves are explicitly incompatible with other schemas or engine rules. */
 export const SAVE_FORMAT = 1;
 export const ENGINE_VERSION = 'sim-v5-phase06';
 export const V6_SAVE_FORMAT = 2;
 export const V6_ENGINE_VERSION = 'sim-v6-map';
+export const WEATHER_SAVE_FORMAT = 3;
+export const WEATHER_ENGINE_VERSION = 'sim-v6-weather';
 export const MAX_SAVE_BYTES = 8 * 1024 * 1024;
 export const LOCAL_SAVE_KEY = 'tiny-civilization:world:v1';
 export type RestoredSave = { world: WorldState; pending: GovernanceCommand[]; nextRequestId: number };
@@ -73,7 +76,7 @@ const eventTypes = ['founded', 'departure', 'work', 'gather', 'home', 'routeBloc
   'shockStarted', 'shockImpact', 'shockEnded', 'illnessRecovered'];
 
 /** Reject malformed and hostile JSON *before* allowing it into the simulation. */
-export function validateWorld(value: unknown): asserts value is WorldState {
+export function validateWorld(value: unknown, requireWeather = true): asserts value is WorldState {
   const w = object(value, 'world');
   if (w.schemaVersion !== 5 && w.schemaVersion !== 6)
     fail('world.schemaVersion', 'chỉ hỗ trợ schema v5 hoặc v6');
@@ -104,6 +107,16 @@ export function validateWorld(value: unknown): asserts value is WorldState {
   number(w.seed, 'world.seed');
   number(w.rngState, 'world.rngState', 1, 0xffffffff);
   const tick = number(w.tick, 'world.tick', 0);
+  if (!isV6 && w.weather !== undefined) fail('world.weather', 'schema v5 không hỗ trợ weather');
+  if (isV6) {
+    if (!requireWeather && w.weather !== undefined)
+      fail('world.weather', 'save v6 cũ không được chứa weather');
+    if (requireWeather) {
+      try { validateWeather(w.weather, tick); } catch (error) {
+        fail('world.weather', error instanceof Error ? error.message : 'weather không hợp lệ');
+      }
+    }
+  }
   const nextEntity = number(w.nextEntityId, 'world.nextEntityId', 1);
   const nextEvent = number(w.nextEventId, 'world.nextEventId', 2);
   const tileCount = dimensions.width * dimensions.height;
@@ -354,8 +367,8 @@ function validatePending(value: unknown, tick: number, nextRequestId: number): G
 export function canonicalV5Projection(world: WorldState): LegacyWorldState {
   if (world.schemaVersion !== 6 || world.map.width !== 48 || world.map.height !== 48)
     throw new Error('Chỉ world v6 48×48 được chiếu về v5.');
-  const { map: _map, layout: _layout, ...legacy } = world;
-  void _map; void _layout;
+  const { map: _map, layout: _layout, weather: _weather, ...legacy } = world;
+  void _map; void _layout; void _weather;
   return { ...legacy, schemaVersion: 5 };
 }
 
@@ -363,7 +376,8 @@ export function canonicalV5Projection(world: WorldState): LegacyWorldState {
 export function migrateLegacyWorld(world: LegacyWorldState): WorldState {
   validateWorld(world);
   if (world.schemaVersion !== 5) fail('world.schemaVersion', 'chỉ migrate v5');
-  const migrated: WorldState = { ...world, schemaVersion: 6, map: { width: 48, height: 48 } };
+  const migrated: WorldState = { ...world, schemaVersion: 6, map: { width: 48, height: 48 },
+    weather: createWeather(world.seed, world.tick) };
   validateWorld(migrated);
   return migrated;
 }
@@ -373,8 +387,8 @@ export function serializeSave(world: WorldState, pending: GovernanceCommand[] = 
   number(nextRequestId, 'nextRequestId', 1);
   validatePending(pending, world.tick, nextRequestId);
   const json = JSON.stringify({
-    saveFormat: world.schemaVersion === 5 ? SAVE_FORMAT : V6_SAVE_FORMAT,
-    engineVersion: world.schemaVersion === 5 ? ENGINE_VERSION : V6_ENGINE_VERSION,
+    saveFormat: world.schemaVersion === 5 ? SAVE_FORMAT : WEATHER_SAVE_FORMAT,
+    engineVersion: world.schemaVersion === 5 ? ENGINE_VERSION : WEATHER_ENGINE_VERSION,
     world, pending, nextRequestId,
   });
   if (new TextEncoder().encode(json).byteLength > MAX_SAVE_BYTES)
@@ -400,18 +414,23 @@ function parseEnvelope(json: string, migrate: boolean): RestoredSave {
   }
   const envelope = object(data, 'save');
   const isLegacy = envelope.saveFormat === SAVE_FORMAT && envelope.engineVersion === ENGINE_VERSION;
-  const isNew = envelope.saveFormat === V6_SAVE_FORMAT && envelope.engineVersion === V6_ENGINE_VERSION;
-  if (!isLegacy && !isNew) throw new Error('Phiên bản save/engine không tương thích.');
-  validateWorld(envelope.world);
+  const isOldV6 = envelope.saveFormat === V6_SAVE_FORMAT && envelope.engineVersion === V6_ENGINE_VERSION;
+  const isNew = envelope.saveFormat === WEATHER_SAVE_FORMAT && envelope.engineVersion === WEATHER_ENGINE_VERSION;
+  if (!isLegacy && !isOldV6 && !isNew) throw new Error('Phiên bản save/engine không tương thích.');
+  validateWorld(envelope.world, !isOldV6);
   if (isLegacy && envelope.world.schemaVersion !== 5) fail('world.schemaVersion', 'v5 cần schema 5');
-  if (isNew && envelope.world.schemaVersion !== 6) fail('world.schemaVersion', 'v6 cần schema 6');
+  if ((isOldV6 || isNew) && envelope.world.schemaVersion !== 6) fail('world.schemaVersion', 'v6 cần schema 6');
   const nextRequestId = number(envelope.nextRequestId, 'nextRequestId', 1);
   const pending = validatePending(envelope.pending, envelope.world.tick, nextRequestId);
-  const world = isLegacy && migrate ? migrateLegacyWorld(envelope.world as LegacyWorldState) : envelope.world;
+  // Complete validation of the original bytes and command queue precedes migration.
+  // Historical v5 parsing remains byte-identical when migrate=false.
+  const world: WorldState = isLegacy && migrate ? migrateLegacyWorld(envelope.world as LegacyWorldState)
+    : isOldV6 ? { ...envelope.world, weather: createWeather(envelope.world.seed, envelope.world.tick) }
+      : envelope.world;
   return { world, pending, nextRequestId };
 }
 
-/** Production import migrates v5 to v6 48×48; v6 imports are validated exactly. */
+/** Production import hydrates legacy v5/v6 with weather; v3 weather saves validate strictly. */
 export function parseSave(json: string): RestoredSave {
   return parseEnvelope(json, true);
 }

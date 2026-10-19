@@ -7,7 +7,7 @@ import { advanceOneTick, advanceTicks } from '../sim/engine';
 import { createWorld, totalCurrency } from '../sim/world';
 import { createWorld96, validateWorld96 } from '../sim/world96';
 import {
-  MAX_SAVE_BYTES, V6_ENGINE_VERSION, V6_SAVE_FORMAT, canonicalV5Projection,
+  MAX_SAVE_BYTES, WEATHER_ENGINE_VERSION, WEATHER_SAVE_FORMAT, canonicalV5Projection,
   parseSave, serializeSave, validateWorld,
 } from './save';
 
@@ -98,10 +98,10 @@ describe('W02-E strict migration and real multi-size runtime', () => {
     const before = JSON.stringify(coordinator.getSnapshot().world);
     const valid = coordinator.exportSave();
     const original = JSON.parse(valid);
-    expect(original.saveFormat).toBe(V6_SAVE_FORMAT);
-    expect(original.engineVersion).toBe(V6_ENGINE_VERSION);
+    expect(original.saveFormat).toBe(WEATHER_SAVE_FORMAT);
+    expect(original.engineVersion).toBe(WEATHER_ENGINE_VERSION);
     const invalidCases: Array<[string, (obj: ReturnType<typeof JSON.parse>) => void]> = [
-      ['saveFormat', o => { o.saveFormat = 3; }],
+      ['saveFormat', o => { o.saveFormat = 4; }],
       ['engineVersion', o => { o.engineVersion = 'sim-v99'; }],
       ['schemaVersion', o => { o.world.schemaVersion = 5; }],
       ['missing map', o => { delete o.world.map; }],
