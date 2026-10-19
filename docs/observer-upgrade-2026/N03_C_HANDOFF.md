@@ -18,3 +18,6 @@ Readable leisure/social routines and purposeful visits using existing POIs; reta
 
 ## Critical corrective gate, 2026-10-19
 The initially green PR #25 full CI did **not** establish gameplay readiness. Pure terrain-optimal A* increased deaths and reduced trade/food production in a 720-hour real simulation. N03-C now uses shortest **simulated travel time** (minimum number of steps at unchanged 4 tiles/hour), breaking shortest-path ties by terrain cost. Original N03-B `findWeightedPath` is unchanged at its public interface. The new QA asserts no worsening deaths, food production, or market trades across nine 96×96 paired 720-hour scenarios, plus independent lexicographic Dijkstra correctness. **Do not hand off to N03-D or merge** without green final HEAD CI and inspected paired benchmark logs.
+
+## Hourly position checkpoint contract
+The time-first-only correction failed its new gameplay regression tests. The final candidate selection requires each route to reach **exactly the same tile at each 4-step hourly boundary as BFS**, otherwise it uses BFS. This permits safe visual weighted alternatives within an hour without moving an urgent preemption point. Coverage includes synthetic acceptance/rejection and nine real paired 720-hour worlds. **N03-D remains gated** on all strict new tests and final HEAD CI; no merge or gameplay retune as a workaround.
