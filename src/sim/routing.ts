@@ -1,6 +1,6 @@
 import type { TilePosition } from './grid';
 import { findPath } from './pathfinding';
-import { findWeightedPath, type WeightedWorld } from './weightedPathfinding';
+import { findTimeFirstWeightedPath, type WeightedWorld } from './weightedPathfinding';
 import { dimensionsOf } from './world';
 
 export type RoutingStrategy = 'bfs' | 'weighted';
@@ -26,12 +26,12 @@ export function defaultRoutingStrategy(world: WeightedWorld): RoutingStrategy {
   return world.schemaVersion === 6 && width === 96 && height === 96 ? 'weighted' : 'bfs';
 }
 
-/** Route selection only; energy use and tiles-per-hour remain engine-owned. */
+/** Time-first A* preserves minimum travel hours; terrain cost breaks shortest-path ties. */
 export function resolvePath(world: WeightedWorld, start: TilePosition, end: TilePosition,
   strategy: RoutingStrategy = defaultRoutingStrategy(world)): TilePosition[] | null {
   routeRequests += 1;
   const route = strategy === 'weighted'
-    ? findWeightedPath(world, start, end)
+    ? findTimeFirstWeightedPath(world, start, end)
     : findPath(world, start, end);
   if (route === null) unreachableRequests += 1;
   return route;
