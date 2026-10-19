@@ -9,6 +9,8 @@ import { AFK_DEFAULT_TIMEOUT_MS, AFK_MAX_TIMEOUT_MS, AFK_MIN_TIMEOUT_MS, AFK_SCE
 import type { CameraMode, CameraSnapshot, WorldCameraControls } from '../camera/types';
 import { ensureArtKit, imageArt } from '../render/artKit';
 import { drawTerrain } from '../render/terrain';
+import { approachLighting, lightingAtTick, streetLightsForWorld, windowLightsForWorld,
+  type LightingState } from '../render/lighting';
 import { buildingStyle, visualHash } from '../render/visualHash';
 import type { Poi96Kind } from '../../sim/world96Layout';
 
@@ -22,6 +24,8 @@ const POI_ART: Record<Poi96Kind, 'well' | 'bench' | 'fence' | 'sign' | 'crops' |
 };
 
 const PALETTE = [0xbc654f, 0xe2aa5d, 0x6d9bb3, 0x9c82b6, 0x8fad6b, 0xd2888d, 0x64afa0, 0xdbc17b];
+const WINDOW_LIGHT_TEXTURE = 'tc-e04b-window-lights';
+const STREET_LIGHT_TEXTURE = 'tc-e04b-street-lights';
 const CENTER = TILE_PIXELS / 2;
 function xPixel(x: number) { return x * TILE_PIXELS + CENTER; }
 function yPixel(y: number) { return y * TILE_PIXELS + CENTER; }
@@ -54,6 +58,11 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private siteCells = new Set<number>();
   private resourceStocks = new Map<number, number>();
   private wasPaused = false;
+  private lightingCurrent = lightingAtTick(0);
+  private lightingTarget = lightingAtTick(0);
+  private ambientShade?: Phaser.GameObjects.Rectangle;
+  private windowLightLayer?: Phaser.GameObjects.Image;
+  private streetLightLayer?: Phaser.GameObjects.Image;
   private highlighter?: Phaser.GameObjects.Graphics;
   private dragStart?: { x: number; y: number };
   private lastDrag?: { x: number; y: number };
@@ -79,6 +88,8 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.motionQuery.addEventListener('change', this.onMotionChanged);
     document.addEventListener('visibilitychange', this.onVisibilityChanged);
     this.reset();
+    this.lightingCurrent = lightingAtTick(this.world.tick);
+    this.lightingTarget = this.lightingCurrent;
     this.paintTerrain();
     this.paintLayout();
     for (const site of this.world.sites) { this.paintSite(site); this.paintedSites.add(site.id); }
@@ -96,6 +107,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.highlighter = this.add.graphics().setDepth(4000).setVisible(false);
     this.highlighter.lineStyle(1.5, 0xffe7a3).strokeCircle(0, -2, 9);
     this.highlighter.fillStyle(0xffe7a3, 0.9).fillTriangle(-3, -15, 3, -15, 0, -11);
+    this.paintLighting();
     this.input.on(Phaser.Input.Events.POINTER_DOWN, this.onDown);
     this.input.on(Phaser.Input.Events.POINTER_MOVE, this.onMove);
     this.input.on(Phaser.Input.Events.POINTER_UP, this.onUp);
@@ -123,6 +135,15 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.labelsShown = null;
       this.movementTweens.clear();
       this.highlighter = undefined;
+      this.ambientShade?.destroy();
+      this.windowLightLayer?.destroy();
+      this.streetLightLayer?.destroy();
+      this.ambientShade = undefined;
+      this.windowLightLayer = undefined;
+      this.streetLightLayer = undefined;
+      for (const key of [WINDOW_LIGHT_TEXTURE, STREET_LIGHT_TEXTURE]) {
+        if (this.textures.exists(key)) this.textures.remove(key);
+      }
     });
   }
 
@@ -180,6 +201,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private readonly onVisibilityChanged = (): void => {
     this.lastActivityMs = performance.now();
     if (document.hidden) {
+      this.setLightingInstant(this.lightingTarget);
       this.clearAfkTimer();
       if (this.cameraMode === 'afk') {
         this.cameraMode = 'manual';
@@ -347,6 +369,10 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     }
     const before = this.world;
     this.world = snapshot.world;
+    // Only the snapshot's authoritative tick selects a light target. A new
+    // seed/save restarts the scene and constructs the same target directly.
+    this.lightingTarget = lightingAtTick(snapshot.world.tick);
+    if (snapshot.paused || document.hidden) this.setLightingInstant(this.lightingTarget);
     if (!this.sys.isActive() || !this.sprites.size) return;
     // Changing selection while following switches targets directly, without locking
     // the camera to a stale person or requiring another toolbar click.
@@ -448,6 +474,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.updateLabelVisibility();
     if (this.selectedId !== null) this.redrawHighlight();
     if (document.hidden) return;
+    this.updateLighting(delta);
     const now = performance.now();
     if (now - this.lastMotionPollMs >= 250) {
       this.lastMotionPollMs = now;
@@ -499,6 +526,71 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     camera.centerOn(nextX, nextY);
     this.clampCamera();
     if (now - this.lastCameraBroadcastMs >= 900) this.announceCamera();
+  }
+
+  /** Rasterize bounded, noninteractive emissive sprites once per world/scene. */
+  private rasterLightTexture(key: string, paint: (g: Phaser.GameObjects.Graphics) => void,
+    depth: number): Phaser.GameObjects.Image {
+    if (this.textures.exists(key)) this.textures.remove(key);
+    const graphics = this.add.graphics();
+    paint(graphics);
+    graphics.generateTexture(key, this.worldWidth, this.worldHeight);
+    graphics.destroy();
+    this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    return this.add.image(0, 0, key).setOrigin(0, 0).setDepth(depth);
+  }
+
+  private paintLighting(): void {
+    // World-space overlays share Phaser camera scroll/zoom/fit/follow exactly.
+    // There is no separate sky-time, per-tile light or per-frame light geometry.
+    this.ambientShade = this.add.rectangle(0, 0, this.worldWidth, this.worldHeight,
+      this.lightingCurrent.tint, this.lightingCurrent.ambientAlpha).setOrigin(0, 0).setDepth(3800);
+
+    const windows = windowLightsForWorld(this.world);
+    this.windowLightLayer = this.rasterLightTexture(WINDOW_LIGHT_TEXTURE, g => {
+      for (const light of windows) {
+        const cx = light.x + light.width / 2;
+        const cy = light.y + light.height / 2;
+        g.fillStyle(0xf6b867, 0.09).fillCircle(cx, cy, 9);
+        g.fillStyle(0xffc47a, 0.18).fillCircle(cx, cy, 5);
+        g.fillStyle(0xffda94, 0.26).fillCircle(cx, cy, 3);
+        g.fillStyle(0xfff0b4, 0.98).fillRect(light.x, light.y, light.width, light.height);
+      }
+    }, 3801);
+
+    const lamps = streetLightsForWorld(this.world);
+    this.streetLightLayer = this.rasterLightTexture(STREET_LIGHT_TEXTURE, g => {
+      for (const light of lamps) {
+        g.fillStyle(0xeaae65, 0.08).fillCircle(light.x, light.y, 13);
+        g.fillStyle(0xffd485, 0.15).fillCircle(light.x, light.y, 7);
+        g.fillStyle(0xffdea0, 0.21).fillCircle(light.x, light.y, 4);
+        g.fillStyle(0x4b4540, 0.9).fillRect(light.x - 1, light.y + 2, 2, 6);
+        g.fillStyle(0xfff0ae, 1).fillRect(light.x - 2, light.y - 1, 4, 3);
+        g.fillStyle(0xfffbe1, 1).fillRect(light.x - 1, light.y, 2, 1);
+      }
+    }, 3802);
+    this.setLightingInstant(this.lightingTarget);
+  }
+
+  private applyLighting(state: LightingState): void {
+    this.ambientShade?.setFillStyle(state.tint, state.ambientAlpha);
+    this.windowLightLayer?.setAlpha(state.windowIntensity);
+    this.streetLightLayer?.setAlpha(state.streetIntensity);
+  }
+
+  private setLightingInstant(state: LightingState): void {
+    this.lightingCurrent = state;
+    this.applyLighting(state);
+  }
+
+  /** One bounded transition, retargetable at 20×; pause/hidden never advance it. */
+  private updateLighting(delta: number): void {
+    if (this.wasPaused || this.isReducedMotion()) {
+      this.setLightingInstant(this.lightingTarget);
+      return;
+    }
+    this.lightingCurrent = approachLighting(this.lightingCurrent, this.lightingTarget, delta);
+    this.applyLighting(this.lightingCurrent);
   }
 
   private paintTerrain(): void {

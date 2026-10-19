@@ -1,3 +1,11 @@
+## Observer Plan 04 — E04-B Day/Night Lighting & Windows/Street Lights (2026-10-19)
+
+- **Preflight PASS:** PR #29 E04-A merged to `main@90fe91292d4a20f6f747928f5ab81ec9422cccfb`; [post-merge Fast CI #39213160232](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39213160232) SUCCESS on that exact SHA.
+- **Branch:** `feat/e04-b-day-night-lighting`; E04-B *only*. Four-phase keyframed hour curve and a single bounded, render-only interpolation controller. Lighting targets derive from `hourOf(snapshot.world.tick)` with no independent clock. Pause and hidden-tab snap to current canonical target; reduced-motion avoids animated transitions.
+- Window apertures follow source-drawn ArtKit building geometries; street lights are sparse, seed-stable, placed on actual 48/96 road geometry near civic hubs. Two reusable world-space light textures and a single tint overlay render above terrain/NPC, without per-frame shape reconstruction, gameplay collision or click interception. No changes to engine/clock/coordinator/save/RNG.
+- Tests: 24 hours, boundaries, 23→00, finiteness/contrast, no independent tick, bounded easing, 48×48/v5 and 96×96/v6 layout validity, stable geometry and identical WorldState/digest. Inherited deterministic goldens and benchmarks remain enabled. **Final-head Fast CI must be confirmed via PR checks and matching commit SHA; no local npm run is claimed.**
+- [Implementation/verification](observer-upgrade-2026/E04_B_IMPLEMENTATION.md) · [E04-C handoff](observer-upgrade-2026/E04_B_HANDOFF.md). Optional Chromium/manual local-PC screenshots/FPS and multi-viewport assessment **NOT VERIFIED**; visual acceptance **PARTIAL**. Do not infer smooth 20× or 60 FPS from pure tests. No optional E2E, Pages or auto-merge triggered.
+
 ## Observer Plan 04 — E04-A Clock ADR & Observer Pace (2026-10-19)
 
 - **Baseline verified:** PR #28 N03-F merged at `aa9de47cdd7cfab1e87b8c3217e41c64e2ac12dc`; [Fast CI after merge #39209568831](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39209568831) SUCCESS on that exact SHA.
