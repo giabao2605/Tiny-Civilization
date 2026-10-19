@@ -182,3 +182,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
   .camera-buttons { width: 100%; }
   .afk-timeout-label { max-width: 100%; }
 }
+
+/* E04-E: compact, keyboard-accessible audio controls. */
+.audio-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 13px;
+  padding: 12px; background: #172f24; border: 1px solid #4b6a50; border-radius: 10px; }
+.audio-controls label { font-size: 11px; color: #c6d8c4; }
+.audio-controls input[type="range"] { flex: 1 1 100px; min-width: 80px; accent-color: #c1db95; }
+.audio-controls .dashboard-note { width: 100%; margin: 0; }
