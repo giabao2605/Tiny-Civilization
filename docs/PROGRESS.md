@@ -1,3 +1,10 @@
+## N03-C corrective QA gate (2026-10-19)
+
+- Initial full GitHub Actions [#39020811689](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39020811689) **PASS** typecheck/lint/Vitest/Chromium E2E/production smoke, but **failed gameplay acceptance** in measured 720-hour comparisons. Terrain-only optimum on 96×96 / 50 NPC / seed 101: BFS deaths 6, trades 702, food 1131; weighted deaths 20, trades 554, food 834. This regression must not be shipped just because CI was green.
+- Corrected production route: `findTimeFirstWeightedPath` lexicographically minimizes cardinal steps then weighted terrain cost; same four tiles per hour, no alteration to needs, economy or WorldState. N03-B `findWeightedPath` still returns the unrestricted terrain-cost optimum for oracle/benchmarks.
+- New small-grid lexicographic Dijkstra tests, production real-NPC shortest route test and 720-hour paired gates assert weighted does **not increase deaths or decrease food production/trades** over BFS across 96×96 20/50/100 × seeds 101/107/12345. Existing N03-A 48/96 golden routes explicitly BFS and fixture hashes unchanged.
+- Corrective CI on final branch HEAD: **PENDING**; see PR #25. **DO NOT MERGE** until both CI and gameplay gates are confirmed green, plus benchmark impact reviewed. Physical Windows/GPU/60–120m soak remains **PARTIAL**.
+
 ## Observer Plan 03 — N03-C Weighted Routing Integration (2026-10-17)
 
 - **Entry gate PASS:** N03-B PR #24 merged into `main@a95dc075f86d00e8a99dbb345d647bf47843c163`; exact post-merge [CI #39018629697](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39018629697) PASS before branching.
