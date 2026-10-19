@@ -93,6 +93,31 @@ describe('E04-E deterministic rain shelter', () => {
     expect(next.schemaVersion).toBe(6);
   });
 
+  it('does not oscillate during rain and releases discretionary NPC when rain ends', () => {
+    const world = rainVillage();
+    world.tick = 17;
+    const actor = world.citizens.find(c => shouldShelterFromRain(world, c, 'commons'))!;
+    const commons = world.sites.find(s => s.kind === 'commons')!.tile;
+    actor.tile = { ...commons }; actor.destination = { ...commons };
+    actor.route = []; actor.goal = 'commons'; actor.activity = 'socialIdle';
+    actor.inventory.food = 0; actor.inventory.wood = 0;
+    actor.hunger = 99; actor.energy = 99; actor.health = 100; actor.needMode = null;
+    const rainTick = advanceOneTick(world);
+    const sheltered = rainTick.citizens.find(c => c.id === actor.id)!;
+    expect(sheltered.goal).toBe('home');
+    const continued = advanceOneTick(rainTick);
+    expect(continued.citizens.find(c => c.id === actor.id)!.goal).toBe('home');
+
+    // Same canonical state, changed weather: no stale rain commitment/flag.
+    const cleared = structuredClone(rainTick);
+    cleared.weather.kind = 'cloudy';
+    cleared.weather.intensity = 0.5;
+    const next = advanceOneTick(cleared);
+    const back = next.citizens.find(c => c.id === actor.id)!;
+    expect(back.goal === 'commons' || back.goal === 'leisure').toBe(true);
+    expect(back.reason.startsWith('Trú mưa')).toBe(false);
+  });
+
   it('unreachable home uses existing bounded route recovery, without teleporting', () => {
     const world = rainVillage();
     world.tick = 17;
