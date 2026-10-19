@@ -16,6 +16,18 @@ export const WEATHER_MAX_DWELL = 72;
 const WEATHER_SEED_SALT = 0x57a7e153;
 const KINDS: readonly WeatherKind[] = ['clear', 'cloudy', 'rain', 'fog'];
 
+/** Mix adjacent numerical seeds before the first xorshift32 draw.
+ * Salt + plain xor alone biased the first kind for seeds 0..199 to fog.
+ * Integer Math.imul avalanche is deterministic and independent of economic RNG.
+ */
+function weatherSeed(seed: number): number {
+  const normalized = normalizeSeed(seed);
+  let n = (normalized ^ WEATHER_SEED_SALT) >>> 0;
+  n = Math.imul(n ^ (n >>> 16), 0x85ebca6b);
+  n = Math.imul(n ^ (n >>> 13), 0xc2b2ae35);
+  return normalizeSeed((n ^ (n >>> 16)) >>> 0);
+}
+
 /**
  * Seed-only bootstrap. For legacy import, start weather at the *current* tick:
  * never fabricate unrecorded past weather or replay any gameplay ticks.
@@ -24,7 +36,7 @@ export function createWeather(seed: number, atTick = 0): WeatherState {
   if (!Number.isSafeInteger(atTick) || atTick < 0 ||
       atTick > Number.MAX_SAFE_INTEGER - WEATHER_MAX_DWELL)
     throw new Error('Invalid weather initial tick');
-  let rng = normalizeSeed(seed ^ WEATHER_SEED_SALT);
+  let rng = weatherSeed(seed);
   const kindDraw = drawInt(rng, KINDS.length); rng = kindDraw.state;
   const kind = KINDS[kindDraw.value]!;
   const intensityDraw = drawInt(rng, 61); rng = intensityDraw.state;

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { createLivingCoordinator } from '../app/livingCoordinator';
 import { advanceOneTick, advanceTicks } from './engine';
 import { createWorld, totalCurrency, type WorldStateV6 } from './world';
 import { createWorld96 } from './world96';
@@ -136,6 +137,42 @@ describe('E04-C weather integration and save compatibility', () => {
     const rejected = JSON.parse(previous);
     rejected.world.weather = { ...createWeather(23, 49), kind: 'snow' };
     expect(() => parseSave(JSON.stringify(rejected))).toThrow(/world.weather/);
+  });
+
+  it('hydrates historical format-2 48×48 with pending policy and every old field preserved', () => {
+    const original = advanceTicks(createWorld(81, 20), 48);
+    const migrated = parseSave(serializeSave(original)).world;
+    expect(migrated.schemaVersion).toBe(6);
+    if (migrated.schemaVersion !== 6) throw new Error('expected v6');
+    const { weather: _removed, ...oldWorld } = migrated;
+    void _removed;
+    const leaderId = migrated.governance.leaderId;
+    expect(leaderId).not.toBeNull();
+    const pending = [{ type: 'emergency-food', issuedTick: 49, leaderId, requestId: 3 }];
+    const payload = JSON.stringify({ saveFormat: 2, engineVersion: 'sim-v6-map',
+      world: oldWorld, pending, nextRequestId: 4 });
+    const restored = parseSave(payload);
+    expect(restored.world.schemaVersion).toBe(6);
+    if (restored.world.schemaVersion !== 6) throw new Error('expected v6');
+    expect(restored.world.map).toEqual({ width: 48, height: 48 });
+    expect(restored.world.weather).toEqual(createWeather(81, 48));
+    expect(restored.pending).toEqual(pending);
+    expect(restored.nextRequestId).toBe(4);
+    expect(canonicalV5Projection(restored.world)).toEqual(original);
+  });
+
+  it('malformed weather import leaves coordinator world, selection and save untouched', () => {
+    const coordinator = createLivingCoordinator(77, 20);
+    const id = coordinator.getSnapshot().world.citizens[0]!.id;
+    coordinator.dispatch({ type: 'select-citizen', id });
+    coordinator.dispatch({ type: 'set-paused', paused: true });
+    const previous = coordinator.getSnapshot();
+    const saved = coordinator.exportSave();
+    const damaged = JSON.parse(saved);
+    damaged.world.weather.weatherRngState = 0;
+    expect(() => coordinator.importSave(JSON.stringify(damaged))).toThrow(/world.weather/);
+    expect(coordinator.getSnapshot()).toEqual(previous);
+    expect(coordinator.exportSave()).toBe(saved);
   });
 
   it('new weather format rejects missing weather, corrupt fields and mismatched envelopes', () => {
