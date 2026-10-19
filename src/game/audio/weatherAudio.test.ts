@@ -45,24 +45,24 @@ describe('E04-E weather audio mix and browser policies', () => {
       destination = {};
       sourceNodes: Array<{ started: number; stopped: number }> = [];
       constructor() { created.push(this); }
-      createBuffer(_channels: number, length: number, _rate: number) {
+      createBuffer(_channels: number, length: number) {
         const data = new Float32Array(length);
         return { getChannelData: () => data };
       }
       createGain() {
-        const gain = { value: 0, cancelScheduledValues: (_time: number) => {},
-          setValueAtTime(value: number, _time: number) { this.value = value; },
-          linearRampToValueAtTime(value: number, _time: number) { this.value = value; } };
-        return { gain, connect: (_target: unknown) => {}, disconnect: () => {} };
+        const gain = { value: 0, cancelScheduledValues: () => {},
+          setValueAtTime(value: number) { this.value = value; },
+          linearRampToValueAtTime(value: number) { this.value = value; } };
+        return { gain, connect: () => {}, disconnect: () => {} };
       }
       createBiquadFilter() {
         return { type: 'lowpass', frequency: { value: 0 },
-          connect: (_target: unknown) => {}, disconnect: () => {} };
+          connect: () => {}, disconnect: () => {} };
       }
       createBufferSource() {
         const record = { started: 0, stopped: 0 };
         this.sourceNodes.push(record);
-        return { buffer: null, loop: false, connect: (_target: unknown) => {},
+        return { buffer: null, loop: false, connect: () => {},
           disconnect: () => {}, start: () => { record.started++; },
           stop: () => { record.stopped++; } };
       }
