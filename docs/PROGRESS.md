@@ -1,3 +1,12 @@
+## Observer Plan 03 — N03-E Path Recovery / Fast CI (2026-10-19)
+
+- **Branch:** `feat/n03-e-path-recovery-fast-ci`, base `main@7e8c49bb` (N03-D PR #26 merged). PR #27 is a draft until final-head QA. **No automatic merge.**
+- Fast CI `checks` now runs npm ci/security audit/typecheck/lint/Vitest/build only. Full Chromium E2E and production smoke live in **manual** `full-e2e.yml`; Pages deploy is **manual-only**. No browser installation in push/PR workflow; see [instructions](observer-upgrade-2026/CI_FAST_AND_MANUAL_E2E.md).
+- Fixed real blocked-route gap: select truly reachable home/commons, or wait on current tile with `waitingForRoute`; bounded retry avoids false rest/travel and repeated blocked events. Inspector displays reason/retry. No teleport or N03-C guarded routing changes.
+- Added optional deterministic `ShelterRequest` tick input for future Plan 04; **no weather implementation, PRNG/save-schema change**. Existing N03-D event-POI routine remains.
+- Added `n03e.recovery.test.ts`; existing 720h paired economy matrix and historic goldens unchanged. **Final Fast CI and manual E2E status require actual verification; do not infer PASS from source alone.**
+- [Implementation](observer-upgrade-2026/N03_E_IMPLEMENTATION.md) · [Recovery QA](observer-upgrade-2026/N03_E_RECOVERY_QA.md) · [Performance](observer-upgrade-2026/N03_E_PERFORMANCE.md) · [N03-F handoff](observer-upgrade-2026/N03_E_HANDOFF.md).
+
 ## Observer Plan 03 — N03-D readable routines / POI (2026-10-19)
 
 - **Branch:** `feat/n03-d-readable-routines`, based on N03-C merge `f6e9a54b`. **PR/CI: PENDING; DO NOT MERGE** until branch final-head checks and post-merge N03-C gate are green.
