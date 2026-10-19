@@ -1,4 +1,4 @@
-import { createClock, type Speed } from '../sim/clock';
+import { createClock, type ObserverPaceMinutes, type Speed } from '../sim/clock';
 import { advanceOneTick } from '../sim/engine';
 import { foodAidRejection, type GovernanceCommand } from '../sim/governance';
 import { createWorld, type WorldState } from '../sim/world';
@@ -13,6 +13,7 @@ export type LivingSnapshot = Readonly<{
   renderPaths?: ReadonlyMap<number, readonly TilePosition[]>;
   selectedCitizenId: number | null;
   speed: Speed;
+  observerPaceMinutes: ObserverPaceMinutes | null;
   paused: boolean;
   lastPolicyMessage: string;
 }>;
@@ -20,6 +21,7 @@ export type LivingSnapshot = Readonly<{
 export type LivingCommand =
   | { type: 'select-citizen'; id: number | null }
   | { type: 'set-speed'; speed: Speed }
+  | { type: 'set-observer-pace'; minutesPerDay: ObserverPaceMinutes | null }
   | { type: 'set-paused'; paused: boolean }
   | { type: 'reset-seed'; seed: number; population?: 20 | 50 | 100 }
   | { type: 'trigger-food-aid' };
@@ -56,7 +58,7 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
       c.needMode = null;
     }
   }
-  let snapshot: LivingSnapshot = { world: initialWorld, selectedCitizenId: null, speed: 1,
+  let snapshot: LivingSnapshot = { world: initialWorld, selectedCitizenId: null, speed: 1, observerPaceMinutes: null,
     paused: false, lastPolicyMessage: '' };
   // The engine always advances each hour. The expensive observer UI can present
   // coherent snapshots less often at 5×/20× without altering the world or RNG.
@@ -81,7 +83,8 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
       (event.type === 'foodAid' || event.type === 'foodAidDenied'));
     snapshot = { ...snapshot, world,
       lastPolicyMessage: policyEvent ? policyEvent.reason : snapshot.lastPolicyMessage };
-    const ticksPerPaint = snapshot.speed === 20 ? 4 : snapshot.speed === 5 ? 2 : 1;
+    const ticksPerPaint = snapshot.observerPaceMinutes !== null ? 1 :
+      snapshot.speed === 20 ? 4 : snapshot.speed === 5 ? 2 : 1;
     if (world.tick % ticksPerPaint === 0) notify();
   });
   const resetElapsed = () => { lastMs = performance.now(); clock.reset(); };
@@ -123,7 +126,8 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
       presetPopulation = count <= 20 ? 20 : count <= 50 ? 50 : 100;
       clock.setPaused(true);
       snapshot = { world: restored.world, selectedCitizenId: null,
-        speed: clock.getSpeed(), paused: true, lastPolicyMessage: '' };
+        speed: clock.getSpeed(), observerPaceMinutes: clock.getObserverPaceMinutes(),
+        paused: true, lastPolicyMessage: '' };
       resetElapsed();
       notify();
     },
@@ -133,9 +137,15 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
         if (snapshot.selectedCitizenId === command.id) return false;
         snapshot = { ...snapshot, selectedCitizenId: command.id };
       } else if (command.type === 'set-speed') {
-        if (![1, 5, 20].includes(command.speed) || snapshot.speed === command.speed) return false;
+        if (![1, 5, 20].includes(command.speed) ||
+          (snapshot.speed === command.speed && snapshot.observerPaceMinutes === null)) return false;
         clock.setSpeed(command.speed);
-        snapshot = { ...snapshot, speed: command.speed };
+        snapshot = { ...snapshot, speed: command.speed, observerPaceMinutes: null };
+      } else if (command.type === 'set-observer-pace') {
+        if (command.minutesPerDay !== null && ![5, 10, 15].includes(command.minutesPerDay)) return false;
+        if (snapshot.observerPaceMinutes === command.minutesPerDay) return false;
+        clock.setObserverPaceMinutes(command.minutesPerDay);
+        snapshot = { ...snapshot, observerPaceMinutes: command.minutesPerDay };
       } else if (command.type === 'set-paused') {
         if (snapshot.paused === command.paused) return false;
         clock.setPaused(command.paused);

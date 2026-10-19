@@ -1,3 +1,11 @@
+## Observer Plan 04 — E04-A Clock ADR & Observer Pace (2026-10-19)
+
+- **Baseline verified:** PR #28 N03-F merged at `aa9de47cdd7cfab1e87b8c3217e41c64e2ac12dc`; [Fast CI after merge #39209568831](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39209568831) SUCCESS on that exact SHA.
+- **E04-A implementation branch:** `feat/e04-a-clock-observer-pace`; opt-in 5/10/15-minutes-per-day experimental runtime pacing. 1 tick = 1 game-hour, 24/day, legacy 1×/5×/20× 2/10/40 ticks/sec unchanged. Off by default; no weather, lighting, sim scheduling, save state or PRNG changes.
+- ADR: [E04_A_CLOCK_ADR.md](observer-upgrade-2026/E04_A_CLOCK_ADR.md). Handoff: [E04_A_HANDOFF.md](observer-upgrade-2026/E04_A_HANDOFF.md). Frozen N03-F `renderPaths` preserved; scene presents observer steps with ordinary tween (up to 450 ms), which is **not yet** convincing continuous movement over 12.5–37.5 seconds per tick.
+- Added deterministic clock/transition, full-state six-mode equality with an ordered world policy command, save/replay, hidden-tab/pause and true hourly path tests. [Pre-final Fast CI #39211980594](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39211980594) **PASS** on `519f29ee` (36 files, 290 tests, production audit 0, typecheck/lint/build), BEFORE the final docs/command-test change. **Final exact-HEAD CI must be checked in PR #29 before claiming acceptance.** Local npm steps unavailable in this isolated environment (network DNS); Full E2E, hardware FPS, screenshots and physical 30s/5min watchability **NOT RUN**. Visual/product gate PARTIAL; no default pace decision.
+- No auto-merge, optional browser workflow or Pages dispatch for this task.
+
 ## Observer Plan 03 — N03-F Performance & Watchability (2026-10-19)
 
 - **N03-E baseline verified:** PR #27 merged as `4b815aff5b3859ea8a47f682fbdc2a44552067ab`; [post-merge Fast CI #39198471157](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39198471157) completed **SUCCESS** on that SHA. This is not a N03-F PASS.
