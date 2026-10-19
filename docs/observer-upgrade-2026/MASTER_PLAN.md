@@ -11,6 +11,8 @@ Mục đích của bộ kế hoạch: một ChatGPT Task/AI coding agent đọc 
 
 **Thứ tự đọc bắt buộc:** README repo → docs/PROGRESS.md → docs/SIMULATION_CONTRACT.md → tài liệu này → plan con liên quan → source/test thật. Nếu tài liệu mâu thuẫn với code, **không âm thầm chọn một bên**: ghi rõ discrepancy, chọn phương án giữ bất biến và giải quyết bằng ADR/test trước khi sửa.
 
+**Cập nhật chính sách CI từ N03-E (2026-10-19):** PC local ưu tiên. PR/main chỉ bắt buộc Fast CI: audit, typecheck, lint, Vitest regression/seed matrix, build. Chromium/Playwright E2E và production browser smoke chỉ tồn tại ở workflow chạy **thủ công, tùy chọn**, **không phải merge gate**; GitHub Pages cũng manual-only. Các tiêu chí visual/screenshot lịch sử bên dưới vẫn hữu ích cho nghiệm thu sản phẩm khi có bằng chứng, nhưng không được dùng để tự động chặn các PR kỹ thuật như N03-F. Không tuyên bố đã kiểm tra FPS hoặc giao diện nếu chưa kiểm tra thực tế; xem [chính sách CI](CI_FAST_AND_MANUAL_E2E.md).
+
 **Các trạng thái:** PROPOSED (ý tưởng) → READY (đủ contract, phụ thuộc) → IN PROGRESS → VERIFIED (CI + bằng chứng) → MERGED. Bản plan READY không chứng nhận feature đã có.
 
 ## 1. North Star và ranh giới sản phẩm
