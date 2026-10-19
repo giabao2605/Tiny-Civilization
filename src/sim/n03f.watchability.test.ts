@@ -6,7 +6,7 @@ import { tileIndexAt } from './grid';
 import { getPathfindingDiagnostics, resetPathfindingDiagnostics } from './pathfinding';
 import { getRoutingDiagnostics, resetRoutingDiagnostics } from './routing';
 import { getWeightedPathDiagnostics, resetWeightedPathDiagnostics } from './weightedPathfinding';
-import { createWorld, dimensionsOf, marketTile, totalCurrency, walkable, type Citizen, type WorldState } from './world';
+import { createWorld, dimensionsOf, marketTile, totalCurrency, walkable, type Citizen, type WorldState, type WorldStateV6 } from './world';
 import { createWorld96 } from './world96';
 import { parseSave, serializeSave } from '../persistence/save';
 
@@ -132,7 +132,7 @@ describe('N03-F deterministic observer validation', () => {
   }, 120000);
 
   it('measures real blocked cooldown without a routeBlocked storm or ghost travel', () => {
-    let world = createWorld96(101, 20);
+    let world: WorldStateV6 = createWorld96(101, 20);
     const c = world.citizens.find(v => v.job === 'farmer')!;
     const at = marketTile(world);
     const dims = dimensionsOf(world);
