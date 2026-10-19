@@ -4,7 +4,7 @@ import { createWorld, type Terrain } from './world';
 import { createWorld96 } from './world96';
 import { findPath, getPathfindingDiagnostics, resetPathfindingDiagnostics } from './pathfinding';
 import {
-  findWeightedPath, traversalCostX10, getWeightedPathDiagnostics,
+  findWeightedPath, findTimeFirstWeightedPath, traversalCostX10, getWeightedPathDiagnostics,
   resetWeightedPathDiagnostics, type WeightedWorld, type WeightedPathStats,
 } from './weightedPathfinding';
 
@@ -55,6 +55,87 @@ function dijkstra(world: WeightedWorld, start: TilePosition, end: TilePosition):
     }
   }
 }
+
+describe('N03-C time-first weighted A* routing without extending NPC travel duration', () => {
+  it('keeps geometric minimum while using terrain cost to break shortest-path ties', () => {
+    const cheapDetour = miniature(['rrrrrrr', 'ggggggg', 'fffffff']);
+    const start = p(0, 1), end = p(6, 1);
+    const originalWeighted = findWeightedPath(cheapDetour, start, end)!;
+    const timeFirst = findTimeFirstWeightedPath(cheapDetour, start, end)!;
+    const bfs = findPath(cheapDetour, start, end)!;
+    expect(originalWeighted.length).toBeGreaterThan(bfs.length);
+    expect(timeFirst.length).toBe(bfs.length);
+    expect(cost(cheapDetour, timeFirst)).toBe(cost(cheapDetour, bfs));
+    assertCardinal(cheapDetour, start, end, timeFirst);
+
+    // Legacy BFS prefers north/east; the equally short southern road is cheaper.
+    const choices = miniature(['rgg', 'rrg', 'rrr']);
+    const from = p(0, 0), to = p(2, 2);
+    const cheapestShortest = findTimeFirstWeightedPath(choices, from, to)!;
+    expect(cheapestShortest).toEqual([p(0, 1), p(0, 2), p(1, 2), p(2, 2)]);
+    expect(cheapestShortest.length).toBe(findPath(choices, from, to)!.length);
+    expect(cost(choices, cheapestShortest)).toBeLessThan(cost(choices, findPath(choices, from, to)!));
+  });
+
+  it('matches independent lexicographic Dijkstra on varied small grids', () => {
+    const oracle = (world: WeightedWorld, start: TilePosition, end: TilePosition) => {
+      const { width, height } = world.schemaVersion === 5 ?
+        { width: 48, height: 48 } : world.map;
+      const size = width * height;
+      const bestSteps = new Array<number>(size).fill(Infinity);
+      const bestCost = new Array<number>(size).fill(Infinity);
+      const done = new Set<number>();
+      const startIndex = start.y * width + start.x, endIndex = end.y * width + end.x;
+      if (traversalCostX10(world, start) === null || traversalCostX10(world, end) === null) return null;
+      bestSteps[startIndex] = 0; bestCost[startIndex] = 0;
+      while (true) {
+        let current = -1;
+        for (let i = 0; i < size; i++) {
+          if (done.has(i) || !Number.isFinite(bestSteps[i]!)) continue;
+          if (current < 0 || bestSteps[i]! < bestSteps[current]! ||
+             bestSteps[i] === bestSteps[current] && bestCost[i]! < bestCost[current]!)
+            current = i;
+        }
+        if (current < 0) return null;
+        if (current === endIndex) return { steps: bestSteps[current]!, cost: bestCost[current]! };
+        done.add(current);
+        const x = current % width, y = Math.floor(current / width);
+        for (const neighbor of [p(x, y - 1), p(x + 1, y), p(x, y + 1), p(x - 1, y)]) {
+          if (neighbor.x < 0 || neighbor.y < 0 || neighbor.x >= width || neighbor.y >= height) continue;
+          const edge = traversalCostX10(world, neighbor);
+          if (edge === null) continue;
+          const idx = neighbor.y * width + neighbor.x;
+          const nextSteps = bestSteps[current]! + 1;
+          const nextCost = bestCost[current]! + edge;
+          if (nextSteps < bestSteps[idx]! || nextSteps === bestSteps[idx] && nextCost < bestCost[idx]!) {
+            bestSteps[idx] = nextSteps; bestCost[idx] = nextCost;
+          }
+        }
+      }
+    };
+    for (let seed = 1; seed <= 12; seed++) {
+      const alphabet = 'gggrrrrfffww';
+      const rows = Array.from({ length: 6 }, (_, y) =>
+        Array.from({ length: 7 }, (_, x) => alphabet[(x * 17 + y * 29 + seed * 23 + x * y) % alphabet.length]!).join(''));
+      const world = miniature(rows);
+      for (let n = 0; n < 10; n++) {
+        const start = p((n + seed) % 7, (n * 3 + seed) % 6);
+        const end = p((n * 4 + seed) % 7, (n + seed * 2) % 6);
+        const oracleRoute = oracle(world, start, end);
+        const stats: WeightedPathStats = { expandedNodes: -1, totalCostX10: null };
+        const actual = findTimeFirstWeightedPath(world, start, end, stats);
+        expect(actual === null).toBe(oracleRoute === null);
+        if (actual && oracleRoute) {
+          assertCardinal(world, start, end, actual);
+          expect(actual.length).toBe(oracleRoute.steps);
+          expect(cost(world, actual)).toBe(oracleRoute.cost);
+          expect(stats.totalCostX10).toBe(oracleRoute.cost);
+          expect(findTimeFirstWeightedPath(world, start, end)).toEqual(actual);
+        }
+      }
+    }
+  });
+});
 
 describe('N03-B weighted A* independent of production behavior', () => {
   it('handles same tile, OOB, water, malformed size and unreachable', () => {
