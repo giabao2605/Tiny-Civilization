@@ -280,6 +280,12 @@ export function App() {
                   onClick={() => { if (selectedCitizenId !== null) cameraControls?.followNpc(selectedCitizenId); }}>
                   Theo dõi NPC
                 </button>
+                <button type="button" className="ghost-button" data-testid="camera-highlights"
+                  disabled={!cameraControls || cameraView?.reducedMotion}
+                  aria-pressed={cameraView?.mode === 'afk'}
+                  onClick={() => cameraControls?.startHighlightsTour()}>
+                  Xem hoạt động
+                </button>
                 <button type="button" className="ghost-button" data-testid="camera-afk-toggle"
                   disabled={!cameraControls || cameraView?.reducedMotion}
                   aria-pressed={cameraView?.afkEnabled ?? false}
