@@ -74,7 +74,8 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
   };
   const clock = createClock(() => {
     const world = advanceOneTick(snapshot.world, pending);
-    recordMovement(pendingVisualMoves, world);
+    // At 1× every published world contains the entire hourly lastMove already.
+    if (snapshot.speed !== 1) recordMovement(pendingVisualMoves, world);
     pending = [];
     const policyEvent = world.events.slice().reverse().find(event => event.tick === world.tick &&
       (event.type === 'foodAid' || event.type === 'foodAidDenied'));
