@@ -82,6 +82,12 @@ describe('N03-E blocked goal recovery and future shelter adapter', () => {
     const result = next.citizens.find(c => c.id === citizen.id)!;
     expect(result.goal).toBe('commons');
     expect(result.reason).toContain('quảng trường');
+    const waiting = advanceOneTick(next);
+    const stillSafe = waiting.citizens.find(c => c.id === citizen.id)!;
+    expect(stillSafe.goal).toBe('commons');
+    expect(stillSafe.blockedGoal).toBe('home');
+    expect(stillSafe.reason).toContain('quảng trường');
+    expect(waiting.events.filter(e => e.type === 'routeBlocked' && e.citizenId === citizen.id)).toHaveLength(1);
     expect(result.lastMove.every(p => walkable(next, p))).toBe(true);
     movesLegally(next, citizen.id);
   });
