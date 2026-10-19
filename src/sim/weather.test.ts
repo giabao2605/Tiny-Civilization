@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { advanceOneTick, advanceTicks } from './engine';
-import { createWorld, totalCurrency } from './world';
+import { createWorld, totalCurrency, type WorldStateV6 } from './world';
 import { createWorld96 } from './world96';
 import { createWeather, advanceWeather, validateWeather, WEATHER_MAX_DWELL, WEATHER_MIN_DWELL } from './weather';
 import { canonicalV5Projection, parseSave, serializeSave, validateWorld, WEATHER_SAVE_FORMAT } from '../persistence/save';
@@ -159,7 +159,7 @@ describe('E04-C weather integration and save compatibility', () => {
 
   it('resumes immediately before and exactly on a transition boundary', () => {
     const seed = 187;
-    let before = createWorld96(seed, 20);
+    let before: WorldStateV6 = createWorld96(seed, 20);
     const boundary = before.weather.nextTransitionTick;
     before = advanceTicks(before, boundary - 1);
     const recovered = parseSave(serializeSave(before)).world;

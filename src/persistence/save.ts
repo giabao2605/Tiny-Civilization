@@ -2,7 +2,7 @@ import { BALANCE } from '../sim/balance';
 import { GRID_HEIGHT, GRID_WIDTH, isValidTileAt, type WorldDimensions } from '../sim/grid';
 import { validateWorld96Layout, type World96LayoutSource } from '../sim/world96Layout';
 import type { GovernanceCommand } from '../sim/governance';
-import type { LegacyWorldState, WorldState } from '../sim/world';
+import type { LegacyWorldState, WorldState, WorldStateV6 } from '../sim/world';
 import { createWeather, validateWeather } from '../sim/weather';
 
 /** Phase 06 saves are explicitly incompatible with other schemas or engine rules. */
@@ -425,7 +425,8 @@ function parseEnvelope(json: string, migrate: boolean): RestoredSave {
   // Complete validation of the original bytes and command queue precedes migration.
   // Historical v5 parsing remains byte-identical when migrate=false.
   const world: WorldState = isLegacy && migrate ? migrateLegacyWorld(envelope.world as LegacyWorldState)
-    : isOldV6 ? { ...envelope.world, weather: createWeather(envelope.world.seed, envelope.world.tick) }
+    : isOldV6 ? { ...(envelope.world as WorldStateV6),
+        weather: createWeather(envelope.world.seed, envelope.world.tick) }
       : envelope.world;
   return { world, pending, nextRequestId };
 }
