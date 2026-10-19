@@ -20,3 +20,9 @@ The broad invariant test runs **outside** the per-tick timer. Its runtime still 
 
 ## Results
 N03-C six-cell comparison and final-HEAD CI: **PENDING**. Publish observed results including any slowdowns; do not import N03-B microbench values and label them integrated N03-C performance.
+
+## Completed initial direct terrain-optimal N03-C comparison (superseded)
+[Initial full PASS CI #39020811689](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39020811689) ran all 720-tick paired samples, but passed despite economic/survival regression. On 96×96 / 50 NPC / seed 101: BFS tick p95 4.441ms, A* 4.949ms, deaths 6→20, transactions 702→554, produced food 1131→834. On 96×96 / 100 NPC / seeds 101,107,12345: baseline/weighted p95 8.291/10.037ms, 7.797/9.524ms, 6.754/11.601ms; deaths 2/6, 1/4, 0/8. These hosted-Linux values are observations of the **discarded terrain-only production policy**, not final routing performance.
+
+## Corrective time-first A* (2026-10-19)
+To align with 4 tiles per game hour, the production route now minimizes step count and terrain cost lexicographically. It retains `findWeightedPath` for the N03-B unconstrained terrain optimum and its benchmarks. Benchmark logs still carry the `strategy:'weighted'` key, but that key now denotes the **time-first weighted production mode**, not the previous terrain-only route. The final 720-tick matrix and p50/p95 numbers must be taken from the **new corrective HEAD CI**, never relabeled from #39020811689. A* may still be computationally slower than BFS; no speedup claim is authorized. Windows GPU/60–120-minute soak remains PARTIAL.
