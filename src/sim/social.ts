@@ -57,9 +57,8 @@ export function applyInteraction(world: WorldState, actorId: number, targetId: n
     const commons = world.sites.find((s) => s.kind === 'commons');
     const atCommons = !!commons && actor.tile.x === commons.tile.x && actor.tile.y === commons.tile.y &&
       actor.goal === 'commons' && target.goal === 'commons';
-    const visitPoi = actor.goal === 'leisure' && target.goal === 'leisure'
+    const eventPoi = actor.goal === 'leisure' && target.goal === 'leisure'
       ? poiAt(world, actor.tile) : null;
-    const eventPoi = visitPoi?.role === 'event' ? visitPoi : null;
     if (!atCommons && !eventPoi) return false;
     change = BALANCE.socialPositiveChat;
     cause = eventPoi ? 'Trò chuyện trực tiếp tại ' + eventPoi.label + '.' :
@@ -304,8 +303,7 @@ export function advanceSocial(world: WorldState, emit: Emit, scarcity: ScarcityW
         housing(world).capacity < world.citizens.filter((c) => c.alive).length) kind = 'housing';
       else if ((actor.goal === 'commons' && other.goal === 'commons' &&
         actor.tile.x === commons.tile.x && actor.tile.y === commons.tile.y) ||
-        (actor.goal === 'leisure' && other.goal === 'leisure' &&
-          poiAt(world, actor.tile)?.role === 'event')) kind = 'chat';
+        (actor.goal === 'leisure' && other.goal === 'leisure' && poiAt(world, actor.tile))) kind = 'chat';
       else {
         const node = world.resourceNodes.find((n) => actor.workNodeId === n.id && other.workNodeId === n.id &&
           n.stock > 0 && n.tile.x === actor.tile.x && n.tile.y === actor.tile.y);

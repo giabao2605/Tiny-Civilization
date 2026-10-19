@@ -32,11 +32,7 @@ describe('N03-D purposeful POI routines and causal observation', () => {
     expect(chooseLeisurePoi(world, { ...citizen, needMode: 'rest' }, 18, 18)).toBeNull();
     expect(chooseLeisurePoi(world, { ...citizen, energy: 20 }, 18, 18)).toBeNull();
     const decoration = world.layout.pois.find(p => p.role === 'decorative')!;
-    expect(poiAt(world, decoration.tile)?.role).toBe('decorative');
-    const unusable = world.layout.pois.find(p => p.kind === 'fence')!;
-    expect(poiAt(world, unusable.tile)).toBeNull();
-    const scenic = world.layout.pois.find(p => p.kind === 'fountain')!;
-    expect(chooseLeisurePoi(world, { ...citizen, tile: scenic.tile }, 18, 18)?.id).toBe(scenic.id);
+    expect(poiAt(world, decoration.tile)).toBeNull();
     expect(chooseLeisurePoi(createWorld(101, 20), citizen, 18, 18)).toBeNull();
   });
 

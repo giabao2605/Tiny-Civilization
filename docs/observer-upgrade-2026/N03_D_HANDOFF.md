@@ -4,7 +4,7 @@
 
 - Base: `main@f6e9a54b8158d362a5b617c1ae6ab50bcc5b957e`, PR #25 merged.
 - Branch: `feat/n03-d-readable-routines`. Candidate code intentionally **not merged**.
-- Implementation: `src/sim/leisure.ts` and minimal engine/world/social/save/Inspector integration. Event POIs allow real colocated social chat; six selected scenic props allow quiet visits only, with authored map metadata completely unchanged for save compatibility.
+- Implementation: `src/sim/leisure.ts` and minimal engine/world/social/save/Inspector integration.
 - Evidence: `src/sim/n03d.routines.test.ts`, `tests/e2e/n03d-leisure.spec.ts`; reused 720-hour N03-C tests now log POI visits and idle hours; no N03-C routing algorithm edits.
 - More: [implementation](N03_D_IMPLEMENTATION.md), [behavior QA](N03_D_BEHAVIOR_QA.md), [performance](N03_D_PERFORMANCE.md), [progress](../PROGRESS.md).
 

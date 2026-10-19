@@ -11,16 +11,10 @@ export const LEISURE_MAX_STEPS = BALANCE.moveTilesPerHour * 2;
 const distance = (a: TilePosition, b: TilePosition): number =>
   Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 
-/** A deliberately small set of scenic props are legitimate quiet stops, never economy sites. */
-const SCENIC_KINDS = new Set<Poi96['kind']>([
-  'garden', 'fountain', 'shade-tree', 'flowerbed', 'wildflowers', 'fallen-log',
-]);
-export function visitablePoi(poi: Poi96): boolean {
-  return poi.role === 'event' || SCENIC_KINDS.has(poi.kind);
-}
+/** POI labels are observational; no POI creates a resource site or entitlement. */
 export function poiAt(world: WorldState, tile: TilePosition): Poi96 | null {
   if (world.schemaVersion !== 6 || !world.layout) return null;
-  return world.layout.pois.find(p => visitablePoi(p) &&
+  return world.layout.pois.find(p => p.role === 'event' &&
     p.tile.x === tile.x && p.tile.y === tile.y) ?? null;
 }
 
@@ -41,7 +35,7 @@ export function chooseLeisurePoi(world: WorldState, c: Citizen, tick: number, ho
     c.health < 65 || c.hunger < 72 || c.energy < 50 ||
     (c.inventory.food === 0 && (c.wallet < world.market.prices.foodSell || world.inventory.food === 0)))
     return null;
-  const candidates = world.layout.pois.filter(p => visitablePoi(p) && walkable(world, p.tile) &&
+  const candidates = world.layout.pois.filter(p => p.role === 'event' && walkable(world, p.tile) &&
     distance(c.tile, p.tile) <= LEISURE_MAX_STEPS)
     .sort((a, b) => distance(c.tile, a.tile) - distance(c.tile, b.tile) ||
       a.id.localeCompare(b.id));

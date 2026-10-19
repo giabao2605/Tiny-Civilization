@@ -8,7 +8,7 @@ Compare branch-HEAD metrics against final N03-C main hosted CI [#39187351220](ht
 
 ## Expected cost and constraints (hypotheses, not observed results)
 
-- Exactly one eligible POI lookup **per eligible citizen at 18:00**; at most existing 24 authored POIs are scanned, filtered to purposeful event/scenic kinds, sorted by distance and stable ID; only ≤8-step candidates require BFS reachability probes.
+- Exactly one eligible POI lookup **per eligible citizen at 18:00**; at most existing 24 authored POIs are scanned, sorted by distance and stable ID; only ≤8-step candidates require BFS reachability probes.
 - At most one additional authoritative route request on a successful evening POI decision, with no per-frame pathfinding, no new cache/worker/global state.
 - A visit is at most two moves + one stationary hour, so long detours and infinite social walks are excluded structurally.
 - Additional social encounters may consume the existing bounded social PRNG and interaction budget, but cannot generate assets or economy currency.
