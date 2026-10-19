@@ -52,6 +52,6 @@ The synthetic 25h water island had five routeBlocked notices at ticks 6 (work), 
 
 ## Render-layer follow-up and cost
 
-At 5×/20×, `movementTrace.ts` accumulates the actual at-most-four cardinal steps for each game-hour over the already batched UI-paint window. At 1× the trace is not collected. This adds short-lived per-NPC display-only path arrays; there is no retained cache/worker and nothing to serialize. The previously measured `N03C_SIM_BENCH` algorithm timings describe **simulation only** and are not evidence of any Phaser render speedup. Browser frame-time, camera jitter and GPU effects remain **NOT VERIFIED** pending manual E2E / physical Windows measurements.
+At 5×/20×, `movementTrace.ts` accumulates the actual at-most-four cardinal steps for each game-hour over the already batched UI-paint window. At 1× the trace is not collected. This adds short-lived per-NPC display-only path arrays; there is no retained cache/worker and nothing to serialize. The previously measured `N03C_SIM_BENCH` algorithm timings describe **simulation only** and are not evidence of any Phaser render speedup. Browser frame-time, camera jitter and GPU effects remain **NOT VERIFIED** without optional manual E2E or physical Windows measurements; these are explicitly non-blocking to Fast CI under N03-E policy.
 
 Camera activity priority performs a bounded filter/sort over at most 100 production NPCs and bounded recent events only when switching tour shots, not every render frame. No engine PRNG or routing counters are changed.
