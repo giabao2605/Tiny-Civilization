@@ -24,7 +24,13 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
   fixture?: 'governance-food-shortage' | 'governance-empty-reserve' | 'n03d-leisure-poi') {
   let presetPopulation = initialPopulation;
   // Explicit development/test scenario, not a player command or an engine shortcut.
-  const initialWorld: WorldState = fixture ? createWorld(initialSeed, initialPopulation) : createWorld96(initialSeed, initialPopulation);
+  const legacyGovernanceFixture = fixture === 'governance-food-shortage' ||
+    fixture === 'governance-empty-reserve';
+  // Only the historical governance scenarios need a v5 48×48 bootstrap.
+  // N03-D requires real 96×96 layout.pois; a truthy fixture must not force v5.
+  const initialWorld: WorldState = legacyGovernanceFixture
+    ? createWorld(initialSeed, initialPopulation)
+    : createWorld96(initialSeed, initialPopulation);
   if (fixture === 'governance-food-shortage' || fixture === 'governance-empty-reserve') {
     initialWorld.inventory.food = fixture === 'governance-empty-reserve' ? 0 : 12;
     for (const c of initialWorld.citizens.slice(0, 6)) {
