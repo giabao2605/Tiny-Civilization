@@ -223,7 +223,12 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
 
     // Leisure is subordinate to every emergency and economic obligation above.
     // Historic 48x48 worlds cannot select or continue new routines.
-    const leisurePoi = requested === 'commons' && continuingLeisure(citizen, tick, hour)
+    // The ordinary home schedule begins at 20:00. An already-started visit may
+    // finish this last hour, unless an actual rest/food/guardian duty supersedes it.
+    const continueWindow = requested === 'commons' ||
+      (hour === 20 && requested === 'home' && citizen.needMode === null &&
+        !guardiansWithHungryDependents.has(citizen.id));
+    const leisurePoi = continueWindow && continuingLeisure(citizen, tick, hour)
       ? poiAt(world, citizen.destination)
       : requested === 'commons' ? chooseLeisurePoi(world, citizen, tick, hour) : null;
     if (leisurePoi) requested = 'leisure';
