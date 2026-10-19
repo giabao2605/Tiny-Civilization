@@ -29,7 +29,7 @@ test('N03-F: real 96x96 canvas, 100-NPC follow and inspector across three game d
   await page.getByRole('button', { name: '20×' }).click();
   await page.getByRole('button', { name: 'Tiếp tục' }).click();
   const tick = async () =>
-    Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\\d+)/)?.[1] ?? 0);
+    Number((await page.getByTestId('world-tick').innerText()).match(/Tick (\d+)/)?.[1] ?? 0);
   await expect.poll(tick, { timeout: 130_000, intervals: [500, 1000] }).toBeGreaterThanOrEqual(72);
   await page.getByRole('button', { name: 'Tạm dừng' }).click();
   await expect(page.getByTestId('camera-status')).toHaveAttribute('data-mode', 'follow');
