@@ -61,7 +61,7 @@ function ids(value: unknown, path: string, max: number, allowed: ReadonlySet<num
   }
 }
 const activities = ['rest', 'travelToWork', 'atWork', 'travelToCommons', 'socialIdle',
-  'travelHome', 'travelToFood', 'eating', 'waitingForFood', 'dead', 'travelToMarket',
+  'travelHome', 'travelToFood', 'eating', 'waitingForFood', 'waitingForRoute', 'dead', 'travelToMarket',
   'trading', 'travelToBuild', 'building', 'travelToLeisure', 'leisureIdle'];
 const goals = ['home', 'work', 'commons', 'food', 'sell', 'build', 'leisure'];
 const eventTypes = ['founded', 'departure', 'work', 'gather', 'home', 'routeBlocked',

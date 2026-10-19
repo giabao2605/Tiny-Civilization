@@ -144,3 +144,7 @@ Thay `npm run dev` bằng `npm run preview` để xem bản build (nếu đã bu
 - **Số đo browser CI (Chromium headless, 100 NPC, 20×, 45 frame):** trung bình **25 FPS**, p95 frame **83.3 ms**, một mẫu JS heap **81.4 MB**. Có giật hình; **không tuyên bố 60 FPS**. Node tick p95 100 NPC trên lượt chạy này chưa trích xuất; lượt trước cùng code lõi là 8.841 ms/tick. Các phép đo phụ thuộc máy runner; chưa kiểm tra trên điện thoại vật lý.
 - **10 seed × 30 ngày ở 100 NPC:** kịch bản thường bảo toàn 100 dân, không thiếu food ở mốc lấy mẫu; kịch bản famine cố ý cắt toàn bộ food và tái sinh ruộng khiến cả 100 NPC chết trong 30 ngày nhưng không âm tài sản, không tạo hàng vô hạn. Không coi thử nghiệm cực đoan là cân bằng mặc định.
 - **Chưa phát hành Phase 07.** Playtest với người mới chưa thực hiện; xem [PROGRESS](docs/PROGRESS.md) để biết gate còn mở và phân biệt số đo Node / browser / thiết bị vật lý.
+
+## Development checks: fast by default, browser manually
+
+Pull requests and pushes to main execute all unit/integration/720-hour deterministic checks plus typecheck, lint, dependency audit and production build, **without Chromium**. To run Chromium E2E and production smoke, dispatch **Tiny Civilization Full E2E (manual)** from GitHub Actions on the intended ref. GitHub Pages deploy is also manual-only because local PC play is the primary target. See [Fast CI workflow guide](docs/observer-upgrade-2026/CI_FAST_AND_MANUAL_E2E.md).
