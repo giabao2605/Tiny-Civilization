@@ -111,6 +111,9 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.highlighter.fillStyle(0xffe7a3, 0.9).fillTriangle(-3, -15, 3, -15, 0, -11);
     this.paintLighting();
     this.weatherLayer = new WeatherLayer(this, this.world);
+    // Local dev-only particle-OFF comparison; authoritative weather is untouched.
+    if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('weatherParticles') === 'off')
+      this.weatherLayer.setParticlesEnabled(false);
     this.input.on(Phaser.Input.Events.POINTER_DOWN, this.onDown);
     this.input.on(Phaser.Input.Events.POINTER_MOVE, this.onMove);
     this.input.on(Phaser.Input.Events.POINTER_UP, this.onUp);

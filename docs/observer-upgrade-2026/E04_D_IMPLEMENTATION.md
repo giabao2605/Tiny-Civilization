@@ -5,7 +5,7 @@
 ## Implementation
 - src/game/render/weatherVisuals.ts: pure clear/cloudy/rain/fog presets, bounded easing, deterministic tile plan and capped particle descriptors.
 - src/game/render/weatherLayer.ts: world-anchored wet network, sparse puddles/lake ripples, moving cloud silhouettes, low-alpha depth fog, viewport-bounded rain.
-- src/game/scenes/WorldScene.ts: create, retarget from snapshots, update in render frames, reduced-motion, pause/hidden, particle-OFF QA toggle and cleanup.
+- src/game/scenes/WorldScene.ts: create, retarget from snapshots, update in render frames, reduced-motion, pause/hidden, particle-OFF QA toggle and cleanup. For local Vite visual QA, append ?weatherParticles=off to the URL.
 - src/game/render/weatherVisuals.test.ts: four kinds, finite intensity, visual retargeting, seed fixtures, 48/96 world geometry, 20/50/100 NPC immutability and fixed pool.
 
 ## Requirements preserved

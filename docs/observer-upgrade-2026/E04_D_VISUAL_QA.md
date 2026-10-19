@@ -12,7 +12,7 @@ Each authoritative initial weather state persists at least 24 game ticks. These 
 ## Mandatory live acceptance
 Capture clear/cloudy/rain/fog at 48x48 and 96x96 with seed, tick, weather kind/intensity, viewport, NPC count and camera recorded. Prioritize 1366x768, 1920x1080 and 2560x1080; sunrise clear at 06:00, midday rain at 12:00, dusk cloudy at 18:00, night fog/rain at 23:00. Check original ArtKit palette, distinct cloudy/fog gradients, wet roads anchored when pan/zoom, NPC/roads visible, stable night window/street lights, and no UI overlays.
 
-Call WorldScene.setWeatherParticlesEnabled(false) in a local debug session and repeat rain, fog, cloudy/clear at the **same** snapshot to verify non-particle recognition. Check pause/resume, 1x/5x/20x, Observer Pace 5/10/15 minutes per day, hidden tab, fit/follow/pan/zoom, resize, 20/50/100 NPC, legacy v5/v6 import, reset, reduced motion and scene restart without leaked objects/textures.
+Open the Vite localhost URL with ?weatherParticles=off (development-only), or call WorldScene.setWeatherParticlesEnabled(false) via a scene debugger and repeat rain, fog, cloudy/clear at the **same** snapshot to verify non-particle recognition. Check pause/resume, 1x/5x/20x, Observer Pace 5/10/15 minutes per day, hidden tab, fit/follow/pan/zoom, resize, 20/50/100 NPC, legacy v5/v6 import, reset, reduced motion and scene restart without leaked objects/textures.
 
 ## Evidence ledger
 | Gate | Status |
