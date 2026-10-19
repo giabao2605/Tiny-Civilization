@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { advanceOneTick } from './engine';
 import { tileIndexAt } from './grid';
 import { totalCurrency } from './world';
+import { parseSave, serializeSave } from '../persistence/save';
 import { createWorld } from './world';
 import { createWorld96 } from './world96';
 import { shouldShelterFromRain } from './weatherShelter';
@@ -50,6 +51,20 @@ describe('E04-E deterministic rain shelter', () => {
       expect(shouldShelterFromRain(world, world.citizens[0]!, 'commons')).toBe(false);
     }
     expect(shouldShelterFromRain(createWorld(1, 20), createWorld(1, 20).citizens[0]!, 'commons')).toBe(false);
+  });
+
+  it('uses owned homes on migrated v6 48x48 without altering frozen v5 behavior', () => {
+    const legacy = createWorld(1, 50);
+    const oldResident = legacy.citizens.find(c => c.homeId !== null)!;
+    expect(shouldShelterFromRain(legacy, oldResident, 'commons')).toBe(false);
+    const restored = parseSave(serializeSave(legacy)).world;
+    expect(restored.schemaVersion).toBe(6);
+    if (restored.schemaVersion !== 6) throw new Error('expected v6');
+    expect(restored.map).toEqual({ width: 48, height: 48 });
+    restored.weather.kind = 'rain'; restored.weather.intensity = 0.95;
+    const candidates = restored.citizens.filter(c => shouldShelterFromRain(restored, c, 'commons'));
+    expect(candidates.length).toBeGreaterThan(0);
+    expect(candidates.length).toBeLessThan(restored.citizens.length);
   });
 
   it('routes towards a real owned home during social time without teleport or money mutation', () => {
