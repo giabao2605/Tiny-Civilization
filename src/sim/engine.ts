@@ -2,6 +2,7 @@ import type { TilePosition } from './grid';
 import { BALANCE, clampNeed } from './balance';
 import { buyFromMarket, sellToMarket, startConstruction, buildOneHour, assignBuilder } from './economy';
 import { findPath } from './pathfinding';
+import { defaultRoutingStrategy, resolvePath, type RoutingStrategy } from './routing';
 import { nextRandom } from './prng';
 import { advanceSocial, cleanupDeath, type ScarcityWitness } from './social';
 import { beginGovernanceTick, advanceGovernanceAfterCitizens, applyFoodAid, applyIllnessHealth,
@@ -42,6 +43,8 @@ function localHome(world: WorldState, citizen: Citizen): TilePosition {
 function availableNode(world: WorldState, citizen: Citizen, occupancy: Map<number, number>): ResourceNode | null {
   const kind = citizen.job === 'farmer' ? 'field' : citizen.job === 'woodcutter' ? 'forest' : null;
   if (!kind) return null;
+  // BFS is a reachability probe for producer assignment, not the route chosen
+  // for movement. Keep this cheap and identical across routing strategies.
   // Preserve a reachable active work commitment: rebalancing every tick can
   // reset travel/work progress and permanently starve slower settlements.
   const assigned = world.resourceNodes.find((node) => node.id === citizen.workNodeId && node.kind === kind &&
@@ -63,10 +66,11 @@ function availableNode(world: WorldState, citizen: Citizen, occupancy: Map<numbe
 }
 
 // Preserve static v5 return types for frozen historical tests and independent v6 worlds.
-export function advanceOneTick(previous: LegacyWorldState, commands?: GovernanceCommand[]): LegacyWorldState;
-export function advanceOneTick(previous: WorldStateV6, commands?: GovernanceCommand[]): WorldStateV6;
-export function advanceOneTick(previous: WorldState, commands?: GovernanceCommand[]): WorldState;
-export function advanceOneTick(previous: WorldState, commands: GovernanceCommand[] = []): WorldState {
+export function advanceOneTick(previous: LegacyWorldState, commands?: GovernanceCommand[], strategy?: RoutingStrategy): LegacyWorldState;
+export function advanceOneTick(previous: WorldStateV6, commands?: GovernanceCommand[], strategy?: RoutingStrategy): WorldStateV6;
+export function advanceOneTick(previous: WorldState, commands?: GovernanceCommand[], strategy?: RoutingStrategy): WorldState;
+export function advanceOneTick(previous: WorldState, commands: GovernanceCommand[] = [],
+  strategy: RoutingStrategy = defaultRoutingStrategy(previous)): WorldState {
   const tick = previous.tick + 1;
   const day = dayOf(tick);
   const hour = hourOf(tick);
@@ -249,13 +253,13 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
     if (citizen.goal !== desired || !same(citizen.destination, target)) {
       citizen.goal = desired;
       citizen.destination = { ...target };
-      const path = findPath(world, citizen.tile, target);
+      const path = resolvePath(world, citizen.tile, target, strategy);
       if (path === null) {
         citizen.blockedGoal = requested;
         citizen.retryAfterTick = tick + BALANCE.retryBlockedAfterHours;
         citizen.goal = 'home';
         citizen.destination = { ...localHome(world, citizen) };
-        citizen.route = findPath(world, citizen.tile, citizen.destination) ?? [];
+        citizen.route = resolvePath(world, citizen.tile, citizen.destination, strategy) ?? [];
         citizen.workNodeId = null;
         citizen.workHours = 0;
         citizen.reason = 'Không thể tới mục tiêu, quay về nơi an toàn.';
@@ -277,7 +281,7 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
       citizen.retryAfterTick = tick + BALANCE.retryBlockedAfterHours;
       citizen.goal = 'home';
       citizen.destination = { ...localHome(world, citizen) };
-      citizen.route = findPath(world, citizen.tile, citizen.destination) ?? [];
+      citizen.route = resolvePath(world, citizen.tile, citizen.destination, strategy) ?? [];
       citizen.workNodeId = null;
       citizen.workHours = 0;
       citizen.reason = 'Đường đi bị chặn; tìm tuyến về nơi nghỉ.';
@@ -446,13 +450,13 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
   return world;
 }
 
-export function advanceTicks(world: LegacyWorldState, count: number): LegacyWorldState;
-export function advanceTicks(world: WorldStateV6, count: number): WorldStateV6;
-export function advanceTicks(world: WorldState, count: number): WorldState;
-export function advanceTicks(world: WorldState, count: number): WorldState {
+export function advanceTicks(world: LegacyWorldState, count: number, strategy?: RoutingStrategy): LegacyWorldState;
+export function advanceTicks(world: WorldStateV6, count: number, strategy?: RoutingStrategy): WorldStateV6;
+export function advanceTicks(world: WorldState, count: number, strategy?: RoutingStrategy): WorldState;
+export function advanceTicks(world: WorldState, count: number, strategy?: RoutingStrategy): WorldState {
   if (!Number.isSafeInteger(count) || count < 0) throw new Error('Invalid tick count');
   let state = world;
-  for (let i = 0; i < count; i += 1) state = advanceOneTick(state);
+  for (let i = 0; i < count; i += 1) state = advanceOneTick(state, [], strategy);
   return state;
 }
 export function stateDigest(world: WorldState): string {

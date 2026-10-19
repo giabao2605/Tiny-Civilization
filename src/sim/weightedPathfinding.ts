@@ -115,11 +115,14 @@ class MinHeap {
 }
 
 /**
- * Deterministic optimal four-direction A*. Edge cost is destination tile cost.
- * Does not consume world RNG or touch engine.ts; production BFS is unchanged.
+ * Deterministic four-direction A*. 'terrain' is the original N03-B
+ * unconstrained cost optimum. 'time-first' is for production NPC routing:
+ * minimum tile count first, and minimum terrain cost among those routes.
+ * Four tiles always cost one in-game hour regardless of terrain; an unconstrained
+ * low-cost detour can starve citizens by consuming extra game hours.
  */
-export function findWeightedPath(world: WeightedWorld, start: TilePosition, end: TilePosition,
-  stats?: WeightedPathStats): TilePosition[] | null {
+function searchWeightedPath(world: WeightedWorld, start: TilePosition, end: TilePosition,
+  stats: WeightedPathStats | undefined, mode: 'terrain' | 'time-first'): TilePosition[] | null {
   weightedPathCalls += 1;
   let expanded = 0;
   const finish = (route: TilePosition[] | null, cost: number | null): TilePosition[] | null => {
@@ -136,12 +139,15 @@ export function findWeightedPath(world: WeightedWorld, start: TilePosition, end:
   if (!costs[first] || !costs[last]) return finish(null, null);
   if (first === last) return finish([], 0);
   const width = dim.width, height = dim.height;
+  // A one-step difference must dominate the maximum possible terrain-cost
+  // difference of any simple route. This is safely exact for a 96x96 grid.
+  const stepBias = mode === 'time-first' ? costs.length * MOVEMENT_COST_X10.forest + 1 : 0;
   const best = new Float64Array(costs.length).fill(Infinity);
   const parent = new Int32Array(costs.length).fill(-1);
   const visited = new Uint8Array(costs.length);
   const heuristic = (index: number): number => (
     Math.abs(index % width - end.x) + Math.abs(Math.floor(index / width) - end.y)
-  ) * MOVEMENT_COST_X10.main;
+  ) * (stepBias + MOVEMENT_COST_X10.main);
   const open = new MinHeap();
   best[first] = 0;
   open.push({ index: first, g: 0, f: heuristic(first) });
@@ -156,7 +162,7 @@ export function findWeightedPath(world: WeightedWorld, start: TilePosition, end:
       for (let i = last; i !== first; i = parent[i]!) {
         reversed.push({ x: i % width, y: Math.floor(i / width) });
       }
-      return finish(reversed.reverse(), best[last]!);
+      return finish(reversed.reverse(), best[last]! - stepBias * reversed.length);
     }
     const x = current % width, y = Math.floor(current / width);
     // N / E / S / W: same orientation as legacy BFS, total order from heap.
@@ -167,7 +173,7 @@ export function findWeightedPath(world: WeightedWorld, start: TilePosition, end:
       else if (direction === 2) { if (y + 1 >= height) continue; next = current + width; }
       else { if (x === 0) continue; next = current - 1; }
       if (!costs[next] || visited[next]) continue;
-      const g = item.g + costs[next]!;
+      const g = item.g + stepBias + costs[next]!;
       if (g >= best[next]!) continue;
       best[next] = g;
       parent[next] = current;
@@ -175,4 +181,19 @@ export function findWeightedPath(world: WeightedWorld, start: TilePosition, end:
     }
   }
   return finish(null, null);
+}
+
+/** Original N03-B API: globally optimal terrain-cost route, with no time constraint. */
+export function findWeightedPath(world: WeightedWorld, start: TilePosition, end: TilePosition,
+  stats?: WeightedPathStats): TilePosition[] | null {
+  return searchWeightedPath(world, start, end, stats, 'terrain');
+}
+
+/**
+ * NPC gameplay API: shortest number of cardinal steps, then cheapest terrain.
+ * Ensures route choice cannot add travel hours to the current 4-tiles/hour rules.
+ */
+export function findTimeFirstWeightedPath(world: WeightedWorld, start: TilePosition, end: TilePosition,
+  stats?: WeightedPathStats): TilePosition[] | null {
+  return searchWeightedPath(world, start, end, stats, 'time-first');
 }
