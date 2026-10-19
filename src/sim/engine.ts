@@ -261,7 +261,11 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
     if (citizen.blockedGoal !== requested) citizen.blockedGoal = null;
     const coolingDown = citizen.blockedGoal === requested && tick < citizen.retryAfterTick;
     let stranded = coolingDown && citizen.activity === 'waitingForRoute';
-    let desired = coolingDown ? 'home' as Goal : requested;
+    let recoveryThisTick = false;
+    // Hold a reachable commons fallback until its blocked goal's next retry.
+    // A failed market transaction still uses the historic home cooldown.
+    let desired: Goal = coolingDown && citizen.goal === 'commons' && citizen.blockedGoal !== 'commons'
+      ? 'commons' : coolingDown ? 'home' : requested;
     const commons = world.sites.find((s) => s.kind === 'commons')!.tile;
     let target: TilePosition = desired === 'food'
       ? (citizen.inventory.food > 0 ? citizen.tile : marketTile(world))
@@ -284,6 +288,7 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
       citizen.workNodeId = null;
       citizen.workHours = 0;
       stranded = fallback.stranded;
+      recoveryThisTick = true;
       citizen.activity = stranded ? 'waitingForRoute' : actionFor(fallback.goal, fallback.route.length > 0);
       citizen.reason = stranded
         ? cause + ' Bị cô lập, đứng yên chờ đường thông; thử lại ở tick ' + citizen.retryAfterTick + '.'
@@ -350,7 +355,8 @@ export function advanceOneTick(previous: WorldState, commands: GovernanceCommand
     const nextActivity = stranded ? 'waitingForRoute' : actionFor(citizen.goal, !arrived);
     if (citizen.activity !== nextActivity) {
       citizen.activity = nextActivity;
-      citizen.reason = goalReason(citizen.goal, !arrived, citizen, world);
+      // Arrival must not overwrite a same-hour blocked-route recovery diagnosis.
+      if (!recoveryThisTick) citizen.reason = goalReason(citizen.goal, !arrived, citizen, world);
       decision(nextActivity, citizen.reason);
       if (arrived && citizen.goal === 'commons') announce('gather', citizen, citizen.name + ' đã đến quảng trường.');
       if (arrived && citizen.goal === 'work') announce('work', citizen, citizen.name + ' bắt đầu ca làm.');
