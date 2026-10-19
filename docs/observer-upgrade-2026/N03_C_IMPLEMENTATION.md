@@ -26,3 +26,13 @@ Use `advanceOneTick(world, commands, 'bfs')` / `advanceTicks(world, n, 'bfs')` f
 
 ## Status
 Code and test integration submitted on the branch. All N03-C tests, benchmark outputs, E2E, full CI and Windows hardware measurements must be attributed to their **actual final-HEAD run**, not inferred from the earlier N03-B PASS.
+
+## 2026-10-19 corrective update: travel-time-safe routing
+
+The original N03-C direct terrain-optimal Weighted A* passed [full CI #39020811689](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39020811689), but its 720-hour paired simulation **failed the gameplay-regression acceptance criterion**, even while mechanical invariants held. On 96×96 / 50 citizens / seed 101, BFS suffered 6 deaths, 702 trades, 1,131 food produced, while terrain-optimal routing suffered 20 deaths, 554 trades, 834 food produced. Three 100-NPC seeds also worsened deaths: 2→6, 1→4, 0→8. A green unit test is not permission to ship those regressions.
+
+Root cause at the rule level: `BALANCE.moveTilesPerHour = 4` charges **time by number of traversed tiles**, not by tile terrain cost. The unconstrained terrain optimum can be longer and thus delay food/work/market arrivals. N03-C must not modify hunger, money, speed, energy, goals or economy to compensate.
+
+Production `resolvePath(..., 'weighted')` therefore calls `findTimeFirstWeightedPath` in `weightedPathfinding.ts`: deterministic lexicographic optimization **minimum cardinal steps, then minimum terrain cost among those minimum-step routes**. It uses a positive `stepBias = tileCount * MOVEMENT_COST_X10.forest + 1` per step, so an extra step can never be offset by terrain savings over a simple path of at most `tileCount - 1` steps. The same binary heap, admissible Manhattan heuristic with minimum edge cost and deterministic tie-break are reused. `totalCostX10` still reports terrain cost alone. `findWeightedPath` keeps exact N03-B global terrain optimum as an independent API. No schema changes.
+
+New acceptance: the N03-C 96×96 seed/population matrix asserts **no deaths increase, no food production or trade count decreases** relative to paired BFS over 720 ticks. If even a same-length route tie changes economic outcomes materially, gate fails for investigation; do not change goldens. A separate small-grid Dijkstra oracle verifies minimum steps and then terrain cost. All conclusions conditional on final commit CI and measured 30-day metrics.
