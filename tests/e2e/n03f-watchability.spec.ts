@@ -60,6 +60,14 @@ test('N03-F: real 96x96 canvas, 100-NPC follow and inspector across three game d
   await page.getByTestId('camera-fit').click();
   await expect(page.getByTestId('camera-status')).toHaveAttribute('data-mode', 'fit');
   await canvas.screenshot({ path: info.outputPath('n03f-fit-overview.png') });
+  // Watchability must be available immediately without waiting 45–90 real seconds.
+  await page.getByTestId('camera-highlights').click();
+  await expect(page.getByTestId('camera-status')).toHaveAttribute('data-mode', 'afk');
+  await expect.poll(() => page.getByTestId('camera-status').getAttribute('data-afk-target'),
+    { timeout: 8000 }).not.toBe('');
+  await page.screenshot({ path: info.outputPath('n03f-activity-tour.png'), fullPage: true });
+  await page.getByTestId('camera-fit').click();
+  await expect(page.getByTestId('camera-status')).toHaveAttribute('data-mode', 'fit');
   const measure = { tick: state.tick, population: state.citizens.length,
     movementSegmentsInFinalHour: movementSegments, runtimeErrors: errors,
     camera: 'follow -> fit', source: 'actual headless Chromium canvas; not Windows FPS' };
