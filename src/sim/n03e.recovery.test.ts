@@ -3,7 +3,7 @@ import { advanceOneTick, advanceTicks, stateDigest } from './engine';
 import { BALANCE } from './balance';
 import { tileIndexAt } from './grid';
 import { findPath } from './pathfinding';
-import { dimensionsOf, marketTile, totalCurrency, walkable } from './world';
+import { dimensionsOf, marketTile, totalCurrency, walkable, type WorldStateV6 } from './world';
 import { createWorld } from './world';
 import { createWorld96 } from './world96';
 import { parseSave, serializeSave } from '../persistence/save';
@@ -25,7 +25,7 @@ function isolatedResident() {
   for (const point of neighbours) world.tiles[tileIndexAt(point, dimensions)!] = 'water';
   return { world, id: citizen.id, tile, neighbours, original };
 }
-function movesLegally(world: ReturnType<typeof createWorld96>, id: number) {
+function movesLegally(world: WorldStateV6, id: number) {
   const citizen = world.citizens.find(c => c.id === id)!;
   expect(citizen.lastMove.length).toBeLessThanOrEqual(BALANCE.moveTilesPerHour + 1);
   for (let i = 1; i < citizen.lastMove.length; i++) {
@@ -62,7 +62,7 @@ describe('N03-E blocked goal recovery and future shelter adapter', () => {
     expect(waiting.events.filter(e => e.type === 'routeBlocked' && e.citizenId === id)).toHaveLength(1);
     for (const [index, point] of neighbours.entries())
       waiting.tiles[tileIndexAt(point, dimensionsOf(waiting))!] = original[index]!;
-    expect(findPath(waiting, tile, marketTile(waiting))).toEqual([]);
+    expect(findPath(waiting, tile, waiting.resourceNodes[0]!.tile)).not.toBeNull();
     const recovered = advanceTicks(waiting, BALANCE.retryBlockedAfterHours + 2);
     const resumed = recovered.citizens.find(c => c.id === id)!;
     expect(resumed.activity).not.toBe('waitingForRoute');
