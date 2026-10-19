@@ -49,3 +49,9 @@ For 96×96, 100 NPC, seeds 101/107/12345, respectively:
 These are **short-window 72h diagnostic measurements**, not the full 720h economy comparison. The opening days are travel-heavy and visually sparse in productive/social activity on the 96×96 map. No ordinary event-POI visit appeared within this 72h sample. That is a **watchability gap** to evaluate before sign-off, not grounds to silently loosen survival bounds or resurrect the rejected N03-D scenic-POI experiment.
 
 The synthetic 25h water island had five routeBlocked notices at ticks 6 (work), 18 (commons), 20 (home), 29 (home) and 30 (work). Each event came after a goal change or a retry transition; the per-active-goal cooldown invariant PASSED. A global event count of <=4 was invalid for a world crossing day/night goal schedule boundaries. This is not evidence that the same goal retries every tick.
+
+## Render-layer follow-up and cost
+
+At 5×/20×, `movementTrace.ts` accumulates the actual at-most-four cardinal steps for each game-hour over the already batched UI-paint window. At 1× the trace is not collected. This adds short-lived per-NPC display-only path arrays; there is no retained cache/worker and nothing to serialize. The previously measured `N03C_SIM_BENCH` algorithm timings describe **simulation only** and are not evidence of any Phaser render speedup. Browser frame-time, camera jitter and GPU effects remain **NOT VERIFIED** pending manual E2E / physical Windows measurements.
+
+Camera activity priority performs a bounded filter/sort over at most 100 production NPCs and bounded recent events only when switching tour shots, not every render frame. No engine PRNG or routing counters are changed.
