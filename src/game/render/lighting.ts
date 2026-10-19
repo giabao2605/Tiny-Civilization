@@ -36,7 +36,7 @@ const CURVE: readonly Keyframe[] = [
 const blend = (a: number, b: number, t: number): number => a + (b - a) * t;
 const channel = (color: number, shift: number): number => (color >>> shift) & 255;
 function blendTint(a: number, b: number, t: number): number {
-  return ([16, 8, 0] as const).reduce((value, shift) =>
+  return ([16, 8, 0] as const).reduce<number>((value, shift) =>
     value | (Math.round(blend(channel(a, shift), channel(b, shift), t)) << shift), 0);
 }
 const clamp01 = (value: number): number => Math.max(0, Math.min(1, value));
