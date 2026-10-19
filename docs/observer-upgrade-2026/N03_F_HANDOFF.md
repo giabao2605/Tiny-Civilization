@@ -15,3 +15,8 @@ Source branch: `feat/n03-f-performance-watchability`, based on N03-E merge `4b81
 
 ## Known limitation
 The 72h watchability counter cannot replace first-person observation of whether scenes feel interesting. Follow jitter and high-speed canvas rendering need manual artifacts and Windows GPU/long-soak measurements.
+
+## N03-F observed blocker handed forward
+The 96×96 / 100 NPC first-three-day samples spent ~81% of live NPC-hours moving, had only 79–149 atWork hours / 7,200, and showed no `leisureIdle` event-POI dwell. This is a **real readability/watchability gap**, not an economy or movement-invariant regression. Plan 04 should preserve simulation consistency and not claim this is solved by new weather textures alone; first examine how travel time, camera framing and legitimate POI scheduling combine. A rejected N03-D scenic-POI experiment previously changed deaths/economy, so never re-introduce that mechanic without full replay/financial gates.
+
+Node source CI PASS: [#39199969967](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39199969967), 278/278. Manual Full E2E, artifact review and physical Windows FPS/soak **NOT RUN**. Branch remains draft/NOT MERGE-READY until gates are checked.
