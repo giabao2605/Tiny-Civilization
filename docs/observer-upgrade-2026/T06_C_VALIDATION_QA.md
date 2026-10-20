@@ -11,6 +11,8 @@
 | Invalid import while coordinator paused/running | new integrity suite, `v6.test.ts` | Automated coverage; not real-browser timing |
 | localStorage unavailable, SecurityError, quota exceeded | `App.tsx` try/catch and unchanged single-slot `setItem` | Static inspection; real browser **NOT RUN** |
 | Clock/lease/metrics after reset/import | `t06b.instrumentation.test.ts`, `livingCoordinator` | Unit/mock checks; physical PC **NOT RUN** |
+| Forged pending leader via actual Chromium file input, unchanged localStorage, 1 canvas/clock lease | `tests/e2e/t06c-save-integrity.spec.ts` | Browser regression **NOT RUN** |
+| Legacy browser v5 import and current writer format assertion | `tests/e2e/observer-w02-e-production.spec.ts` (corrected obsolete format-2 assertions to v3) | Browser regression **NOT RUN** |
 
 Import path: parse+validate → optional migration → **only then** clear movement diagnostics, restore pending+ID, reset runtime elapsed and pause on successful import. Error before swap preserves old `WorldState`, saved JSON, simulation settings, request counter and scheduler leases. UI `restore` resets audio only after import succeeded. Avoid claiming every storage driver uses the same localStorage quota/exception behavior.
 
