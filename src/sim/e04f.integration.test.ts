@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { createClock, ticksPerSecond, type ObserverPaceMinutes, type Speed } from './clock';
-import { advanceTicks } from './engine';
+import { advanceOneTick, advanceTicks } from './engine';
+import { getRoutingDiagnostics, resetRoutingDiagnostics } from './routing';
+import { getWeightedPathDiagnostics, resetWeightedPathDiagnostics } from './weightedPathfinding';
+import { getPathfindingDiagnostics, resetPathfindingDiagnostics } from './pathfinding';
 import { totalCurrency, walkable, type WorldStateV6 } from './world';
 import { createWorld } from './world';
 import { createWorld96 } from './world96';
@@ -17,6 +20,37 @@ function initialV6(size: 48 | 96, seed: number, population: 20 | 50 | 100): Worl
   const loaded = parseSave(serializeSave(createWorld(seed, population))).world;
   if (loaded.schemaVersion !== 6) throw new Error('v5 migration did not produce v6');
   return loaded;
+}
+
+
+/** Stock audit counts legitimate harvests/consumption, construction and trade once. */
+function conservedBalances(world: WorldStateV6) {
+  return {
+    money: totalCurrency(world),
+    food: world.inventory.food + world.citizens.reduce((n, c) => n + c.inventory.food, 0)
+      + world.stats.totalFoodConsumed - world.stats.totalFoodProduced,
+    wood: world.inventory.wood + world.citizens.reduce((n, c) => n + c.inventory.wood, 0)
+      + world.constructions.reduce((n, c) => n + c.woodSpent, 0) - world.stats.totalWoodProduced,
+  };
+}
+function percentile(values: number[], fraction: number) {
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.max(0, Math.ceil(sorted.length * fraction) - 1)] ?? 0;
+}
+function assertHourlyMovement(before: WorldStateV6, after: WorldStateV6) {
+  const previous = new Map(before.citizens.map(c => [c.id, c]));
+  for (const citizen of after.citizens) {
+    const prior = previous.get(citizen.id);
+    if (!prior) continue; // Legitimate birth begins at the current tick.
+    expect(citizen.lastMove[0], 'start tile for NPC ' + citizen.id).toEqual(prior.tile);
+    expect(citizen.lastMove.at(-1), 'end tile for NPC ' + citizen.id).toEqual(citizen.tile);
+    expect(citizen.lastMove.length).toBeLessThanOrEqual(5);
+    for (let i = 1; i < citizen.lastMove.length; i++) {
+      const a = citizen.lastMove[i - 1]!, b = citizen.lastMove[i]!;
+      expect(Math.abs(a.x - b.x) + Math.abs(a.y - b.y)).toBe(1);
+      expect(walkable(after, b)).toBe(true);
+    }
+  }
 }
 
 function validResidentMovement(world: WorldStateV6): number {
@@ -51,9 +85,23 @@ describe('E04-F cross-phase deterministic matrix: weather, economy, navigation a
           expect(initial.weather.kind).toBe(kind);
           expect(initial.map.width).toBe(size);
           expect(initial.citizens).toHaveLength(population);
-          const startCash = totalCurrency(initial);
+          const baseline = conservedBalances(initial);
           const start = performance.now();
-          const part = advanceTicks(initial, 36);
+          resetRoutingDiagnostics();
+          resetPathfindingDiagnostics();
+          resetWeightedPathDiagnostics();
+          const tickTimesMs: number[] = [];
+          let part: WorldStateV6 = initial;
+          for (let hour = 0; hour < 36; hour++) {
+            const before = part, tickStart = performance.now();
+            part = advanceOneTick(part);
+            tickTimesMs.push(performance.now() - tickStart);
+            assertHourlyMovement(before, part);
+            if (part.tick % 24 === 0) expect(conservedBalances(part)).toEqual(baseline);
+          }
+          const routing = getRoutingDiagnostics();
+          const bfsCalls = getPathfindingDiagnostics();
+          const weighted = getWeightedPathDiagnostics();
           const restored = parseSave(serializeSave(part)).world;
           if (restored.schemaVersion !== 6) throw new Error('v6 state lost on roundtrip');
           const split = advanceTicks(restored, 36);
@@ -62,7 +110,7 @@ describe('E04-F cross-phase deterministic matrix: weather, economy, navigation a
           expect(split.tick).toBe(72);
           expect(split.weather.currentSinceTick).toBeGreaterThan(0);
           expect(split.weather.nextTransitionTick).toBeGreaterThan(split.tick);
-          expect(totalCurrency(split)).toBe(startCash);
+          expect(conservedBalances(split)).toEqual(baseline);
           expect(split.inventory.food).toBeGreaterThanOrEqual(0);
           expect(split.inventory.wood).toBeGreaterThanOrEqual(0);
           expect(split.market.cash).toBeGreaterThanOrEqual(0);
@@ -72,7 +120,11 @@ describe('E04-F cross-phase deterministic matrix: weather, economy, navigation a
             activeResidents: split.citizens.filter(c => c.alive).length,
             movementSegmentsInLastHour: segments,
             durationMs: Number((performance.now() - start).toFixed(2)),
-            startingCash: startCash, endingCash: totalCurrency(split) });
+            tickP50Ms: Number(percentile(tickTimesMs, 0.5).toFixed(3)),
+            tickP95Ms: Number(percentile(tickTimesMs, 0.95).toFixed(3)),
+            routeRequestsFirst36h: routing.calls, bfsCallsFirst36h: bfsCalls,
+            weightedCallsFirst36h: weighted.calls, expandedNodesFirst36h: weighted.expandedNodes,
+            conservedBalances: baseline });
         }
         // Wall-clock numbers here are Node CI diagnostics, never browser FPS.
         console.log('E04F_NODE_MATRIX', JSON.stringify({ environment: 'Node.js CI; no browser GPU',
