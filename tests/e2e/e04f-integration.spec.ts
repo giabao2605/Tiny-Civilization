@@ -88,7 +88,25 @@ test('E04-F: real Phaser four-weather x two-world x three-PC-viewport screenshot
       }
     }
   }
-  expect(evidence).toHaveLength(24);
+  // Required cross-condition: rain must remain readable at night, not only at midday.
+  for (const size of [48, 96] as const) {
+    if (size === 48) await importedLegacy(page, 1);
+    else await resetWorld(page, 1);
+    await expect(host).toHaveAttribute('data-map-width', String(size));
+    const capturedTick = await pauseUntilHour(page, 23);
+    expect(capturedTick).toBe(23);
+    await expect(page.getByTestId('weather-label')).toHaveText('Trời mưa');
+    for (const viewport of viewports) {
+      await page.setViewportSize(viewport);
+      await page.getByTestId('camera-fit').click();
+      const label = `e04f-${size}-rain-night-${viewport.width}x${viewport.height}`;
+      await canvas.screenshot({ path: info.outputPath(label + '.png') });
+      evidence.push({ label, size, seed: 1, weather: 'rain', capturedTick,
+        viewport: `${viewport.width}x${viewport.height}`,
+        population: 20, camera: 'fit', particlesEnabled: false });
+    }
+  }
+  expect(evidence).toHaveLength(30);
   expect(errors).toEqual([]);
   const report = { source: 'live Phaser canvas in headless Chromium; not Windows hardware',
     screenshotCount: evidence.length, weatherKinds: climates.map(x => x.kind),
