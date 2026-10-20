@@ -76,14 +76,20 @@ function categoryOf(type: EventType): Exclude<TimelineCategory, 'all'> {
     GOVERNANCE_TYPES.has(type) ? 'governance' : 'survival';
 }
 
+const PERF_MODE = import.meta.env.DEV && typeof window !== 'undefined' &&
+  new URLSearchParams(window.location.search).get('observerPerf') === '1';
+
 export function App() {
   const coordinator = useMemo(() => {
     const fixture = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('fixture') : null;
     return createLivingCoordinator(12345, 20, fixture === 'governance-food-shortage' ||
-      fixture === 'governance-empty-reserve' || fixture === 'n03d-leisure-poi' ? fixture : undefined);
+      fixture === 'governance-empty-reserve' || fixture === 'n03d-leisure-poi' ? fixture : undefined,
+      PERF_MODE);
   }, []);
   const snapshot = useSyncExternalStore(coordinator.subscribe, coordinator.getUiSnapshot);
   const [canvasVersion, setCanvasVersion] = useState(0);
+  const [diagnosticsEnabled, setDiagnosticsEnabled] = useState(PERF_MODE);
+  const [diagnosticsText, setDiagnosticsText] = useState('Bấm “Chụp số đo” để đọc dữ liệu.');
   const audioRef = useRef<WeatherAudio | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [soundVolume, setSoundVolume] = useState(40);
@@ -140,6 +146,26 @@ export function App() {
   const averageHealth = living.length ? Math.round(living.reduce((sum, c) => sum + c.health, 0) / living.length) : 0;
 
   useEffect(() => coordinator.start(), [coordinator]);
+
+  useEffect(() => {
+    if (!PERF_MODE) return;
+    const host = window as Window & {
+      __tcObserverPerfEnabled?: boolean;
+      __tcObserverFullMetrics?: () => object;
+    };
+    host.__tcObserverPerfEnabled = diagnosticsEnabled;
+    host.__tcObserverFullMetrics = () => ({
+      simulation: coordinator.getDiagnostics(),
+      lifecycle: coordinator.getLifecycleDiagnostics(),
+      renderer: (document.querySelector('[data-testid="game-container"]') as
+        (HTMLElement & { __tcObserverMetrics?: () => object }) | null)?.__tcObserverMetrics?.() ?? null,
+      audio: audioRef.current?.diagnostics ?? null,
+    });
+    return () => {
+      delete host.__tcObserverFullMetrics;
+      delete host.__tcObserverPerfEnabled;
+    };
+  }, [coordinator, diagnosticsEnabled]);
 
   // Audio belongs to this React app, not a WorldScene, render frame or save.
   useEffect(() => {
@@ -371,6 +397,27 @@ export function App() {
                 {cameraView?.reducedMotion && ' · AFK tắt để giảm chuyển động'}
               </span>
             </div>
+            {PERF_MODE && (
+              <details data-testid="observer-debug-panel" style={{
+                margin: '8px 0', padding: '8px', border: '1px solid #66766b',
+                borderRadius: '6px', fontSize: '12px',
+              }}>
+                <summary>Diagnostics DEV (mặc định thu gọn)</summary>
+                <button type="button" data-testid="observer-debug-toggle" onClick={() => {
+                  const next = !diagnosticsEnabled;
+                  coordinator.setDiagnosticsEnabled(next);
+                  setDiagnosticsEnabled(next);
+                  setDiagnosticsText(next ? 'Đã bật, bấm Chụp số đo.' : 'Đã tắt và xóa mẫu trước.');
+                }}>{diagnosticsEnabled ? 'Tắt metrics' : 'Bật metrics'}</button>
+                <button type="button" data-testid="observer-debug-sample" onClick={() => {
+                  const target = window as Window & { __tcObserverFullMetrics?: () => object };
+                  setDiagnosticsText(JSON.stringify(target.__tcObserverFullMetrics?.() ?? null, null, 2));
+                }}>Chụp số đo</button>
+                <pre data-testid="observer-debug-readout" style={{
+                  maxHeight: '180px', overflow: 'auto', whiteSpace: 'pre-wrap',
+                }}>{diagnosticsText}</pre>
+              </details>
+            )}
             <div className="legend-row" aria-label="Chú giải bản đồ">
               <span><i className="legend-tile grass" />Đồng cỏ</span>
               <span><i className="legend-tile forest" />Rừng</span>
