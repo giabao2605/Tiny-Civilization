@@ -148,7 +148,9 @@ test('E04-F: real 100 NPC camera, pace, audio UI and lifecycle integration', asy
   await mute.click(); // authentic browser gesture; API may be unavailable on runner.
   const afterUnlock = await page.getByRole('status').last().innerText();
   expect(afterUnlock.length).toBeGreaterThan(0);
-  await page.getByRole('slider', { name: 'Âm lượng môi trường' }).fill('0');
+  // Range sliders are adjusted by keyboard like a real user; fill() is not supported on all engines.
+  await page.getByRole('slider', { name: 'Âm lượng môi trường' }).focus();
+  await page.keyboard.press('Home');
   await expect(page.getByText('Âm lượng: 0%')).toBeVisible();
   if (await mute.getAttribute('aria-pressed') === 'true') await mute.click();
   await expect(mute).toHaveAttribute('aria-pressed', 'false');
