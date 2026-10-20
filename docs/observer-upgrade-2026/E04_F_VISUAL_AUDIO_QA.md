@@ -2,9 +2,9 @@
 
 ## Chromium visual evidence (implemented, NOT RUN)
 
-`tests/e2e/e04f-integration.spec.ts` opens the **real Phaser canvas** in Chromium and plans 24 PNG files: 48×48 migrated v5 and 96×96 v6, seed 2 clear at 06:00, seed 1 rain at 12:00, seed 3 cloudy at 18:00, seed 8 fog at 23:00, each in 1366×768, 1920×1080 and 2560×1080 viewports. The dev-only `weatherParticles=off` flag helps show whether rain/fog/cloud remain identifiable by grade/ground alone. A second browser case screenshots 100-NPC follow and reduced motion.
+`tests/e2e/e04f-integration.spec.ts` opens the **real Phaser canvas** in Chromium and plans 30 PNG files: 48×48 migrated v5 and 96×96 v6, seed 2 clear at 06:00, seed 1 rain at 12:00, seed 3 cloudy at 18:00, seed 8 fog at 23:00, each in 1366×768, 1920×1080 and 2560×1080 viewports, plus six extra rainy-night (23:00) images on both maps. The dev-only `weatherParticles=off` flag helps show whether rain/fog/cloud remain identifiable by grade/ground alone. A second browser case screenshots 100-NPC follow and reduced motion.
 
-**Screenshot capture is not visual acceptance.** A human must actually open the PNGs and inspect dawn/day/dusk/night, rain at night, wet ground, fog readability, lighting, NPC/site visibility and scene resize. The 24-image grid intentionally samples one weather kind per hour and does not exhaust all 16 hour×weather combinations; nighttime rain and clear daytime are still **PARTIAL** until directly inspected.
+**Screenshot capture is not visual acceptance.** A human must actually open the PNGs and inspect dawn/day/dusk/night, rain at night, wet ground, fog readability, lighting, NPC/site visibility and scene resize. The 30-image grid tests rain at night as well as noon, but does not exhaust all 16 hour×weather combinations. Every image remains **NOT REVIEWED** until a person actually opens it.
 
 ## Audio tests (manual evidence NOT RUN)
 
