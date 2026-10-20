@@ -18,4 +18,6 @@
 - Sound effects are deliberately minimal procedural cues. **Real speaker/headphone listening acceptance is NOT RUN**; headless tests cannot certify timbre/comfort.
 - The A05-D overlay/mixer has no connection to `WorldState` mutation, simulation RNG, save schema or economic event feed.
 
+**Automated verification:** Fast CI #39369238733 SUCCESS on implementation commit `dfd52cc3f21938fdd402691b3cf5ee6c27455a50`: 47 test files, 392 tests PASS; npm ci, audit, typecheck, lint, build PASS. Final documentation HEAD CI must be checked separately. Browser audio/manual listening remains NOT RUN.
+
 See architecture, audio QA, lifecycle QA and A05-E handoff in adjacent files.
