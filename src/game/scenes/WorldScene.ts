@@ -75,6 +75,9 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private dragStart?: { x: number; y: number };
   private lastDrag?: { x: number; y: number };
   private dragged = false;
+  private sceneCreates = 0;
+  private sceneShutdowns = 0;
+  private sceneRestarts = 0;
 
   constructor(world: WorldState, private readonly onCitizenSelected: (id: number) => void,
     private readonly onCameraChanged?: (camera: CameraSnapshot) => void,
@@ -84,6 +87,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   }
 
   create(): void {
+    this.sceneCreates++;
     // Manual bounds allow a smaller world to be centered inside a large viewport.
     this.cameras.main.removeBounds();
     this.followId = null;
@@ -131,6 +135,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.input.on(Phaser.Input.Events.POINTER_UP, this.onUp);
     this.input.on(Phaser.Input.Events.POINTER_WHEEL, this.onWheel);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.sceneShutdowns++;
       this.clearAfkTimer();
       document.removeEventListener('visibilitychange', this.onVisibilityChanged);
       this.motionQuery?.removeEventListener('change', this.onMotionChanged);
@@ -416,6 +421,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
         before.layout !== snapshot.world.layout) ||
       before.seed !== snapshot.world.seed || before.citizens.length !== snapshot.world.citizens.length ||
       before.tick > snapshot.world.tick || (before.tick === snapshot.world.tick && before.citizens !== snapshot.world.citizens)) {
+      this.sceneRestarts++;
       this.scene.restart();
       return;
     }
@@ -504,6 +510,18 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       : this.world.resourceNodes.find(node => node.id === interest.id)?.tile;
     return tile ? { x: xPixel(tile.x), y: yPixel(tile.y) } : null;
   }
+  /** Read-only counts across scene restart; no gameplay state is read back from the camera. */
+  getPresentationDiagnostics() {
+    const camera = this.cameras?.main;
+    return {
+      sceneCreates: this.sceneCreates, sceneShutdowns: this.sceneShutdowns,
+      sceneRestarts: this.sceneRestarts,
+      camera: camera ? { mode: this.cameraMode, zoom: camera.zoom,
+        viewportWidth: camera.width, viewportHeight: camera.height } : null,
+      weatherParticles: this.weatherLayer?.diagnostics ?? null,
+    };
+  }
+
   /** Read-only diagnostics: scheduled descriptors are not necessarily rendered objects. */
   getAmbientDiagnostics(): object | null {
     return this.ambientDirector ? { ...this.ambientDirector.metrics,

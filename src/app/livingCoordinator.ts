@@ -6,6 +6,10 @@ import { createWorld96 } from '../sim/world96';
 import { recordMovement, takeMovement, type MovementTrace } from './movementTrace';
 import type { TilePosition } from '../sim/grid';
 import { parseSave, serializeSave } from '../persistence/save';
+import { getRoutingDiagnostics } from '../sim/routing';
+import { getPathfindingDiagnostics } from '../sim/pathfinding';
+import { getWeightedPathDiagnostics } from '../sim/weightedPathfinding';
+import { createObserverMetrics } from './observerMetrics';
 
 export type LivingSnapshot = Readonly<{
   world: WorldState;
@@ -27,7 +31,8 @@ export type LivingCommand =
   | { type: 'trigger-food-aid' };
 
 export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 20 | 50 | 100 = 20,
-  fixture?: 'governance-food-shortage' | 'governance-empty-reserve' | 'n03d-leisure-poi') {
+  fixture?: 'governance-food-shortage' | 'governance-empty-reserve' | 'n03d-leisure-poi',
+  diagnosticsInitiallyEnabled = false) {
   let presetPopulation = initialPopulation;
   // Explicit development/test scenario, not a player command or an engine shortcut.
   const legacyGovernanceFixture = fixture === 'governance-food-shortage' ||
@@ -69,13 +74,33 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
   const listeners = new Set<() => void>();
   let timer: ReturnType<typeof setInterval> | null = null;
   let lastMs = 0;
+  let leases = 0;
+  let timerStarts = 0;
+  let timerStops = 0;
+  const metrics = createObserverMetrics(diagnosticsInitiallyEnabled);
   const notify = () => {
     const renderPaths = takeMovement(pendingVisualMoves);
     uiSnapshot = renderPaths.size ? { ...snapshot, renderPaths } : snapshot;
+    metrics.notePublish(snapshot.world.tick);
     for (const listener of listeners) listener();
   };
   const clock = createClock(() => {
+    const measure = metrics.isEnabled();
+    const started = measure ? performance.now() : 0;
+    const routingBefore = measure ? getRoutingDiagnostics() : null;
+    const bfsBefore = measure ? getPathfindingDiagnostics() : 0;
+    const weightedBefore = measure ? getWeightedPathDiagnostics().calls : 0;
     const world = advanceOneTick(snapshot.world, pending);
+    if (routingBefore) {
+      const routingAfter = getRoutingDiagnostics();
+      const finished = performance.now();
+      metrics.recordTick(finished - started, finished, {
+        routeRequests: routingAfter.calls - routingBefore.calls,
+        bfsCalls: getPathfindingDiagnostics() - bfsBefore,
+        weightedCalls: getWeightedPathDiagnostics().calls - weightedBefore,
+        bfsFallbacks: routingAfter.bfsFallbacks - routingBefore.bfsFallbacks,
+      });
+    }
     // At 1× every published world contains the entire hourly lastMove already.
     if (snapshot.speed !== 1) recordMovement(pendingVisualMoves, world);
     pending = [];
@@ -97,28 +122,47 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
       listeners.add(listener);
       return () => { listeners.delete(listener); };
     },
+    /** Each subscriber owns one idempotent lease; only the last release stops the shared clock. */
     start: () => {
-      if (timer !== null) return () => { /* already running */ };
-      resetElapsed();
-      document.addEventListener('visibilitychange', onVisibility);
-      timer = setInterval(() => {
-        const now = performance.now();
-        const delta = now - lastMs;
-        lastMs = now;
-        clock.onElapsed(delta, document.visibilityState === 'visible');
-      }, 25);
+      leases++;
+      if (timer === null) {
+        resetElapsed();
+        document.addEventListener('visibilitychange', onVisibility);
+        timer = setInterval(() => {
+          const now = performance.now();
+          const delta = now - lastMs;
+          lastMs = now;
+          clock.onElapsed(delta, document.visibilityState === 'visible');
+        }, 25);
+        timerStarts++;
+      }
+      let released = false;
       return () => {
-        if (timer !== null) clearInterval(timer);
-        timer = null;
+        if (released) return;
+        released = true;
+        leases--;
+        if (leases !== 0) return;
+        if (timer !== null) {
+          clearInterval(timer);
+          timer = null;
+          timerStops++;
+        }
         document.removeEventListener('visibilitychange', onVisibility);
         clock.reset();
       };
     },
+    getLifecycleDiagnostics: () => ({
+      leases, timerActive: timer !== null, visibilityListenerAttached: timer !== null,
+      timerStarts, timerStops,
+    }),
+    getDiagnostics: () => metrics.read(),
+    setDiagnosticsEnabled: (next: boolean) => metrics.setEnabled(next),
     /** Synchronous tick-boundary snapshot; includes a queued policy command and its ID counter. */
     exportSave: (): string => serializeSave(snapshot.world, pending, nextRequestId),
     /** Validation finishes before any active state, timer or queued command is touched. */
     importSave: (json: string): void => {
       const restored = parseSave(json);
+      metrics.reset();
       pendingVisualMoves.clear();
       pending = restored.pending;
       nextRequestId = restored.nextRequestId;
@@ -164,6 +208,7 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
       } else {
         if (!Number.isSafeInteger(command.seed) || (command.population !== undefined && ![20, 50, 100].includes(command.population))) return false;
         presetPopulation = command.population ?? presetPopulation;
+        metrics.reset();
         pending = []; nextRequestId = 1;
         pendingVisualMoves.clear();
         snapshot = { ...snapshot, world: createWorld96(command.seed, presetPopulation), selectedCitizenId: null, lastPolicyMessage: '' };

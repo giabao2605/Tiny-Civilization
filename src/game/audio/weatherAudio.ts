@@ -39,6 +39,9 @@ export type AudioDiagnostics = Readonly<{
   suppressedDuplicate: number;
   suppressedBudget: number;
   unlockFailures: number;
+  voiceLimit: number;
+  bus: Readonly<{ enabled: boolean; suspended: boolean;
+    masterVolume: number; effectsVolume: number; rainLevel: number; outdoorsLevel: number }>;
 }>;
 const MAX_SFX_VOICES = 4;
 const MAX_SEEN_EVENTS = 192;
@@ -75,7 +78,11 @@ export class WeatherAudio {
       activeOneShots: this.voices.size, activeLoops: this.sources.length,
       voicesCreated: this.createdCount, voicesReleased: this.releasedCount,
       suppressedDuplicate: this.duplicateCount, suppressedBudget: this.budgetCount,
-      unlockFailures: this.failureCount };
+      unlockFailures: this.failureCount,
+      voiceLimit: MAX_SFX_VOICES,
+      bus: { enabled: this.enabled, suspended: this.suspended,
+        masterVolume: this.masterVolume, effectsVolume: this.sfxVolume,
+        rainLevel: this.last.rain, outdoorsLevel: this.last.outdoors } };
   }
 
   /** Must be called in a click/keyboard gesture, never an effect or mount. */
