@@ -7,6 +7,10 @@ import { getRoutingDiagnostics } from '../sim/routing';
 import { getPathfindingDiagnostics } from '../sim/pathfinding';
 import { getWeightedPathDiagnostics } from '../sim/weightedPathfinding';
 
+// Module-local DEV lifecycle counters survive GameCanvas remounts, not saves.
+let debugGameCreates = 0;
+let debugGameDestroys = 0;
+
 export function createGame(
   parent: HTMLElement,
   world: WorldState,
@@ -26,6 +30,7 @@ export function createGame(
   });
   // Opt-in diagnostics for matched CI/PC profiling. Never part of WorldState or save.
   if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('observerPerf') === '1') {
+    debugGameCreates++;
     const host = parent as HTMLElement & { __tcObserverMetrics?: () => object };
     // Game step is the real Phaser frame path. 120 values only; this does not
     // intercept advanceOneTick, render pacing, camera choices or gameplay RNG.
@@ -52,6 +57,7 @@ export function createGame(
     game.events.on(Phaser.Core.Events.STEP, onFrame);
     game.events.once(Phaser.Core.Events.DESTROY, () => {
       gameDestroyed = true;
+      debugGameDestroys++;
       game.events.off(Phaser.Core.Events.STEP, onFrame);
     });
     const quantile = (fraction: number): number | null => {
@@ -60,6 +66,8 @@ export function createGame(
       return sorted[Math.ceil((sorted.length - 1) * fraction)]!;
     };
     host.__tcObserverMetrics = () => ({
+      gameInstancesCreated: debugGameCreates,
+      gameInstancesDestroyed: debugGameDestroys,
       gameObjects: scene.sys.isActive() ? scene.children.list.length : null,
       textureCount: gameDestroyed ? null : Object.keys(game.textures.list).length,
       rendererType: gameDestroyed ? null : game.renderer.type,
