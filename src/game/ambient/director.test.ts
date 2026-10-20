@@ -171,6 +171,32 @@ describe('A05-B deterministic, bounded presentation scheduler', () => {
     expect(findCosmeticCartRoute(invalid, index, candidate!.anchor)).toBeUndefined();
   });
 
+  it('active event persists across ordinary tick/candidate rotation, then expires on presentation time', () => {
+    const world = createAmbientFixture('sign-of-life-30s').world;
+    const director = new AmbientDirector(world);
+    expect(director.advance(250).some(t => t.status === 'started')).toBe(true);
+    const id = director.activeActors[0]!.id;
+    const later = structuredClone(world);
+    later.tick++;
+    expect(director.reconcile(later)).toEqual([]);
+    expect(director.activeActors.some(a => a.id === id)).toBe(true);
+    expect(play(director, 4000).some(t => t.id === id && t.status === 'ended')).toBe(true);
+    director.dispose();
+  });
+
+  it('existing birds are cancelled on real weather invalidation, not arbitrary candidate reselection', () => {
+    const world = createAmbientFixture('sign-of-life-30s').world;
+    const director = new AmbientDirector(world);
+    play(director, 9000);
+    expect(director.activeActors.some(a => a.type === 'bird-visit')).toBe(true);
+    const rain = structuredClone(world);
+    rain.tick++;
+    if (rain.schemaVersion === 6) rain.weather = { ...rain.weather, kind: 'rain', intensity: 0.8 };
+    expect(director.reconcile(rain).some(t => t.status === 'cancelled')).toBe(true);
+    expect(director.activeActors.some(a => a.type === 'bird-visit')).toBe(false);
+    director.dispose();
+  });
+
   it('seed replacement, reset and scene-like dispose clear actor/cooldown/history', () => {
     const world = createAmbientFixture('sign-of-life-30s').world;
     const director = new AmbientDirector(world);
