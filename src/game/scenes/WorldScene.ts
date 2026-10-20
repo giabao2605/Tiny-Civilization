@@ -13,6 +13,7 @@ import { approachLighting, lightingAtTick, streetLightsForWorld, windowLightsFor
   type LightingState } from '../render/lighting';
 import { buildingStyle, visualHash } from '../render/visualHash';
 import { WeatherLayer } from '../render/weatherLayer';
+import { AmbientDirector } from '../ambient/director';
 import type { Poi96Kind } from '../../sim/world96Layout';
 
 const POI_ART: Record<Poi96Kind, 'well' | 'bench' | 'fence' | 'sign' | 'crops' | 'lantern' | 'barrel' | 'crate' | 'oak' | 'pine' | 'shrub' | 'woodpile'> = {
@@ -62,6 +63,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private lightingCurrent = lightingAtTick(0);
   private lightingTarget = lightingAtTick(0);
   private weatherLayer?: WeatherLayer;
+  private ambientDirector?: AmbientDirector;
   private ambientShade?: Phaser.GameObjects.Rectangle;
   private windowLightLayer?: Phaser.GameObjects.Image;
   private streetLightLayer?: Phaser.GameObjects.Image;
@@ -111,6 +113,8 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.highlighter.fillStyle(0xffe7a3, 0.9).fillTriangle(-3, -15, 3, -15, 0, -11);
     this.paintLighting();
     this.weatherLayer = new WeatherLayer(this, this.world);
+    // A05-B: one presentation-only director per scene lifetime (no extra timer).
+    this.ambientDirector = new AmbientDirector(this.world);
     // Local dev-only particle-OFF comparison; authoritative weather is untouched.
     if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('weatherParticles') === 'off')
       this.weatherLayer.setParticlesEnabled(false);
@@ -141,6 +145,8 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.labelsShown = null;
       this.movementTweens.clear();
       this.highlighter = undefined;
+      this.ambientDirector?.dispose();
+      this.ambientDirector = undefined;
       this.weatherLayer?.destroy();
       this.weatherLayer = undefined;
       this.ambientShade?.destroy();
@@ -217,7 +223,10 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
         this.shot = null;
         this.announceCamera();
       }
-    } else this.armAfkTimer();
+    } else {
+      this.ambientDirector?.reconcile(this.world);
+      this.armAfkTimer();
+    }
   };
   private isReducedMotion(): boolean {
     return this.motionQuery?.matches ?? window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -399,6 +408,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.scene.restart();
       return;
     }
+    this.ambientDirector?.reconcile(snapshot.world);
     if (this.followId !== null && !followTargetIsAlive(this.world, this.followId)) {
       this.followId = null; this.cameraMode = 'manual'; this.announceCamera();
     }
@@ -479,11 +489,21 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       : this.world.resourceNodes.find(node => node.id === interest.id)?.tile;
     return tile ? { x: xPixel(tile.x), y: yPixel(tile.y) } : null;
   }
+  /** Read-only diagnostics. A05-B descriptors are not rendered actors (A05-C). */
+  getAmbientDiagnostics(): object | null {
+    return this.ambientDirector?.metrics ?? null;
+  }
+
   /** Render-only frame smoothing. Never advances the simulation or changes citizen tiles. */
   update(_time: number, delta: number): void {
     this.updateLabelVisibility();
     if (this.selectedId !== null) this.redrawHighlight();
     if (document.hidden) return;
+    this.ambientDirector?.advance(delta, {
+      paused: this.wasPaused, hidden: document.hidden, reducedMotion: this.isReducedMotion(),
+      isVisible: anchor => this.cameras.main.worldView.contains(
+        xPixel(anchor.tile.x), yPixel(anchor.tile.y)),
+    });
     this.updateLighting(delta);
     this.weatherLayer?.update(delta, this.cameras.main, this.wasPaused, this.isReducedMotion());
     const now = performance.now();

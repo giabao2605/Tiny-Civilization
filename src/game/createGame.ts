@@ -31,6 +31,7 @@ export function createGame(
       rendererType: game.renderer.type,
       phaserFps: game.loop.actualFps,
       frameDeltaMs: game.loop.delta,
+      ambient: scene.getAmbientDiagnostics(),
       routeRequests: getRoutingDiagnostics().calls,
       bfsCalls: getPathfindingDiagnostics(),
       weightedCalls: getWeightedPathDiagnostics().calls,
