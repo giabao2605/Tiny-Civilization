@@ -4,7 +4,7 @@
 **Branch:** `feat/t06-c-save-compatibility`; [Draft PR #43](https://github.com/giabao2605/Tiny-Civilization/pull/43). **DO NOT MERGE.** Baseline `main@d91a1b0b772ac25ba86edb159c017fde3b2ad51b`, post-T06-B merge [CI #39394639636](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39394639636) SUCCESS. Exact final implementation HEAD and Fast CI status: **PENDING**, verify on GitHub before claiming CODE VERIFIED.
 
 ## Delivered / still open
-Reader format 1/2/3 preserved; minimal pending citizen reference guard; new legacy-migration, format-2, UTF-8, paused/running atomicity, and 48/96 × population/seed checkpoints. Existing v5 genuine golden bytes and expected hashes untouched. Independent archived v5 20/100 and authentic format-2 file absent; generated checkpoints are not equivalent to historical user backups. Physical browser and Windows Playwright/localStorage quota/performance remain **NOT RUN / NOT MEASURED**, not hidden as PASS. See `T06_C_*_QA.md`.
+Reader format 1/2/3 preserved; minimal pending citizen reference guard; new legacy-migration, format-2, UTF-8, paused/running atomicity, and 48/96 × population/seed checkpoints. Existing v5 genuine golden bytes and expected hashes untouched. Twelve separately pinned engine-generated 48/96 × 20/50/100 × two seeds (tick 24) hashes are stored in `tests/fixtures/t06c-engine-checkpoints.expected.json` with source and CI provenance. Independent archived v5 20/100 and authentic format-2 user files remain absent; source-generated checkpoints are not equivalent to historical user backups. Physical browser and Windows Playwright/localStorage quota/performance remain **NOT RUN / NOT MEASURED**, not hidden as PASS. See `T06_C_*_QA.md`.
 
 ## Ready-to-copy T06-D task prompt
 
