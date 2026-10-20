@@ -4,7 +4,9 @@
  */
 import type { WorldState } from '../../sim/world';
 import { AMBIENT_CATALOG, ambientCandidates } from './catalog';
-import { buildAmbientAnchorIndex } from './anchors';
+import { buildAmbientAnchorIndex, isAmbientAnchorValid } from './anchors';
+import { tileIndexAt } from '../../sim/grid';
+import { dimensionsOf } from '../../sim/world';
 import { findCosmeticCartRoute } from './routes';
 import { createAmbientSession, finishAmbient, getAmbientMetrics,
   noteAmbientCandidates, noteAmbientVisibility, resetAmbientSession, tryStartAmbient } from './runtime';
@@ -119,14 +121,12 @@ export class AmbientDirector {
     if (nextWeather === 'rain' || (this.rainEndedTick !== undefined &&
       next.tick - this.rainEndedTick > 2)) this.rainEndedTick = undefined;
 
-    // Recompute eligibility only when snapshots change; validates NPC pair activity
-    // and reason, daylight/weather, real site and road anchors, not just IDs.
-    const valid = new Set(ambientCandidates(next, this.index,
-      { virtualMs: this.presentationMs, rainEndedTick: this.rainEndedTick })
-      .map(c => c.type + '|' + c.anchor.key));
+    // Validate EXISTING actor anchors, not a fresh candidate selection:
+    // A05-A rotates some selected anchors by world.tick. Re-selecting would
+    // incorrectly cancel every bird/cart on each ordinary game-hour change.
     const changes: AmbientTransition[] = [];
     for (const actor of this.actors.values()) {
-      if (!valid.has(actor.type + '|' + actor.anchor.key)) {
+      if (!this.stillValid(actor, next)) {
         this.release(actor.id, true);
         changes.push({ id: actor.id, status: 'cancelled',
           reason: 'World/actor/weather anchor no longer eligible', atMs: this.presentationMs });
@@ -192,6 +192,35 @@ export class AmbientDirector {
       break; // One new actor per interval, never a startup burst.
     }
     return changes;
+  }
+
+  /** Active durations survive ordinary tick changes; event start hours are not end deadlines. */
+  private stillValid(actor: AmbientActorDescriptor, world: WorldState): boolean {
+    if (!isAmbientAnchorValid(world, actor.anchor)) return false;
+    const definition = AMBIENT_CATALOG[actor.type];
+    const weather = world.schemaVersion === 6 ? world.weather.kind : undefined;
+    if (definition.weather !== 'any' && (!weather ||
+      !definition.weather.includes(weather))) return false;
+    if (actor.type === 'rain-shelter-visual') {
+      if (actor.anchor.kind !== 'citizen') return false;
+      const npc = world.citizens.find(c => c.id === actor.anchor.citizenId);
+      return !!npc && npc.alive && npc.goal === 'home' &&
+        (npc.activity === 'rest' || npc.activity === 'travelHome') &&
+        npc.reason.startsWith('Trú mưa');
+    }
+    if (actor.type === 'plaza-chat') {
+      const t = actor.anchor.tile;
+      return world.sites.some(s => s.kind === 'commons' && s.tile.x === t.x &&
+        s.tile.y === t.y) || this.index.pois.some(p => p.role === 'event' &&
+        p.tile.x === t.x && p.tile.y === t.y);
+    }
+    if (actor.type === 'cart-delivery') {
+      return !!actor.route && actor.route.every(tile => {
+        const i = tileIndexAt(tile, dimensionsOf(world));
+        return i !== null && world.tiles[i] === 'road';
+      });
+    }
+    return true;
   }
 
   /** Stop and release every descriptor, cooldown and read-only metric on replacement. */
