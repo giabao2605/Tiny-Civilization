@@ -151,6 +151,7 @@ describe('A05-B deterministic, bounded presentation scheduler', () => {
   it('cart trajectories only traverse contiguous genuine 96x96 road and fail closed without hierarchy', () => {
     const world = createWorld96(107, 20);
     world.tick = 10;
+    world.weather = { ...world.weather, kind: 'clear', intensity: 0 };
     const index = buildAmbientAnchorIndex(world);
     const candidate = ambientCandidates(world, index, { virtualMs: 0 }).find(c => c.type === 'cart-delivery');
     expect(candidate).toBeDefined();
@@ -199,7 +200,7 @@ describe('A05-B deterministic, bounded presentation scheduler', () => {
         director.reconcile(enabled);
         expect(enabled.rngState).toBe(disabled.rngState);
         if (enabled.schemaVersion === 6 && disabled.schemaVersion === 6)
-          expect(enabled.weather.rngState).toBe(disabled.weather.rngState);
+          expect(enabled.weather.weatherRngState).toBe(disabled.weather.weatherRngState);
       }
       expect(enabled).toEqual(disabled);
       director.dispose();
