@@ -79,6 +79,14 @@ describe('T06-C save compatibility and integrity regression', () => {
 
   it('keeps paused/running coordinator snapshot, queued command and clock settings on rejected import', () => {
     const coordinator = createLivingCoordinator(101, 20, undefined, true);
+    const originalWorld = advanceTicks(createWorld96(101, 20), 48);
+    const leader = originalWorld.governance.leaderId;
+    expect(leader).not.toBeNull();
+    const legitimatePending: GovernanceCommand[] = [{ type: 'emergency-food',
+      leaderId: leader!, issuedTick: 49, requestId: 17 }];
+    // Start with an actual queued command and nextRequestId=18. An invalid import
+    // must not discard either; a merely-empty queue would hide that regression.
+    coordinator.importSave(serializeSave(originalWorld, legitimatePending, 18));
     for (const paused of [true, false]) {
       coordinator.dispatch({ type: 'set-paused', paused });
       const state = coordinator.getSnapshot();
