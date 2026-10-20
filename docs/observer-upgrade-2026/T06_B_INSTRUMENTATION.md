@@ -8,7 +8,7 @@
 | Coordinator | `lastTick`, `routingTotals` (calls) | Deltas of already-existing routing `calls`, BFS, weighted A*, BFS fallbacks around authoritative tick |
 | Coordinator | `uiPublishes`, `publishGapP50Ticks`, `publishGapP95Ticks` (notifications; ticks) | `notify()` includes UI commands; zero-gap notifications are valid |
 | Phaser Game STEP | `frameP50Ms`, `frameP95Ms`, `frameMaxMs`, `frameSampleCount` | Last at most 120 actual Phaser loop `delta` values, not GPU timing; `phaserFps` from Phaser's reported `actualFps` |
-| Phaser scene | `gameObjects`, `textureCount`, `sceneCreates`, `sceneShutdowns`, `sceneRestarts` | Scene direct object list, global texture cache, per-instance lifecycle counts |
+| Phaser scene | `gameObjects`, `textureCount`, `sceneCreates`, `sceneShutdowns`, `sceneRestarts` | Scene direct object list, global texture cache, per-instance scene lifecycle counts plus DEV module-wide Game create/destroy counts across remount |
 | Phaser scene | `camera` | mode, zoom, viewport width/height; presentation only |
 | AmbientDirector/Visuals | active actors, `createdVisuals`, `destroyedVisuals`, category/type counters | Reused existing bounded cosmetic director/session counters; not proof audio was heard |
 | WeatherLayer | `weatherParticles.active/budget/enabled` | Active CPU-drawn rain line segments and deterministic particle pool |

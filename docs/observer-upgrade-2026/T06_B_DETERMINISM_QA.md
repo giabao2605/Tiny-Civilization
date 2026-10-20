@@ -5,7 +5,7 @@ New `src/app/t06b.instrumentation.test.ts` uses each map type 48×48 (legacy gov
 
 Independent speed/observer-pacing comparisons: 1×, 5×, 20× and observer pace 5/10/15 min/day on 96×96 20 NPC at seed 101. New tests also cover valid import/reset with telemetry ON, preserving serialized save and live timer lease.
 
-Existing contracts retained: `observerPace.e04a.test.ts` covers clock parity across multiple modes; `save.test.ts`, `v6.test.ts`, weather, legacy frozen fixture and T06-A baseline cover save continuation/compatibility and economic/governance semantics. No save file format, parser, engine pipeline or gameplay RNG was edited.
+Additional optional real Chromium `tests/e2e/t06b-diagnostics.spec.ts` is authored but NOT RUN. Existing contracts retained: `observerPace.e04a.test.ts` covers clock parity across multiple modes; `save.test.ts`, `v6.test.ts`, weather, legacy frozen fixture and T06-A baseline cover save continuation/compatibility and economic/governance semantics. No save file format, parser, engine pipeline or gameplay RNG was edited.
 
 ## Evidence policy
 Source assertions present on Draft PR #42. Mark PASS only once Fast CI on exact final HEAD confirms them; separate Chromium/physical Windows state stays NOT RUN. Frame rate and camera tracking depend on presentation only; equality of canonical state is testable without GPU. The 48×48 fixture is **not** a new historical-save golden file; historical save migration remains T06-C.

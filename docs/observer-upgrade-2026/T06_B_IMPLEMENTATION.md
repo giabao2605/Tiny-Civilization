@@ -12,6 +12,7 @@ Base `main@6b44a6f0e81e99438b1a8238153b406cfdf108d3`, PR #41 merged; main Fast C
 - `src/game/audio/weatherAudio.ts`: audio diagnostics return context state, active voices/loops, voice limit and bus settings. Existing ambient director/visual counters reused.
 - `src/app/App.tsx`: DEV-only `?observerPerf=1` compact collapsed readout, manual sample and on/off controls.
 - `src/app/t06b.instrumentation.test.ts`: lease and diagnostic parity regressions.
+- `tests/e2e/t06b-diagnostics.spec.ts`: optional Chromium diagnostics toggle and GameCanvas remount smoke (NOT RUN in this environment).
 
 ## Boundaries
 `WorldState` remains authoritative only in coordinator/engine. Camera, weather particles, ambient director/visuals, Web Audio and debug samplers cannot dispatch gameplay mutations. No secondary simulation clock, gameplay PRNG consumption, renderer rewrite, pathfinding optimization, save parser/schema/migration change, backend, worker or desktop packager. Existing pre-T06-B routing diagnostic counters are global: concurrent independent coordinator benchmarking can contaminate attribution and must be serialized.
