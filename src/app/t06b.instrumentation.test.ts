@@ -151,6 +151,26 @@ describe('T06-B lease ownership and read-only diagnostics', () => {
     expect(on.save).toBe(off.save);
   }, 120_000);
 
+  it.each([
+    ['1x', 1, null, 20], ['5x', 5, null, 4], ['20x', 20, null, 1],
+    ['observer-5', 1, 5, 500], ['observer-10', 1, 10, 1000],
+    ['observer-15', 1, 15, 1500],
+  ] as const)('speed %s preserves state when diagnostics toggle', (_label, speed, pace, cycles) => {
+    const run = (enabled: boolean) => {
+      const runtime = fakeRuntime();
+      const c = createLivingCoordinator(101, 20, undefined, enabled);
+      c.dispatch({ type: 'set-speed', speed });
+      if (pace !== null) c.dispatch({ type: 'set-observer-pace', minutesPerDay: pace });
+      const stop = c.start();
+      runtime.tick(cycles);
+      const state = c.getSnapshot().world;
+      const save = c.exportSave();
+      stop();
+      return { state, save };
+    };
+    expect(run(true)).toEqual(run(false));
+  }, 120_000);
+
   it('import/reset clear metrics without altering serialized save or running lease', () => {
     const runtime = fakeRuntime();
     const c = createLivingCoordinator(13, 20, undefined, true);
