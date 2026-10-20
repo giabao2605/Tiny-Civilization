@@ -94,6 +94,7 @@ export function App() {
     transitions: (changes, actors, view) => audioRef.current?.consumeTransitions(changes, actors, view),
     viewport: view => audioRef.current?.updateViewport(view),
     reset: () => audioRef.current?.resetEvents(),
+    diagnostics: () => audioRef.current?.diagnostics ?? null,
   }), []);
   const [cameraControls, setCameraControls] = useState<WorldCameraControls | null>(null);
   const [cameraView, setCameraView] = useState<CameraSnapshot | null>(null);
