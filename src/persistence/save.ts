@@ -361,9 +361,10 @@ function validatePending(value: unknown, world: WorldState, nextRequestId: numbe
     // A syntactically valid request must not refer to a nonexistent citizen.
     // Do not require the *current* leader: older valid saves may queue a command
     // immediately before an election, and the engine owns eligibility checks.
+    if (number(c.issuedTick, p + '.issuedTick', 1) !== tick + 1) fail(p, 'lệnh sai tick');
+    // Preserve legacy rejection precedence for commands carrying a bad tick.
     if (!world.citizens.some(citizen => citizen.id === leaderId))
       fail(p + '.leaderId', 'NPC không tồn tại');
-    if (number(c.issuedTick, p + '.issuedTick', 1) !== tick + 1) fail(p, 'lệnh sai tick');
     const requestId = number(c.requestId, p + '.requestId', last + 1, nextRequestId - 1);
     last = requestId;
   }
