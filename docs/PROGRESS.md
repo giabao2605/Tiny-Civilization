@@ -435,3 +435,12 @@ Phase 00 was merged and verified. Next task may implement Phase 01 only after re
 - E04-E branch `feat/e04-e-weather-reactions-audio`: adds 96×96 deterministic rain shelter choices below critical needs, explanatory citizen reason, existing pathfinding/backoff and lazy Web Audio rain/outdoors with mute/volume.
 - Frozen raw v5 replay and fixtures remain unchanged. Migrated v6 48×48 and authored v6 96×96 now both use automatic owned-home rain shelters. Their post-migration trajectories can differ legitimately; exact v6 save/replay and resource conservation are tested.
 - E04-E final-head Fast CI and audio/manual PC QA must be verified before calling DONE or merging. Do not start E04-F, trigger Pages or manual full browser workflows until the gate is met.
+
+
+## Observer Plan 04 — E04-F Integration & Pacing Validation (2026-10-20)
+
+- Branch: `feat/e04-f-integration-pacing-validation` created from merged E04-E `201f20c6`; E04-E post-merge [Fast CI #39350374219](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39350374219) PASS. The two original E04-F integration test files are preserved and extended.
+- Source/test work: 48/96 × 20/50/100 × four seeded climates, hourly no-teleport checks, conservation accounting, v5→v6 import, deterministic replay, Node tick/route profiling; read-only development Phaser/texture/FPS/route diagnostics; manual Chromium 24-screenshot matrix + 8 short profile samples; optional true 60/90/120-minute PC soak. The Full E2E manual workflow preserves `e04f-*` artifacts.
+- **E04-F Fast CI on final HEAD: NOT RUN at authoring;** status must be updated only after checking GitHub run `head_sha`. Historical 329 tests passed on E04-E, not E04-F.
+- **E04-F browser/headless screenshot/benchmark:** NOT RUN; **Windows PC visual/audio/GPU FPS/heap/leak and 60–120 minute soak:** NOT RUN / NOT MEASURED. Observer Pace remains explicitly optional; no claim of continuous observer animation between long ticks.
+- **DoD / Plan 05 gate: PARTIAL**, review pending. No automatic merge or Pages deployment. [Implementation](observer-upgrade-2026/E04_F_IMPLEMENTATION.md) · [Integration QA](observer-upgrade-2026/E04_F_INTEGRATION_QA.md) · [Performance](observer-upgrade-2026/E04_F_PERFORMANCE.md) · [Visual/audio](observer-upgrade-2026/E04_F_VISUAL_AUDIO_QA.md) · [Handoff](observer-upgrade-2026/E04_F_HANDOFF.md).
