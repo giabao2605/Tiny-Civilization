@@ -9,7 +9,7 @@
 2. Revalidate anchors and living actor co-location when starting, not just at index construction. Index once per world replacement; reset director on seed reset, save import, scene shutdown and geometry change.
 3. End/cancel/cleanup every cosmetic actor, cap active global/per-anchor and cooldown records. Suppress offscreen render without modifying world behavior. Handle pause/hidden/reduced motion.
 4. Cart requires contiguous walkable **road route** before A05-C draws it; anchor validity alone is insufficient. 48×48 does not have a known `main` road. Do not add fake NPCs to world.citizens.
-5. `puddle-bird` needs real observed rain-end context; current WeatherState does not store previous weather. Never infer it merely from clear weather.
+5. `puddle-bird` uses real E04-D seeded Nature-road puddles from the indexed ground plan and needs observed rain-end context; A05-B must retain wet visual briefly after rainfall; current WeatherState does not store previous weather. Never infer it merely from clear weather.
 6. Use seeded fixtures to test 30s/5min **after** A05-B/C live actors exist, then browser/PC validation in E. Keep tests and evidence explicit.
 
 **Forbidden:** add ambient to `WorldEvent` timeline, allocate numeric citizen/event IDs, mutate gameplay from renderer, add cosmetic save version, auto-merge or GitHub Pages deploy.

@@ -28,6 +28,8 @@ export type AmbientAnchorIndex = Readonly<{
   sites: readonly SiteAnchor[];
   pois: readonly PoiAnchor[];
   roads: readonly RoadAnchor[];
+  /** Actual seeded wet-ground markers from E04-D, never synthetic puddles. */
+  puddles: readonly RoadAnchor[];
 }>;
 export type AmbientDefinition = Readonly<{
   category: AmbientCategory;

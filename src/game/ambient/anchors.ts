@@ -2,7 +2,8 @@
  * Build at world load/geometry change or a canonical tick boundary, not per frame.
  * Only indexes real authored POIs, roads and sites. Legacy maps acquire no fake layout.
  */
-import { isValidTileAt, tileIndexAt, type TilePosition } from '../../sim/grid';
+import { isValidTileAt, tileIndexAt, TILE_PIXELS, type TilePosition } from '../../sim/grid';
+import { weatherGroundPlan } from '../render/weatherVisuals';
 import { dimensionsOf, type Citizen, type WorldState } from '../../sim/world';
 import type { District96Id } from '../../sim/world96Layout';
 import type {
@@ -62,7 +63,15 @@ export function buildAmbientAnchorIndex(world: WorldState): AmbientAnchorIndex {
   }
   pois.sort((a, b) => a.poiId.localeCompare(b.poiId));
   roads.sort((a, b) => a.tile.y - b.tile.y || a.tile.x - b.tile.x);
-  return { sites, pois, roads };
+  // Reuse Plan 04's actual procedural puddle placement, computed once with index.
+  // A05-B owns post-rain visual persistence; a dry location must not be called a puddle.
+  const puddlePositions = world.schemaVersion === 6 && world.layout
+    ? new Set(weatherGroundPlan(world).puddles.map(p =>
+      Math.floor(p.x / TILE_PIXELS) + ':' + Math.floor(p.y / TILE_PIXELS)))
+    : new Set<string>();
+  const puddles = roads.filter(road => road.districtId === 'nature' &&
+    puddlePositions.has(key(road.tile)));
+  return { sites, pois, roads, puddles };
 }
 export function citizenAnchor(world: WorldState, citizen: Citizen): CitizenAnchor | null {
   if (!citizen.alive || !validTile(world, citizen.tile)) return null;

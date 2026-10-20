@@ -6,6 +6,8 @@ import { createWorld, type WorldState } from '../../sim/world';
 import { createWorld96 } from '../../sim/world96';
 import { AMBIENT_CATALOG, ambientCandidates, isAmbientCandidate } from './catalog';
 import { buildAmbientAnchorIndex, isAmbientAnchorValid } from './anchors';
+import { weatherGroundPlan } from '../render/weatherVisuals';
+import { TILE_PIXELS } from '../../sim/grid';
 import { AMBIENT_LIMITS, createAmbientSession, finishAmbient, getAmbientMetrics,
   noteAmbientCandidates, noteAmbientVisibility, resetAmbientSession, tryStartAmbient } from './runtime';
 import { AMBIENT_TYPES, type AmbientCandidate } from './types';
@@ -52,6 +54,10 @@ describe('A05-A immutable event taxonomy and anchor ownership', () => {
       } else {
         expect(first.pois).toHaveLength(24);
         expect(first.roads.some(r => r.roadKind === 'main')).toBe(true);
+        const puddles = new Set(weatherGroundPlan(world).puddles.map(p =>
+          Math.floor(p.x / TILE_PIXELS) + ':' + Math.floor(p.y / TILE_PIXELS)));
+        expect(first.puddles.every(r => r.districtId === 'nature' &&
+          puddles.has(r.tile.x + ':' + r.tile.y) && isAmbientAnchorValid(world, r))).toBe(true);
       }
       expect(JSON.stringify(world)).toBe(before);
     });

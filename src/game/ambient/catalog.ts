@@ -35,7 +35,7 @@ export const AMBIENT_CATALOG: Readonly<Record<AmbientType, AmbientDefinition>> =
   'bell-hour': { category: 'civic', anchorKinds: ['site'], phases: ALL, weather: 'any',
     map: 'both', hours: [6, 12, 18], durationMs: 3_000, cooldownMs: 40_000,
     priority: 3, budgetClass: 'audio', channel: 'audio', reason: 'Canonical civic hour at existing commons' },
-  'puddle-bird': { category: 'wildlife', anchorKinds: ['poi'], phases: ['dawn', 'day'], weather: DRY,
+  'puddle-bird': { category: 'wildlife', anchorKinds: ['road'], phases: ['dawn', 'day'], weather: DRY,
     map: '96-only', durationMs: 9_000, cooldownMs: 70_000,
     priority: 1, budgetClass: 'moving', channel: 'visual', reason: 'Observed recent rain end and real nature anchor' },
   'window-light': { category: 'lighting', anchorKinds: ['site'], phases: ['dusk', 'night'], weather: 'any',
@@ -105,9 +105,13 @@ export function ambientCandidates(world: WorldState, index: AmbientAnchorIndex,
   if (nature.length) {
     const selected = nature[((world.seed ^ world.tick) >>> 0) % nature.length]!;
     offer('bird-visit', selected);
-    if (context.rainEndedTick !== undefined && Number.isSafeInteger(context.rainEndedTick) &&
-      context.rainEndedTick <= world.tick && world.tick - context.rainEndedTick <= 2 &&
-      weather !== 'rain') offer('puddle-bird', selected);
+  }
+  if (index.puddles.length && context.rainEndedTick !== undefined &&
+    Number.isSafeInteger(context.rainEndedTick) &&
+    context.rainEndedTick <= world.tick && world.tick - context.rainEndedTick <= 2 &&
+    weather !== 'rain') {
+    const puddle = index.puddles[((world.seed ^ world.tick) >>> 0) % index.puddles.length]!;
+    offer('puddle-bird', puddle);
   }
   const homes = index.sites.filter(s => s.siteKind === 'home' &&
     (s.districtId === 'residential' || s.districtId === undefined));

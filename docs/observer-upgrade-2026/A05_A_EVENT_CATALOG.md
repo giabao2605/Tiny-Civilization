@@ -13,7 +13,7 @@ The runtime catalog is `AMBIENT_CATALOG` and `AMBIENT_TYPES`. Every candidate in
 | chimney-smoke | dawn/dusk, any | real home | short smoke | 13s/46s, static | real home |
 | rain-shelter-visual | rain, real home goal, activity and `Trú mưa` reason | real living NPC | umbrella/roof splash | 10s/35s, static | if true reason exists |
 | bell-hour | 06/12/18h, any | real commons/Civic site | one-shot SFX in A05-D | 3s/40s, audio | real commons |
-| puddle-bird | dawn/day, clear/cloudy within 2 ticks of **observed** rain stop | real nature event POI | bird on wet ground | 9s/70s, moving | **skip** |
+| puddle-bird | dawn/day, clear/cloudy within 2 ticks of **observed** rain stop | actual E04-D Nature-district road puddle | bird on wet ground | 9s/70s, moving | **skip** |
 | window-light | dusk/night | Plan 04 lighting owner | existing visual ONLY; **not scheduled** | n/a | Plan 04 already handles |
 
 **Universal prohibited actions:** mutation of authoritative WorldState, world.events, money, stock, health, social relations, NPC goal/action, weatherRngState/rngState; creating fake trades/sites/citizens; blocking routes or moving to water. Missing anchor ⇒ no event. 48×48 must not invent districts or fake roads.

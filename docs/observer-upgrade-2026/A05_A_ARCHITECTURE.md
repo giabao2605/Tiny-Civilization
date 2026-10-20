@@ -13,7 +13,7 @@ WorldState (read only) -> buildAmbientAnchorIndex (load/topology change)
               A05-B/C/D future renderer/audio
 ```
 
-No Math.random, Date.now, RNG draws or independent game timer in candidate selection. Site/road/POI index is generated once per world/topology replacement rather than per render frame. A05-B **must revalidate** moving citizen/pair anchors when starting, reset on save-load/seed/scene shutdown, distinguish schedule from visibility and never move NPCs to fit vignettes. 48×48 migrated maps have actual roads/sites but no authoritative 96 POI/district metadata.
+No Math.random, Date.now, RNG draws or independent game timer in candidate selection. Site/road/POI index and real Plan 04 puddle locations are generated once per world/topology replacement rather than per render frame. A05-B **must revalidate** moving citizen/pair anchors when starting, reset on save-load/seed/scene shutdown, distinguish schedule from visibility and never move NPCs to fit vignettes. 48×48 migrated maps have actual roads/sites but no authoritative 96 POI/district metadata.
 
 `AMBIENT_LIMITS` defaults: maxActive=4, maxPerAnchor=1, maxCooldownEntries=128. Manual primitives reject invalid, duplicate, anchor-busy, global budget, cooldown and expired events. An explicit `finishAmbient` releases actor references, records per-type/anchor cooldown and counts end/cancel. A reset clears active, cooldowns and instrumentation. Metrics: candidate, scheduled, started/ended/cancelled, active/peak, invalid anchor, budget/cooldown/duplicate suppression, visible/offscreen and per-category starts. These are developer presentation counters, not gameplay or analytics service.
 
