@@ -1,3 +1,9 @@
+## Observer Plan 05 — A05-B Deterministic Ambient Scheduler (2026-10-20)
+- Implementation branch `feat/a05-b-ambient-scheduler` from A05-A merged `main@b52d832f`, post-merge Fast CI #39360324394 SUCCESS.
+- One presentation-owned ambient director; scene-integrated bounded virtual clock, candidate fairness, per-tick deduplication, end/cancel/release and road-only cart preflight.
+- Unit/virtual-time and replay tests: see [A05-B Lifecycle QA](observer-upgrade-2026/A05_B_LIFECYCLE_QA.md) and [Determinism QA](observer-upgrade-2026/A05_B_DETERMINISM_QA.md). Final PR SHA Fast CI verification required before PASS.
+- A05-C actual visuals, A05-D audio, A05-E watchability/FPS/soak remain NOT RUN / NOT MEASURED. No Pages deployment, no merge.
+
 ## Observer Plan 05 — A05-A Event Taxonomy & Instrumentation (2026-10-20)
 
 - **CODE VERIFIED / PR #35 awaiting review (do not merge)** on `feat/a05-a-event-taxonomy`, based on E04-F merge `bd43ed2d`; prior post-merge [CI #39355971369](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39355971369) PASS.
