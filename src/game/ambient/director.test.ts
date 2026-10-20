@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { advanceOneTick } from '../../sim/engine';
-import { createWorld } from '../../sim/world';
+import { createWorld, type WorldState } from '../../sim/world';
 import { createWorld96 } from '../../sim/world96';
 import { buildAmbientAnchorIndex } from './anchors';
 import { ambientCandidates } from './catalog';
@@ -125,7 +125,7 @@ describe('A05-B deterministic, bounded presentation scheduler', () => {
     const changed = structuredClone(world);
     changed.tick++;
     changed.citizens[0]!.alive = false;
-    changed.citizens[1]!.tile.x += 1;
+    changed.citizens[1]!.tile = { ...changed.citizens[1]!.tile, x: changed.citizens[1]!.tile.x + 1 };
     const cancelled = director.reconcile(changed);
     expect(cancelled.some(t => t.status === 'cancelled')).toBe(true);
     expect(director.activeActors.some(a => a.type === 'plaza-chat')).toBe(false);
@@ -216,8 +216,8 @@ describe('A05-B deterministic, bounded presentation scheduler', () => {
 
   it('gameplay replay is identical with ambient enabled/disabled, including weather RNG', () => {
     for (const initial of [createWorld(113, 20), createWorld96(113, 50)]) {
-      let enabled = initial;
-      let disabled = structuredClone(initial);
+      let enabled: WorldState = initial;
+      let disabled: WorldState = structuredClone(initial);
       const director = new AmbientDirector(enabled);
       for (let tick = 0; tick < 48; tick++) {
         play(director, 250);

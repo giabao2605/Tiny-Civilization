@@ -203,7 +203,8 @@ export class AmbientDirector {
       !definition.weather.includes(weather))) return false;
     if (actor.type === 'rain-shelter-visual') {
       if (actor.anchor.kind !== 'citizen') return false;
-      const npc = world.citizens.find(c => c.id === actor.anchor.citizenId);
+      const citizenId = actor.anchor.citizenId;
+      const npc = world.citizens.find(c => c.id === citizenId);
       return !!npc && npc.alive && npc.goal === 'home' &&
         (npc.activity === 'rest' || npc.activity === 'travelHome') &&
         npc.reason.startsWith('Trú mưa');
