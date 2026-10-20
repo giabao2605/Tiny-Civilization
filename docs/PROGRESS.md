@@ -1,6 +1,6 @@
 ## Observer Plan 05 — A05-D Ambient Audio & Localized SFX (2026-10-20)
 - Verified A05-C PR #37 merged: main@24573918; Fast CI #39366800211 SUCCESS.
-- Working branch \`feat/a05-d-ambient-audio\`: React-owned shared Web Audio mixer, canonical day/night/weather gain, transition-only bird/cart/bell/market/drip cues, world-space stereo attenuation, mute/volume buses, bounded polyphony and lifecycle cleanup. No simulation/save/RNG changes; no Pages deployment.
+- Working branch `feat/a05-d-ambient-audio`: React-owned shared Web Audio mixer, canonical day/night/weather gain, transition-only bird/cart/bell/market/drip cues, world-space stereo attenuation, mute/volume buses, bounded polyphony and lifecycle cleanup. No simulation/save/RNG changes; no Pages deployment.
 - Unit and integration tests added for spatial gain, duplicate/ended/cancelled voices, gesture unlock, denial, and director transitions. **Fast CI verification: PENDING**. Real PC auditory acceptance: **NOT RUN**; FPS/heap and soak: **NOT MEASURED**.
 - Documentation: [Implementation](observer-upgrade-2026/A05_D_IMPLEMENTATION.md) · [Architecture](observer-upgrade-2026/A05_D_AUDIO_ARCHITECTURE.md) · [Audio QA](observer-upgrade-2026/A05_D_AUDIO_QA.md) · [Lifecycle QA](observer-upgrade-2026/A05_D_LIFECYCLE_QA.md) · [A05-E Handoff](observer-upgrade-2026/A05_D_HANDOFF.md). PR unmerged.
 

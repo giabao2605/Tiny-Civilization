@@ -158,9 +158,9 @@ export class WeatherAudio {
   }
 
   private apply(): void {
-    if (!this.context || this.destroyed) return;
-    this.ramp(this.master!.gain, this.enabled && !this.suspended ? this.masterVolume * 0.78 : 0, 0.08);
-    this.ramp(this.sfxBus!.gain, this.sfxVolume * 0.58, 0.10);
+    if (!this.context || this.destroyed || !this.master || !this.sfxBus) return;
+    this.ramp(this.master.gain, this.enabled && !this.suspended ? this.masterVolume * 0.78 : 0, 0.08);
+    this.ramp(this.sfxBus.gain, this.sfxVolume * 0.58, 0.10);
     if (this.rainGain) this.ramp(this.rainGain.gain, this.last.rain, 0.75);
     if (this.outdoorsGain) this.ramp(this.outdoorsGain.gain, this.last.outdoors, 0.75);
   }

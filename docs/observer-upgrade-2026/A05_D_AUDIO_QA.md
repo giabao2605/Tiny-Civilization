@@ -4,8 +4,8 @@ Legend: **PASS / FAIL / PARTIAL / NOT RUN / NOT MEASURED**. Do not equate unit t
 
 | Test area | Evidence | Status |
 | --- | --- | --- |
-| Pure volume clamp, invalid coordinates, world-space attenuation/pan | \`soundModel.test.ts\` | NOT RUN (awaiting Fast CI) |
-| Canonical daytime/nighttime/rain/weather levels | \`ambientAudio.test.ts\`, \`weatherAudio.test.ts\` | NOT RUN (awaiting Fast CI) |
+| Pure volume clamp, invalid coordinates, world-space attenuation/pan | `soundModel.test.ts` | NOT RUN (awaiting Fast CI) |
+| Canonical daytime/nighttime/rain/weather levels | `ambientAudio.test.ts`, `weatherAudio.test.ts` | NOT RUN (awaiting Fast CI) |
 | Autoplay policy / same AudioContext / unlock rejection | Fake Web AudioContext tests | NOT RUN (awaiting Fast CI) |
 | Real director transition → bounded sound; audio-only bell without visual | Integration via fixture + mocked AudioContext | NOT RUN (awaiting Fast CI) |
 | Repeat event ID and start/end/cancel cleanup | Mock lifecycle tests | NOT RUN (awaiting Fast CI) |
@@ -18,7 +18,7 @@ Legend: **PASS / FAIL / PARTIAL / NOT RUN / NOT MEASURED**. Do not equate unit t
 | Production dependency security, typecheck, lint, unit tests and build | Fast CI workflow on final PR head | NOT RUN (awaiting Fast CI) |
 
 ## Manual PC acceptance checklist
-1. Cold load: inspect devtools for zero \`AudioContext\` before clicking audio.
+1. Cold load: inspect devtools for zero `AudioContext` before clicking audio.
 2. Enable from a click; inspect context state and audible low-volume outdoor, rain and bell/bird cues. Try blocked autoplay and disabled Web Audio.
 3. Set master/ambient/SFX sliders to 0, 50 and 100; rapidly mute/unmute with no crackle, doubled layers or speaker spikes.
 4. Compare 06:00/12:00/18:00/23:00 with clear/cloudy/rain/fog; pan/zoom/follow/AFK from audible into inaudible distances.

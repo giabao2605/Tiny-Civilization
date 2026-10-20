@@ -7,10 +7,10 @@ const view = { x: 0, y: 0, width: 1600, height: 1600 };
 
 class Param {
   value = 0;
-  cancelScheduledValues(_time: number) {}
-  setValueAtTime(value: number, _time: number) { this.value = value; }
-  linearRampToValueAtTime(value: number, _time: number) { this.value = value; }
-  exponentialRampToValueAtTime(value: number, _time: number) { this.value = value; }
+  cancelScheduledValues() {}
+  setValueAtTime(value: number) { this.value = value; }
+  linearRampToValueAtTime(value: number) { this.value = value; }
+  exponentialRampToValueAtTime(value: number) { this.value = value; }
 }
 class FakeOscillator {
   onended: (() => void) | null = null;
@@ -18,10 +18,10 @@ class FakeOscillator {
   type = 'sine';
   starts = 0;
   stops = 0;
-  connect(_target: unknown) {}
+  connect() {}
   disconnect() {}
-  start(_time: number) { this.starts++; }
-  stop(_time?: number) { this.stops++; }
+  start() { this.starts++; }
+  stop() { this.stops++; }
   end() { this.onended?.(); }
 }
 class FakeAudioContext {
@@ -40,18 +40,18 @@ class FakeAudioContext {
   createBufferSource() {
     const item = { stops: 0 };
     this.buffers.push(item);
-    return { buffer: null, loop: false, connect: (_target: unknown) => {},
+    return { buffer: null, loop: false, connect: () => {},
       disconnect: () => {}, start: () => {}, stop: () => { item.stops++; } };
   }
   createGain() {
-    return { gain: new Param(), connect: (_target: unknown) => {}, disconnect: () => {} };
+    return { gain: new Param(), connect: () => {}, disconnect: () => {} };
   }
   createBiquadFilter() {
-    return { type: 'lowpass', frequency: new Param(), connect: (_target: unknown) => {},
+    return { type: 'lowpass', frequency: new Param(), connect: () => {},
       disconnect: () => {} };
   }
   createStereoPanner() {
-    return { pan: new Param(), connect: (_target: unknown) => {}, disconnect: () => {} };
+    return { pan: new Param(), connect: () => {}, disconnect: () => {} };
   }
   createOscillator() {
     const oscillator = new FakeOscillator();

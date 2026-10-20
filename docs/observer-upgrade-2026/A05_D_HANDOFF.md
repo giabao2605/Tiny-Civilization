@@ -1,6 +1,6 @@
 # A05-D → A05-E Handoff: Watchability Tuning & Performance
 
-A05-D provides one React-owned Web Audio mixer extending E04-E, scoped soundscape and transition-driven localized SFX. Relevant code: \`src/game/audio/{weatherAudio.ts,soundModel.ts,ambientBridge.ts}\`, \`WorldScene.ts\`, \`createGame.ts\`, \`GameCanvas.tsx\`, \`App.tsx\`. It does not create a new ambient director, simulation state, gameplay sounds, asset library or mobile support.
+A05-D provides one React-owned Web Audio mixer extending E04-E, scoped soundscape and transition-driven localized SFX. Relevant code: `src/game/audio/{weatherAudio.ts,soundModel.ts,ambientBridge.ts}`, `WorldScene.ts`, `createGame.ts`, `GameCanvas.tsx`, `App.tsx`. It does not create a new ambient director, simulation state, gameplay sounds, asset library or mobile support.
 
 A05-E must inspect final A05-D PR CI and merge baseline **only after explicit approval**. Test real PC listening for acceptable low-level chirp/cart/bell and ambient balance, compare sound behavior under weather/time/observer speeds, and measure actual watchability with screenshots/video + performance/soak data. Use the observer upgrade Master Plan and Plan 05 acceptance gates; do not declare visual quality from pure unit tests.
 
