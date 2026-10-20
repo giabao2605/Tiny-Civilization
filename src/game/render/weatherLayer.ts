@@ -27,6 +27,12 @@ export class WeatherLayer {
   private elapsed = 0;
   private particlesEnabled = true;
   private dropsDrawn = false;
+  private activeDrops = 0;
+
+  /** CPU-drawn line segments, not a count of GPU draw calls. */
+  get diagnostics() {
+    return { active: this.activeDrops, budget: this.particles.length, enabled: this.particlesEnabled };
+  }
 
   constructor(scene: Phaser.Scene, world: WorldState) {
     const { width, height } = dimensionsOf(world);
@@ -118,6 +124,7 @@ export class WeatherLayer {
     const left = camera.scrollX + (camera.width - visibleWidth) / 2;
     const top = camera.scrollY + (camera.height - visibleHeight) / 2;
     const active = Math.min(this.particles.length, Math.round(this.particles.length * this.current.rainAlpha));
+    this.activeDrops = active;
     this.drops.clear();
     this.drops.lineStyle(1 / zoom, 0xc1d9e8, 0.55);
     const motion = this.elapsed / 1000;
@@ -134,6 +141,7 @@ export class WeatherLayer {
   }
 
   private clearDrops(): void {
+    this.activeDrops = 0;
     if (!this.dropsDrawn) return;
     this.drops.clear();
     this.dropsDrawn = false;
