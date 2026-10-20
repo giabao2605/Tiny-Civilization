@@ -34,6 +34,8 @@ export function createGame(
       phaserFps: game.loop.actualFps,
       frameDeltaMs: game.loop.delta,
       ambient: scene.getAmbientDiagnostics(),
+      weatherVisuals: scene.getWeatherDiagnostics(),
+      audio: ambientAudio?.diagnostics?.() ?? null,
       routeRequests: getRoutingDiagnostics().calls,
       bfsCalls: getPathfindingDiagnostics(),
       weightedCalls: getWeightedPathDiagnostics().calls,
