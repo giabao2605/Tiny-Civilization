@@ -11,6 +11,7 @@ import { TILE_PIXELS } from '../../sim/grid';
 import { AMBIENT_LIMITS, createAmbientSession, finishAmbient, getAmbientMetrics,
   noteAmbientCandidates, noteAmbientVisibility, resetAmbientSession, tryStartAmbient } from './runtime';
 import { AMBIENT_TYPES, type AmbientCandidate } from './types';
+import { createAmbientFixture, type AmbientFixtureName } from './fixtures';
 
 const at = (world: WorldState, hour: number): WorldState => ({ ...world, tick: 24 + hour });
 const make = (size: 48 | 96, population: 20 | 50 | 100 = 20): WorldState =>
@@ -218,4 +219,40 @@ describe('A05-A virtual time, budget, lifecycle, instrumentation and replay', ()
     expect(session.active.size).toBe(0);
     expect(getAmbientMetrics(session).invalidAnchor).toBe(1);
   });
+});
+
+describe('A05-A named reusable seeded fixtures (candidate readiness only)', () => {
+  for (const name of ['sign-of-life-30s', 'three-categories-5min', 'native-96',
+    'migrated-48', 'frozen-v5-48', 'missing-poi', 'rainy-night',
+    'no-nearby-citizens', 'co-located-chat', 'post-rain-puddle'] as const satisfies
+    readonly AmbientFixtureName[]) {
+    it(name + ' initializes reproducible virtual presentation inputs', () => {
+      const one = createAmbientFixture(name);
+      const two = createAmbientFixture(name);
+      expect(one).toEqual(two);
+      const before = JSON.stringify(one.world);
+      const index = buildAmbientAnchorIndex(one.world);
+      const eligible = ambientCandidates(one.world, index, one.context);
+      expect(eligible).toEqual(ambientCandidates(two.world, buildAmbientAnchorIndex(two.world), two.context));
+      expect(JSON.stringify(one.world)).toBe(before);
+      expect(new Set(eligible.map(event => event.category)).size)
+        .toBeGreaterThanOrEqual(one.expectedCandidateCategories);
+      if (name === 'sign-of-life-30s') {
+        expect(eligible.some(event => event.startMs === 0 && event.durationMs <= 30_000)).toBe(true);
+      }
+      if (name === 'three-categories-5min') {
+        expect(one.context.virtualMs).toBe(300_000);
+      }
+      if (name === 'missing-poi' || name === 'migrated-48' || name === 'frozen-v5-48') {
+        expect(index.pois).toHaveLength(0);
+      }
+      if (name === 'frozen-v5-48') expect(one.world.schemaVersion).toBe(5);
+      if (name === 'no-nearby-citizens')
+        expect(eligible.some(event => event.type === 'plaza-chat')).toBe(false);
+      if (name === 'co-located-chat')
+        expect(eligible.some(event => event.type === 'plaza-chat')).toBe(true);
+      if (name === 'rainy-night')
+        expect(eligible.some(event => ['cart-delivery', 'bird-visit', 'pet-wander'].includes(event.type))).toBe(false);
+    });
+  }
 });
