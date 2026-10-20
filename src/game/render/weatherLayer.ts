@@ -76,6 +76,14 @@ export class WeatherLayer {
     this.apply();
   }
 
+  /** Read-only capacity, not GPU timing or a count of individually allocated nodes. */
+  get diagnostics(): Readonly<{ particleCapacity: number; activeParticleBudget: number; particlesEnabled: boolean }> {
+    return { particleCapacity: this.particles.length,
+      activeParticleBudget: this.particlesEnabled
+        ? Math.min(this.particles.length, Math.round(this.particles.length * this.current.rainAlpha)) : 0,
+      particlesEnabled: this.particlesEnabled };
+  }
+
   setWeather(world: WorldState, immediate = false): void {
     const weather = world.schemaVersion === 6 ? world.weather : null;
     const nextSignature = weather ? weather.kind + ':' + weather.intensity : 'clear:0';
