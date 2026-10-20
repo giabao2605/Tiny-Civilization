@@ -1,0 +1,129 @@
+{
+  "provenance": "Deterministic 24-tick engine-generated checkpoints; NOT historical player save captures",
+  "sourceSimCommit": "d91a1b0b772ac25ba86edb159c017fde3b2ad51b",
+  "captureCommit": "251d24031a5c2fb8970474e217647eb12e307fc3",
+  "captureCiRun": "https://github.com/giabao2605/Tiny-Civilization/actions/runs/39397276992",
+  "captureStatus": "CI failed on an unrelated pre-existing error-message-precedence assertion; all 12 checkpoint cases passed",
+  "entries": [
+    {
+      "size": 48,
+      "population": 20,
+      "seed": 101,
+      "tick": 24,
+      "saveFormat": 1,
+      "saveSha256": "6063a8343da933fef3a9dea348c9f3d48d1535c4c679b95faee85d449ed218e3",
+      "worldSha256": "b45b39c8c36fd00a810c077eb3f8c5b7404996e81606d7a38faf81a0f3041c72",
+      "rngState": 52813843
+    },
+    {
+      "size": 48,
+      "population": 20,
+      "seed": 12345,
+      "tick": 24,
+      "saveFormat": 1,
+      "saveSha256": "5932ef63c6f6e52f4aeb7c51eac1d7e17bc8c2103ffe7b81e473aab7feb5e6ee",
+      "worldSha256": "3e580f9baacd8676d9e2a0d645c9f435524a5fb42363c0e232673454dc97b911",
+      "rngState": 1805349007
+    },
+    {
+      "size": 48,
+      "population": 50,
+      "seed": 101,
+      "tick": 24,
+      "saveFormat": 1,
+      "saveSha256": "18ac13fa5a223fc023cd4738bb93c957ba6677fcbe739e223533e319de4964a5",
+      "worldSha256": "278f80bf0688fa1cadc86e2bc3f43932ed61a08876aa80e68a2f8388ff5ecd47",
+      "rngState": 3103289615
+    },
+    {
+      "size": 48,
+      "population": 50,
+      "seed": 12345,
+      "tick": 24,
+      "saveFormat": 1,
+      "saveSha256": "8ca4647e1607f8e9862f4460fdf5285d2b08f3f90484871b70869c9f08298e5a",
+      "worldSha256": "150814249d876cf21a540e3efb8468a4036f8299920caddb16bd093c71df72fc",
+      "rngState": 3575934932
+    },
+    {
+      "size": 48,
+      "population": 100,
+      "seed": 101,
+      "tick": 24,
+      "saveFormat": 1,
+      "saveSha256": "2b5213811c5ab073b671c185aba4d710db30d9787cc64a41abede391eb826646",
+      "worldSha256": "f91f56c439ad56d73dfc7b404eea913ef528b8ab451fba88b9892d48ad7928cd",
+      "rngState": 2557109913
+    },
+    {
+      "size": 48,
+      "population": 100,
+      "seed": 12345,
+      "tick": 24,
+      "saveFormat": 1,
+      "saveSha256": "3aa581e8ccdecbf26174a9fc70a3da87c6bf21454b6b50a3dabb764249e21c96",
+      "worldSha256": "4136da8a317f7f9202bf0fe937fe6f45b2c5f6ae61c7d028d1207815495bd924",
+      "rngState": 1366685745
+    },
+    {
+      "size": 96,
+      "population": 20,
+      "seed": 101,
+      "tick": 24,
+      "saveFormat": 3,
+      "saveSha256": "ffd2c1408d1a116857e934d00de937935f6dc70a7abd4e5c5ee34473340dbb0c",
+      "worldSha256": "46d95a9dd612aca71b44cb65f26f5308959be6cafde0c9423f8d9ef0b34e24be",
+      "rngState": 356457446
+    },
+    {
+      "size": 96,
+      "population": 20,
+      "seed": 12345,
+      "tick": 24,
+      "saveFormat": 3,
+      "saveSha256": "01aceb3b4b13310bf0b412fc7232618fe40356369ca08c84060ee8e51d5c734d",
+      "worldSha256": "26b08b0ca25cd6a46e0480b2d4e9edb2ec1232e51afe4d7b64e92208e7eeaad7",
+      "rngState": 3833554759
+    },
+    {
+      "size": 96,
+      "population": 50,
+      "seed": 101,
+      "tick": 24,
+      "saveFormat": 3,
+      "saveSha256": "75bf4781fcb4821d9cf82d56317b5620e9f3e6df07fd7f60aade6dc39328a7db",
+      "worldSha256": "df734afce1e78db53a0eaa5588867d7586397dce096e50dedf81f6e4fc8830c3",
+      "rngState": 356457446
+    },
+    {
+      "size": 96,
+      "population": 50,
+      "seed": 12345,
+      "tick": 24,
+      "saveFormat": 3,
+      "saveSha256": "743d20f43234ed250b0f26bb4768585b93c84839871167947cfd3c5c228c60c0",
+      "worldSha256": "cf508d6f88838a79cd47e925aa3f2cddcd13160e89d1fa5d5d933a47a418a657",
+      "rngState": 3833554759
+    },
+    {
+      "size": 96,
+      "population": 100,
+      "seed": 101,
+      "tick": 24,
+      "saveFormat": 3,
+      "saveSha256": "5684763a7a1b87033d855025d29ed87fe89d0903334e3b5c4714d50ff43c5b11",
+      "worldSha256": "709743abd923d8f1523033420026e84f0747774d7747b9ab93893cb5eef85bf8",
+      "rngState": 356457446
+    },
+    {
+      "size": 96,
+      "population": 100,
+      "seed": 12345,
+      "tick": 24,
+      "saveFormat": 3,
+      "saveSha256": "826c2073d6ff069ef7eb688ddf407e770b235bbd30bf1f09de2cbead3602b73f",
+      "worldSha256": "ccd951e376004cf85edba32358769db0e14680fbeb1633209ad5dfece79af7d0",
+      "rngState": 3833554759
+    }
+  ]
+}

@@ -350,14 +350,21 @@ export function validateWorld(value: unknown, requireWeather = true): asserts va
     }
   }
 }
-function validatePending(value: unknown, tick: number, nextRequestId: number): GovernanceCommand[] {
+function validatePending(value: unknown, world: WorldState, nextRequestId: number): GovernanceCommand[] {
+  const tick = world.tick;
   const pending = array(value, 'pending', 1);
   let last = 0;
   for (const [i, v] of pending.entries()) {
     const p = 'pending[' + i + ']', c = object(v, p);
     if (c.type !== 'emergency-food') fail(p + '.type', 'lệnh không hỗ trợ');
-    number(c.leaderId, p + '.leaderId', 1);
+    const leaderId = number(c.leaderId, p + '.leaderId', 1);
+    // A syntactically valid request must not refer to a nonexistent citizen.
+    // Do not require the *current* leader: older valid saves may queue a command
+    // immediately before an election, and the engine owns eligibility checks.
     if (number(c.issuedTick, p + '.issuedTick', 1) !== tick + 1) fail(p, 'lệnh sai tick');
+    // Preserve legacy rejection precedence for commands carrying a bad tick.
+    if (!world.citizens.some(citizen => citizen.id === leaderId))
+      fail(p + '.leaderId', 'NPC không tồn tại');
     const requestId = number(c.requestId, p + '.requestId', last + 1, nextRequestId - 1);
     last = requestId;
   }
@@ -385,7 +392,7 @@ export function migrateLegacyWorld(world: LegacyWorldState): WorldState {
 export function serializeSave(world: WorldState, pending: GovernanceCommand[] = [], nextRequestId = 1): string {
   validateWorld(world);
   number(nextRequestId, 'nextRequestId', 1);
-  validatePending(pending, world.tick, nextRequestId);
+  validatePending(pending, world, nextRequestId);
   const json = JSON.stringify({
     saveFormat: world.schemaVersion === 5 ? SAVE_FORMAT : WEATHER_SAVE_FORMAT,
     engineVersion: world.schemaVersion === 5 ? ENGINE_VERSION : WEATHER_ENGINE_VERSION,
@@ -421,7 +428,7 @@ function parseEnvelope(json: string, migrate: boolean): RestoredSave {
   if (isLegacy && envelope.world.schemaVersion !== 5) fail('world.schemaVersion', 'v5 cần schema 5');
   if ((isOldV6 || isNew) && envelope.world.schemaVersion !== 6) fail('world.schemaVersion', 'v6 cần schema 6');
   const nextRequestId = number(envelope.nextRequestId, 'nextRequestId', 1);
-  const pending = validatePending(envelope.pending, envelope.world.tick, nextRequestId);
+  const pending = validatePending(envelope.pending, envelope.world as WorldState, nextRequestId);
   // Complete validation of the original bytes and command queue precedes migration.
   // Historical v5 parsing remains byte-identical when migrate=false.
   const world: WorldState = isLegacy && migrate ? migrateLegacyWorld(envelope.world as LegacyWorldState)
