@@ -63,6 +63,12 @@ export function ambientPoint(actor: AmbientActorDescriptor, nowMs: number,
   return center;
 }
 
+/** Slight overview boost for tiny cosmetic silhouettes without changing world-space movement. */
+export function ambientOverviewScale(zoom: number): number {
+  return Number.isFinite(zoom) && zoom > 0 ?
+    Math.min(1.35, Math.max(1, 0.9 / zoom)) : 1;
+}
+
 export const isRenderableAmbient = (actor: AmbientActorDescriptor): boolean =>
   AMBIENT_CATALOG[actor.type].channel === 'visual';
 
@@ -78,19 +84,20 @@ export class AmbientVisualRegistry<T> {
     isVisible: (actor: AmbientActorDescriptor) => boolean,
     create: (actor: AmbientActorDescriptor) => T | null,
     destroy: (handle: T) => void): void {
-    const visible = new Map(actors.filter(actor =>
-      isRenderableAmbient(actor) && isVisible(actor)).map(actor => [actor.id, actor]));
+    // Only four active descriptors are permitted. An array avoids allocating
+    // a filter result, mapped tuples AND a new Map on every Phaser frame.
+    const visible = actors.filter(actor => isRenderableAmbient(actor) && isVisible(actor));
     for (const [id, entry] of this.entries) {
-      if (visible.has(id)) continue;
+      if (visible.some(actor => actor.id === id)) continue;
       destroy(entry.handle);
       this.entries.delete(id);
       this.destroyed++;
     }
-    for (const [id, actor] of visible) {
-      if (this.entries.has(id)) continue;
+    for (const actor of visible) {
+      if (this.entries.has(actor.id)) continue;
       const handle = create(actor);
       if (handle === null) continue;
-      this.entries.set(id, { actor, handle });
+      this.entries.set(actor.id, { actor, handle });
       this.created++;
     }
   }

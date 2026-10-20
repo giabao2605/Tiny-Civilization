@@ -55,9 +55,17 @@ export type AmbientDirectorMetrics = ReturnType<typeof getAmbientMetrics> & Read
 
 /** Deterministic choices are computed from the snapshot and bounded session counters. */
 export function rankAmbientCandidates(candidates: readonly AmbientCandidate[],
-  startedCounts: Readonly<Record<AmbientCandidate['category'], number>>): AmbientCandidate[] {
+  startedCounts: Readonly<Record<AmbientCandidate['category'], number>>,
+  isVisible?: (anchor: AmbientAnchor) => boolean): AmbientCandidate[] {
+  // A small presentation-only cost for offscreen visuals. Unlike a hard filter,
+  // this still rotates through distant districts when nearby categories repeat.
+  // Audio-only events retain their original fairness score.
+  const score = (candidate: AmbientCandidate) =>
+    startedCounts[candidate.category] +
+    (isVisible && AMBIENT_CATALOG[candidate.type].channel === 'visual' &&
+      !isVisible(candidate.anchor) ? 2 : 0);
   return [...candidates].sort((a, b) =>
-    startedCounts[a.category] - startedCounts[b.category] ||
+    score(a) - score(b) ||
     b.priority - a.priority || a.type.localeCompare(b.type) ||
     a.anchor.key.localeCompare(b.anchor.key));
 }
@@ -157,7 +165,7 @@ export class AmbientDirector {
     const eligible = ambientCandidates(this.world, this.index,
       { virtualMs: this.presentationMs, rainEndedTick: this.rainEndedTick });
     noteAmbientCandidates(this.session, eligible.length);
-    for (const candidate of rankAmbientCandidates(eligible, this.session.counters.byCategory)) {
+    for (const candidate of rankAmbientCandidates(eligible, this.session.counters.byCategory, options.isVisible)) {
       if (this.attempted.has(candidate.id)) {
         this.session.counters.suppressedDuplicate++;
         continue;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createAmbientFixture } from './fixtures';
 import { AmbientDirector, type AmbientActorDescriptor } from './director';
-import { AmbientVisualRegistry, ambientCenter, ambientPoint, cartPoint } from './visualModel';
+import { AmbientVisualRegistry, ambientCenter, ambientOverviewScale, ambientPoint, cartPoint } from './visualModel';
 
 const run = (name: 'sign-of-life-30s' | 'three-categories-5min', duration: number) => {
   const world = createAmbientFixture(name).world;
@@ -72,8 +72,16 @@ describe('A05-C visual presentation contract', () => {
     expect(thirty.rendered.length).toBeGreaterThan(0);
     const five = run('three-categories-5min', 300_000);
     expect(five.rendered.length).toBeGreaterThan(0);
-    expect(five.categories.length).toBeGreaterThanOrEqual(2);
+    expect(five.categories.length).toBeGreaterThanOrEqual(3);
     // Pure registry checks handles, not browser raster output, FPS or on-screen visibility.
+  });
+
+  it('overview scale stays bounded, and normal zoom preserves native pixel silhouette', () => {
+    expect(ambientOverviewScale(0.5)).toBe(1.35);
+    expect(ambientOverviewScale(0.9)).toBe(1);
+    expect(ambientOverviewScale(2)).toBe(1);
+    expect(ambientOverviewScale(NaN)).toBe(1);
+    expect(ambientOverviewScale(0)).toBe(1);
   });
 
   it('pose uses only immutable director descriptors and freezes for reduced motion', () => {
