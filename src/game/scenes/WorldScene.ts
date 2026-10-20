@@ -510,6 +510,11 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       ...(this.ambientVisuals?.metrics ?? { renderedActors: 0, createdVisuals: 0, destroyedVisuals: 0 }) } : null;
   }
 
+  /** Actual per-scene cosmetic budget; no WorldState or RNG access. */
+  getWeatherDiagnostics(): object | null {
+    return this.weatherLayer?.diagnostics ?? null;
+  }
+
   private audioViewport(): { x: number; y: number; width: number; height: number } {
     const view = this.cameras.main.worldView;
     return { x: view.x, y: view.y, width: view.width, height: view.height };
