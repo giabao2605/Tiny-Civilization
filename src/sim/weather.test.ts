@@ -86,18 +86,30 @@ describe('E04-C deterministic weather state machine', () => {
 
 describe('E04-C weather integration and save compatibility', () => {
   for (const population of [20, 50, 100] as const) {
-    it('preserves all frozen v5 gameplay after v5→v6 48×48 migration for ' + population, () => {
+    it('preserves frozen v5 replay and deterministic v6 48×48 migration for ' + population, () => {
       const seed = 100 + population;
       const original = advanceTicks(createWorld(seed, population), 720);
       const preWeather = advanceTicks(createWorld(seed, population), 300);
+      // Frozen original engine must still produce identical v5 bytes and outcomes.
+      expect(advanceTicks(preWeather, 420)).toEqual(original);
       const restored = parseSave(serializeSave(preWeather)).world;
       expect(restored.schemaVersion).toBe(6);
       if (restored.schemaVersion !== 6) throw new Error('expected v6');
       expect(restored.weather.currentSinceTick).toBe(300);
+      expect(canonicalV5Projection(restored)).toEqual(preWeather);
+      // E04-E introduces real weather routines in v6, including migrated 48x48.
+      // Instead of claiming the resulting social/economic trajectory matches v5,
+      // verify exact post-migration save/replay, IDs, tick and resource conservation.
       const migrated = advanceTicks(restored, 420);
-      expect(canonicalV5Projection(migrated)).toEqual(original);
-      expect(migrated.rngState).toBe(original.rngState);
-      expect(totalCurrency(migrated)).toBe(totalCurrency(original));
+      const fromSave = advanceTicks(parseSave(serializeSave(restored)).world, 420);
+      expect(migrated).toEqual(fromSave);
+      expect(migrated.tick).toBe(720);
+      const migratedIds = migrated.citizens.map(c => c.id);
+      expect(new Set(migratedIds).size).toBe(migratedIds.length);
+      // Existing identities persist; post-migration births are allowed to differ
+      // because rain can alter adult co-location and social opportunities.
+      expect(preWeather.citizens.every(c => migratedIds.includes(c.id))).toBe(true);
+      expect(totalCurrency(migrated)).toBe(totalCurrency(preWeather));
       expect(migrated.weather.weatherRngState).toBe(forecastAfter(restored.weather, 420, 300).weatherRngState);
     }, 120000);
   }

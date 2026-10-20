@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { GameCanvas } from '../game/GameCanvas';
+import { WeatherAudio } from '../game/audio/weatherAudio';
 import type { CameraSnapshot, WorldCameraControls } from '../game/camera/types';
 import { V6_ENGINE_VERSION as ENGINE_VERSION, LOCAL_SAVE_KEY, MAX_SAVE_BYTES } from '../persistence/save';
 import { dayOf, hourOf, stateDigest } from '../sim/engine';
@@ -82,6 +83,10 @@ export function App() {
   }, []);
   const snapshot = useSyncExternalStore(coordinator.subscribe, coordinator.getUiSnapshot);
   const [canvasVersion, setCanvasVersion] = useState(0);
+  const audioRef = useRef<WeatherAudio | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [soundVolume, setSoundVolume] = useState(40);
+  const [soundStatus, setSoundStatus] = useState('Âm thanh tắt. Bấm bật để cho phép trình duyệt phát.');
   const [cameraControls, setCameraControls] = useState<WorldCameraControls | null>(null);
   const [cameraView, setCameraView] = useState<CameraSnapshot | null>(null);
   const [timelineCategory, setTimelineCategory] = useState<TimelineCategory>('all');
@@ -91,6 +96,10 @@ export function App() {
   const [saveMessage, setSaveMessage] = useState('Chưa lưu trong phiên này. File JSON có thể sao lưu sang thiết bị khác.');
   const [saveTick, setSaveTick] = useState<number | null>(null);
   const { world, selectedCitizenId, paused, speed, observerPaceMinutes } = snapshot;
+  const weather = world.schemaVersion === 6 ? world.weather : null;
+  const weatherKind = weather?.kind ?? 'clear';
+  const weatherIntensity = weather?.intensity ?? 0;
+  const weatherLabel = { clear: 'Trời quang', cloudy: 'Nhiều mây', rain: 'Trời mưa', fog: 'Sương mù' }[weatherKind];
   const governance = world.governance;
   const leader = world.citizens.find(c => c.id === governance.leaderId);
   const aidReason = foodAidRejection({ ...world, tick: world.tick + 1 }, governance.leaderId ?? -1, world.tick + 1);
@@ -123,6 +132,32 @@ export function App() {
   const averageHealth = living.length ? Math.round(living.reduce((sum, c) => sum + c.health, 0) / living.length) : 0;
 
   useEffect(() => coordinator.start(), [coordinator]);
+
+  // Audio belongs to this React app, not a WorldScene, render frame or save.
+  useEffect(() => {
+    const audio = new WeatherAudio();
+    audioRef.current = audio;
+    return () => { audioRef.current = null; audio.destroy(); };
+  }, []);
+  useEffect(() => {
+    const updateAudio = () => audioRef.current?.setEnvironment(
+      weather, soundVolume / 100, soundEnabled, paused, document.hidden);
+    updateAudio();
+    document.addEventListener('visibilitychange', updateAudio);
+    return () => document.removeEventListener('visibilitychange', updateAudio);
+  }, [weatherKind, weatherIntensity, soundVolume, soundEnabled, paused]);
+
+  const toggleSound = async () => {
+    if (soundEnabled) {
+      setSoundEnabled(false);
+      setSoundStatus('Âm thanh đã tắt.');
+      return;
+    }
+    const unlocked = await audioRef.current?.unlock();
+    setSoundEnabled(unlocked === true);
+    setSoundStatus(unlocked ? 'Âm thanh môi trường đã bật.' :
+      'Trình duyệt chưa cho phép Web Audio. Game vẫn chơi bình thường.');
+  };
 
   // User activity is presentation-only. Keep the idle clock independent of game speed/ticks.
   useEffect(() => {
@@ -343,6 +378,7 @@ export function App() {
               <div className="stat-grid">
                 <div className="stat"><span>Ngày</span><strong data-testid="day-value">{String(day).padStart(2, '0')}</strong></div>
                 <div className="stat"><span>Giờ</span><strong data-testid="hour-value">{String(hour).padStart(2, '0')}:00</strong></div>
+                <div className="stat"><span>Thời tiết</span><strong className="stat-word" data-testid="weather-label">{weatherLabel}</strong></div>
                 <div className="stat"><span>Cư dân sống</span><strong data-testid="population-value">{living.length}</strong></div>
                 <div className="stat"><span>Trạng thái</span><strong className="stat-word" data-testid="play-status">{paused ? 'Tạm dừng' : 'Đang chạy'}</strong></div>
               </div>
@@ -395,6 +431,16 @@ export function App() {
                 </select>
               </div>
               <p className="dashboard-note">Observer Pace chỉ là thử nghiệm. Một tick vẫn là một giờ; không tạo chuyển động liên tục giữa các giờ.</p>
+              <div className="audio-controls" aria-label="Âm thanh thời tiết">
+                <button type="button" className={soundEnabled ? 'control active' : 'control'}
+                  onClick={() => { void toggleSound(); }} aria-pressed={soundEnabled}
+                  data-testid="toggle-weather-audio">{soundEnabled ? 'Tắt âm thanh' : 'Bật âm thanh'}</button>
+                <label htmlFor="weather-audio-volume">Âm lượng: {soundVolume}%</label>
+                <input id="weather-audio-volume" type="range" min="0" max="100" step="5"
+                  value={soundVolume} onChange={event => setSoundVolume(Number(event.target.value))}
+                  aria-label="Âm lượng môi trường" />
+                <p className="dashboard-note" role="status">{soundStatus}</p>
+              </div>
               <div className="seed-controls">
                 <label htmlFor="seed-input">Seed thế giới</label>
                 <div>

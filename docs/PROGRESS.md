@@ -427,3 +427,11 @@ Phase 00 was merged and verified. Next task may implement Phase 01 only after re
 - Tests added: frozen legacy SHA-256 migration/continuation, 30 seed/population 96×96 runtime cases, save roundtrip, corrupt import rollback, 96 construction/layout and CI benchmarks, Chromium production gameplay screenshots.
 - QA documents: W02_E_IMPLEMENTATION, W02_E_MIGRATION_QA, W02_E_RUNTIME_QA, W02_E_VISUAL_QA, W02_E_LEGACY_REGRESSION and W02_E_HANDOFF.
 - Status: **NOT VERIFIED** until the final PR HEAD passes typecheck/lint/Vitest/build/Chromium E2E/production smoke and required artifacts are reviewed. Physical Windows FPS/GPU/memory soak remains W02-F.
+
+
+## Observer E04-D / E04-E (19/10/2026)
+
+- E04-D weather visual PR #32 merged by explicit repository-owner request after locally reported visual review. Main merge commit `d099c8650fd4b1ef6d5029613cb71ab6ab38407a`; post-merge Fast CI verified success on that exact SHA. Detailed screenshot ledger remains incomplete, PC FPS/heap NOT MEASURED.
+- E04-E branch `feat/e04-e-weather-reactions-audio`: adds 96×96 deterministic rain shelter choices below critical needs, explanatory citizen reason, existing pathfinding/backoff and lazy Web Audio rain/outdoors with mute/volume.
+- Frozen raw v5 replay and fixtures remain unchanged. Migrated v6 48×48 and authored v6 96×96 now both use automatic owned-home rain shelters. Their post-migration trajectories can differ legitimately; exact v6 save/replay and resource conservation are tested.
+- E04-E final-head Fast CI and audio/manual PC QA must be verified before calling DONE or merging. Do not start E04-F, trigger Pages or manual full browser workflows until the gate is met.
