@@ -4,7 +4,8 @@
  */
 import Phaser from 'phaser';
 import type { AmbientActorDescriptor } from './director';
-import { AmbientVisualRegistry, ambientPoint, ambientProgress } from './visualModel';
+import type { AmbientCategory, AmbientType } from './types';
+import { AmbientVisualRegistry, ambientOverviewScale, ambientPoint, ambientProgress } from './visualModel';
 
 type Handle = {
   readonly root: Phaser.GameObjects.Container;
@@ -123,11 +124,17 @@ function paint(g: Phaser.GameObjects.Graphics, actor: AmbientActorDescriptor,
 
 export class AmbientVisuals {
   private readonly registry = new AmbientVisualRegistry<Handle>();
+  // A bounded vocabulary, not an unbounded historical ID registry.
+  private readonly renderedTypes = new Set<AmbientType>();
+  private readonly renderedCategories = new Set<AmbientCategory>();
   constructor(private readonly scene: Phaser.Scene) {}
 
-  get metrics(): Readonly<{ renderedActors: number; createdVisuals: number; destroyedVisuals: number }> {
+  /** Counts Phaser handles actually created in camera, not just scheduled actors. */
+  get metrics() {
     return { renderedActors: this.registry.size, createdVisuals: this.registry.created,
-      destroyedVisuals: this.registry.destroyed };
+      destroyedVisuals: this.registry.destroyed, renderedTypeCount: this.renderedTypes.size,
+      renderedCategoryCount: this.renderedCategories.size,
+      renderedTypes: [...this.renderedTypes], renderedCategories: [...this.renderedCategories] };
   }
 
   /** Reconciles both transitions and camera enter/leave, no extra scheduler. */
@@ -151,6 +158,8 @@ export class AmbientVisuals {
       // Ambient actors deliberately have no input or gameplay ID.
       root.setData('ambientId', actor.id);
       const variant = [...actor.id].reduce((sum, char) => (sum + char.charCodeAt(0)) % 256, 0);
+      this.renderedTypes.add(actor.type);
+      this.renderedCategories.add(actor.category);
       return { root, graphic, variant, frame: -1 };
     }, handle => handle.root.destroy(true));
 
@@ -158,6 +167,7 @@ export class AmbientVisuals {
       const point = ambientPoint(actor, nowMs, reducedMotion);
       if (!point) return;
       handle.root.setPosition(point.x, point.y);
+      handle.root.setScale(ambientOverviewScale(camera.zoom));
       // A storefront/roof effect belongs near its building; do not cover NPC heads.
       const back = actor.type === 'chimney-smoke' || actor.type === 'market-open' ||
         actor.type === 'market-close';

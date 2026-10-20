@@ -30,7 +30,7 @@ export function createAmbientFixture(name: AmbientFixtureName,
       : createWorld96(AMBIENT_FIXTURE_SEED, population);
   const world = structuredClone(base);
   world.tick = name === 'rainy-night' ? 23 : name === 'co-located-chat' ||
-    name === 'no-nearby-citizens' ? 18 : 6;
+    name === 'no-nearby-citizens' ? 18 : name === 'three-categories-5min' ? 7 : 6;
   if (world.schemaVersion === 6) {
     // Fixture weather state is structurally valid (48h dwell), independent of gameplay RNG.
     world.weather = { ...world.weather, kind: name === 'rainy-night' ? 'rain' : 'clear',

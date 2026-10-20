@@ -64,6 +64,24 @@ describe('A05-B deterministic, bounded presentation scheduler', () => {
     if (ranked.some(c => c.category !== 'civic')) expect(ranked[0]?.category).not.toBe('civic');
   });
 
+  it('prefers visible visual districts, yet retains eventual offscreen fairness', () => {
+    const world = createAmbientFixture('three-categories-5min').world;
+    const candidates = ambientCandidates(world, buildAmbientAnchorIndex(world), { virtualMs: 0 })
+      .filter(event => event.type === 'bird-visit' || event.type === 'pet-wander');
+    expect(candidates).toHaveLength(2);
+    const counts = { commerce: 0, social: 0, wildlife: 0, domestic: 0,
+      weather: 0, civic: 0, lighting: 0 };
+    const siteVisible = (anchor: (typeof candidates)[number]['anchor']) => anchor.kind === 'site';
+    expect(rankAmbientCandidates(candidates, counts, siteVisible)[0]?.type).toBe('pet-wander');
+    expect(rankAmbientCandidates(candidates, { ...counts, domestic: 3 }, siteVisible)[0]?.type)
+      .toBe('bird-visit');
+    const director = new AmbientDirector(world);
+    const first = director.advance(250, { isVisible: siteVisible });
+    expect(first.some(t => t.status === 'started')).toBe(true);
+    expect(director.metrics.peak).toBeLessThanOrEqual(4);
+    director.dispose();
+  });
+
   it('pause, hidden, discontinuities and reduced motion never catch up or mutate world', () => {
     const world = createAmbientFixture('sign-of-life-30s').world;
     const director = new AmbientDirector(world);
