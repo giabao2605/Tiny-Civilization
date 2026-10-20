@@ -14,6 +14,7 @@ import { approachLighting, lightingAtTick, streetLightsForWorld, windowLightsFor
 import { buildingStyle, visualHash } from '../render/visualHash';
 import { WeatherLayer } from '../render/weatherLayer';
 import { AmbientDirector } from '../ambient/director';
+import { AmbientVisuals } from '../ambient/visuals';
 import type { Poi96Kind } from '../../sim/world96Layout';
 
 const POI_ART: Record<Poi96Kind, 'well' | 'bench' | 'fence' | 'sign' | 'crops' | 'lantern' | 'barrel' | 'crate' | 'oak' | 'pine' | 'shrub' | 'woodpile'> = {
@@ -64,6 +65,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private lightingTarget = lightingAtTick(0);
   private weatherLayer?: WeatherLayer;
   private ambientDirector?: AmbientDirector;
+  private ambientVisuals?: AmbientVisuals;
   private ambientShade?: Phaser.GameObjects.Rectangle;
   private windowLightLayer?: Phaser.GameObjects.Image;
   private streetLightLayer?: Phaser.GameObjects.Image;
@@ -115,6 +117,9 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.weatherLayer = new WeatherLayer(this, this.world);
     // A05-B: one presentation-only director per scene lifetime (no extra timer).
     this.ambientDirector = new AmbientDirector(this.world);
+    // A05-C: one bounded display adapter; never a second ambient scheduler.
+    if (!(import.meta.env.DEV && new URLSearchParams(window.location.search).get('ambientVisuals') === 'off'))
+      this.ambientVisuals = new AmbientVisuals(this);
     // Local dev-only particle-OFF comparison; authoritative weather is untouched.
     if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('weatherParticles') === 'off')
       this.weatherLayer.setParticlesEnabled(false);
@@ -145,6 +150,8 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.labelsShown = null;
       this.movementTweens.clear();
       this.highlighter = undefined;
+      this.ambientVisuals?.dispose();
+      this.ambientVisuals = undefined;
       this.ambientDirector?.dispose();
       this.ambientDirector = undefined;
       this.weatherLayer?.destroy();
@@ -409,6 +416,8 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       return;
     }
     this.ambientDirector?.reconcile(snapshot.world);
+    // Cancels must release graphics on this exact snapshot, even while paused.
+    this.syncAmbientVisuals();
     if (this.followId !== null && !followTargetIsAlive(this.world, this.followId)) {
       this.followId = null; this.cameraMode = 'manual'; this.announceCamera();
     }
@@ -489,9 +498,16 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       : this.world.resourceNodes.find(node => node.id === interest.id)?.tile;
     return tile ? { x: xPixel(tile.x), y: yPixel(tile.y) } : null;
   }
-  /** Read-only diagnostics. A05-B descriptors are not rendered actors (A05-C). */
+  /** Read-only diagnostics: scheduled descriptors are not necessarily rendered objects. */
   getAmbientDiagnostics(): object | null {
-    return this.ambientDirector?.metrics ?? null;
+    return this.ambientDirector ? { ...this.ambientDirector.metrics,
+      ...(this.ambientVisuals?.metrics ?? { renderedActors: 0, createdVisuals: 0, destroyedVisuals: 0 }) } : null;
+  }
+
+  private syncAmbientVisuals(): void {
+    if (!this.ambientDirector || !this.ambientVisuals) return;
+    this.ambientVisuals.sync(this.ambientDirector.activeActors,
+      this.ambientDirector.metrics.presentationMs, this.cameras.main, this.isReducedMotion());
   }
 
   /** Render-only frame smoothing. Never advances the simulation or changes citizen tiles. */
@@ -504,6 +520,9 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       isVisible: anchor => this.cameras.main.worldView.contains(
         xPixel(anchor.tile.x), yPixel(anchor.tile.y)),
     });
+    // The director owns starts/end/cancels; sync is idempotent and camera-aware.
+    // PresentationMs freezes on pause, hidden and discarded frame discontinuities.
+    this.syncAmbientVisuals();
     this.updateLighting(delta);
     this.weatherLayer?.update(delta, this.cameras.main, this.wasPaused, this.isReducedMotion());
     const now = performance.now();
