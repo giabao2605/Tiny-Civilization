@@ -1,5 +1,5 @@
 import { writeFile } from 'node:fs/promises';
-import os from 'node:os';
+import { cpus, totalmem } from 'node:os';
 import { expect, test } from '@playwright/test';
 
 /**
@@ -101,7 +101,8 @@ test('T06-F real-time 96x96 / 100 NPC reliability and resource trend', async ({ 
     const tickLabel = await page.getByTestId('world-tick').innerText();
     const tick = Number(tickLabel.match(/Tick (\d+)/)?.[1] ?? NaN);
     const weather = await page.getByTestId('weather-label').innerText();
-    const { rafIntervalsMs: _intervals, ...remainingCounters } = counters;
+    const remainingCounters = { ...counters };
+    delete (remainingCounters as Partial<typeof counters>).rafIntervalsMs;
     observations.push({ elapsedMinutes, actualElapsedMs: Date.now() - started,
       tick, weather, rafSampleCount: intervals.length,
       rafCadenceMeanFps: rafMean ? Math.round(1000 / rafMean * 100) / 100 : null,
@@ -123,8 +124,8 @@ test('T06-F real-time 96x96 / 100 NPC reliability and resource trend', async ({ 
     mode: 'real elapsed wall-clock; rAF is callback cadence, NOT GPU draw duration',
     requestedMinutes: minutes, actualElapsedMs: Date.now() - started,
     platform: process.platform, node: process.version,
-    cpuModel: os.cpus()[0]?.model ?? null, cpuLogicalCores: os.cpus().length,
-    memoryTotalBytes: os.totalmem(), browser: browser?.browserType().name() ?? 'unknown',
+    cpuModel: cpus()[0]?.model ?? null, cpuLogicalCores: cpus().length,
+    memoryTotalBytes: totalmem(), browser: browser?.browserType().name() ?? 'unknown',
     userAgent: await page.evaluate(() => navigator.userAgent),
     viewport: '1920x1080', seed: 1, map: 'native v6 96x96',
     initialPopulation: 100, gameSpeed: '1x', camera: 'fit',
