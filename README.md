@@ -29,7 +29,7 @@
 
 - **React + TypeScript + Vite** làm giao diện; **Phaser** vẽ bản đồ và nhân vật.
 - **Simulation engine TypeScript độc lập**, không dùng AI API cho từng NPC.
-- Khởi đầu **20 NPC**, tiến lên **100 NPC**, thế giới **48×48 ô**, một làng.
+- Khởi đầu **20 NPC**, hỗ trợ **20/50/100 NPC**; thế giới mới **96×96 ô**, save legacy vẫn giữ bản đồ **48×48**.
 - **1 tick = 1 giờ trong game**, tua 1×/5×/20×; pause không cho thời gian game trôi.
 - Có seed để tái hiện một thế giới; bản phát hành phải có lưu/tải game.
 - Bản MVP **không** cần backend, cloud, tài khoản, multiplayer, Unreal/Unity hay đống framework phức tạp.
@@ -72,17 +72,17 @@ Playwright tự khởi động Vite tại port 4173 và kiểm tra Chromium desk
 - `src/game`: Phaser đọc snapshot, vẽ tile/nhà/NPC, nội suy và xử lý click/pan/zoom; không quyết định luật game.
 - `src/sim`: PRNG xorshift32, `createWorld(seed)`, BFS, `advanceOneTick` và runtime accumulator clock độc lập React/Phaser.
 - `tests/e2e`: Chromium desktop/mobile, sự kiện, chọn NPC, tốc độ, pause và lifecycle.
-- `.github/workflows/ci.yml`: xác minh từ checkout sạch và lưu screenshot artifact.
+- `.github/workflows/ci.yml`: Fast CI từ checkout sạch (audit/typecheck/lint/Vitest/build); Chromium và screenshot chỉ qua Playwright E2E riêng, không nằm trong Fast CI.
 
-**Lưu/tải hiện hoạt động bằng localStorage và import/export JSON cục bộ**, snapshot engine `sim-v5-phase06`. Không có backend, tài khoản, đồng bộ đám mây hoặc AI API. Save trên trình duyệt có thể mất khi người chơi xóa dữ liệu trang; file JSON là phương án backup. Bấm **Tạo lại** sẽ yêu cầu xác nhận, nhưng không tự xóa bản lưu cũ. Lưu tiếp sẽ ghi đè slot localStorage hiện tại.
+**Lưu/tải hiện hoạt động bằng localStorage và import/export JSON cục bộ**. World mới sử dụng **v6**, writer save **format 3 / `sim-v6-weather`**; reader vẫn chấp nhận legacy v5 **format 1 / `sim-v5-phase06`** và historical v6 **format 2 / `sim-v6-map`**. Không có backend, tài khoản, đồng bộ đám mây hoặc AI API. Save trên trình duyệt có thể mất khi người chơi xóa dữ liệu trang; file JSON là phương án backup. Bấm **Tạo lại** sẽ yêu cầu xác nhận, nhưng không tự xóa bản lưu cũ. Lưu tiếp sẽ ghi đè slot localStorage hiện tại.
 
 ## Phase 07 · Phát hành website (đang thực hiện)
 
-**Phiên bản ứng dụng:** `0.9.0`, release candidate, chưa tạo tag chính thức. **Engine/save schema:** `sim-v5-phase06` / format 1. **Trình duyệt ưu tiên:** Chromium desktop; mobile responsive ở mức kiểm thử viewport, **chưa chứng nhận trên thiết bị thật**.
+**Phiên bản ứng dụng:** `0.9.0`, release candidate, chưa tạo tag chính thức. **Engine/save hiện hành:** `sim-v6-weather` / format 3; reader tương thích format 1/2/3. **Trình duyệt ưu tiên:** Chromium desktop; mobile responsive ở mức kiểm thử viewport, **chưa chứng nhận trên thiết bị thật**.
 
 **URL GitHub Pages dự kiến:** `https://giabao2605.github.io/Tiny-Civilization/`. Đây chỉ là địa chỉ quy ước, **không được coi là URL đang hoạt động trước khi có xác minh public**. Workflow triển khai `.github/workflows/pages.yml` chạy sau khi test từ `main` hoặc branch Phase 07; bật Settings → Pages → Build and deployment → Source: **GitHub Actions** nếu chưa bật. Nếu Pages chưa cấu hình, deploy có thể bị chặn, dù code và CI hợp lệ. Xem [hướng dẫn bàn giao](docs/RELEASE_NOTES_0.9.0.md).
 
-**Cách chơi:** Mở trang, quan sát làng 48×48, chọn một NPC trên bản đồ/danh sách để xem lý do hành động; 1 tick = 1 giờ game; 1× = 2 tick/giây thực, 5× = 10 và 20× = 40 tick/giây mục tiêu trước giới hạn máy. Pause dừng thời gian mô phỏng; Seed + số dân 20/50/100 tạo thế giới tái lập được theo cùng engine và trình tự lệnh. Các sự kiện về đói, giao dịch, quan hệ và khủng hoảng có nguyên nhân trong mô phỏng. Ở 100 NPC và 20× có thể giật trong Chromium CI; đừng mặc định mọi máy đạt 60 FPS.
+**Cách chơi:** Mở trang, quan sát làng 96×96 (save cũ giữ 48×48), chọn một NPC trên bản đồ/danh sách để xem lý do hành động; 1 tick = 1 giờ game; 1× = 2 tick/giây thực, 5× = 10 và 20× = 40 tick/giây mục tiêu trước giới hạn máy. Pause dừng thời gian mô phỏng; Seed + số dân 20/50/100 tạo thế giới tái lập được theo cùng engine và trình tự lệnh. Các sự kiện về đói, giao dịch, quan hệ và khủng hoảng có nguyên nhân trong mô phỏng. Ở 100 NPC và 20× có thể giật trong Chromium CI; đừng mặc định mọi máy đạt 60 FPS.
 
 **Lệnh kiểm thử:**
 
