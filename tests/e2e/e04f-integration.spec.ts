@@ -34,9 +34,9 @@ async function resetWorld(page: Page, seed: number) {
   await expect(page.getByTestId('world-tick')).toContainText('Tick 0 ');
 }
 
-async function importedLegacy(page: Page, seed: number) {
+async function importedLegacy(page: Page, seed: number, population: 20 | 50 | 100 = 20) {
   // The importer, not a fabricated 48x48 WorldState, performs canonical v5->v6 migration.
-  const content = serializeSave(createWorld(seed, 20));
+  const content = serializeSave(createWorld(seed, population));
   await page.getByTestId('import-world').setInputFiles({
     name: 'e04f-v5-' + seed + '.json', mimeType: 'application/json',
     buffer: Buffer.from(content, 'utf8'),
@@ -160,4 +160,90 @@ test('E04-F: real 100 NPC camera, pace, audio UI and lifecycle integration', asy
     pausedTickStableAcrossSceneRestart: true, canvasCount: 1 };
   await writeFile(info.outputPath('e04f-ui-lifecycle.json'), JSON.stringify(report, null, 2));
   console.log('E04F_UI_LIFECYCLE', JSON.stringify(report));
+});
+
+/**
+ * Manual Full E2E: browser/Phaser measurements, never Node throughput as a FPS proxy.
+ * rAF intervals are browser cadence, Phaser FPS is a separate live game-loop counter.
+ * Heap is nullable: unsupported browsers must report NOT MEASURED rather than zero.
+ */
+test('E04-F: live browser frame/heap/Phaser/routing profile across maps, NPCs and PC viewports', async ({ page }, info) => {
+  test.setTimeout(210_000);
+  const runtimeErrors: string[] = [];
+  page.on('pageerror', error => runtimeErrors.push(error.message));
+  page.on('console', message => { if (message.type() === 'error') runtimeErrors.push(message.text()); });
+  await page.goto('/?observerPerf=1');
+  const host = page.getByTestId('game-container');
+  await expect(host.locator('canvas')).toBeVisible();
+  await page.getByRole('button', { name: 'Tạm dừng' }).click();
+  const observations: Array<Record<string, unknown>> = [];
+  for (const size of [48, 96] as const) for (const population of [20, 50, 100] as const) {
+    if (size === 48) await importedLegacy(page, 1, population);
+    else {
+      await page.getByTestId('population-input').selectOption(String(population));
+      await resetWorld(page, 1);
+    }
+    await expect(host).toHaveAttribute('data-map-width', String(size));
+    await expect(host).toHaveAttribute('data-npc-count', String(population));
+    const sizes = size === 96 && population === 100 ? viewports : [viewports[0]];
+    for (const viewport of sizes) {
+      await page.setViewportSize(viewport);
+      await page.getByTestId('camera-fit').click();
+      await page.getByRole('button', { name: '20×', exact: true }).click();
+      const beforeTick = await page.getByTestId('world-tick').innerText();
+      await page.getByRole('button', { name: 'Tiếp tục' }).click();
+      const reading = await page.evaluate(async () => {
+        const samples: number[] = [];
+        const host = document.querySelector('[data-testid="game-container"]') as
+          (HTMLElement & { __tcObserverMetrics?: () => Record<string, number> }) | null;
+        const before = host?.__tcObserverMetrics?.() ?? null;
+        const began = performance.now();
+        await new Promise<void>(resolve => {
+          let last = 0;
+          const frame = (now: number) => {
+            if (last > 0) samples.push(now - last);
+            last = now;
+            if (samples.length >= 45 || now - began >= 2500) resolve();
+            else requestAnimationFrame(frame);
+          };
+          requestAnimationFrame(frame);
+        });
+        const after = host?.__tcObserverMetrics?.() ?? null;
+        const p = (fraction: number) => {
+          const sorted = [...samples].sort((a, b) => a - b);
+          return sorted[Math.max(0, Math.ceil(sorted.length * fraction) - 1)] ?? null;
+        };
+        const memory = (performance as Performance & {
+          memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number }
+        }).memory;
+        return {
+          elapsedMs: performance.now() - began, frameSamples: samples.length,
+          browserFrameP50Ms: p(0.5), browserFrameP95Ms: p(0.95),
+          browserFrameMeanMs: samples.length ? samples.reduce((n, v) => n + v, 0) / samples.length : null,
+          phaserBefore: before, phaserAfter: after,
+          jsHeapUsedBytes: memory?.usedJSHeapSize ?? null,
+          jsHeapTotalBytes: memory?.totalJSHeapSize ?? null,
+          jsHeapLimitBytes: memory?.jsHeapSizeLimit ?? null,
+        };
+      });
+      await page.getByRole('button', { name: 'Tạm dừng' }).click();
+      const afterTick = await page.getByTestId('world-tick').innerText();
+      expect(reading.frameSamples).toBeGreaterThan(0);
+      expect(reading.phaserAfter).not.toBeNull();
+      expect(reading.phaserAfter?.gameObjects).toBeGreaterThan(0);
+      expect(reading.phaserAfter?.textureCount).toBeGreaterThan(0);
+      const routeDelta = (reading.phaserAfter?.routeRequests ?? 0) -
+        (reading.phaserBefore?.routeRequests ?? 0);
+      expect(routeDelta).toBeGreaterThanOrEqual(0);
+      observations.push({ size, population, viewport, beforeTick, afterTick, routeDelta,
+        ...reading, renderer: 'real headless Chromium Phaser; not Windows PC' });
+    }
+  }
+  expect(observations).toHaveLength(8);
+  expect(runtimeErrors).toEqual([]);
+  const report = { status: 'measured in headless Chromium only', samples: observations,
+    limitations: 'rAF frame cadence is not GPU draw-time; browser heap may be unavailable; short samples cannot establish leak-free 60 FPS or Windows performance',
+    runtimeErrors };
+  await writeFile(info.outputPath('e04f-chromium-performance.json'), JSON.stringify(report, null, 2));
+  console.log('E04F_CHROMIUM_PROFILE', JSON.stringify(report));
 });
