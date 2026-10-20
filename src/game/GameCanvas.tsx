@@ -43,6 +43,7 @@ export function GameCanvas({ snapshot, onCitizenSelected, onCameraReady, onCamer
             transitions: (changes, actors, view) => audioBridgeRef.current?.transitions(changes, actors, view),
             viewport: view => audioBridgeRef.current?.viewport(view),
             reset: () => audioBridgeRef.current?.reset(),
+            diagnostics: () => audioBridgeRef.current?.diagnostics?.() ?? null,
           });
         liveRef.current = live;
         const controls: WorldCameraControls = {
