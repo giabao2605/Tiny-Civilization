@@ -8,7 +8,7 @@
 | 48×48 migrated v5, 96×96 native v6 | Six map×population fixtures, v5 import and v6 round-trip | NOT RUN |
 | Population 20/50/100 | 24 Node cases, browser profile matrix | NOT RUN |
 | Camera fit/follow/zoom, restart, reduced motion | Playwright lifecycle/camera screenshots, one-canvas and paused state assertion | NOT RUN |
-| PC viewports 1366×768, 1920×1080, 2560×1080 | 24 screenshots with particles disabled; 96×96/100 browser profile in three sizes | NOT RUN |
+| PC viewports 1366×768, 1920×1080, 2560×1080 | 30 screenshots with particles disabled, including rain at 23:00; 96×96/100 browser profile in three sizes | NOT RUN |
 | Legacy 1×/5×/20×, optional 5/10/15-min day | Accumulator assertions and real UI selection test | NOT RUN |
 | Consecutive routes/no teleport, nonnegative resources | Hourly trace checks and source/sink-adjusted resource audit | NOT RUN |
 | Money, economy, social, governance, building | 72-hour deterministic comparisons and inherited golden/soak suites | NOT RUN (E04-F); inherited predecessor Fast CI PASS |
@@ -17,7 +17,7 @@
 | Rain shelter and shelter release over real transitions | Existing E04-E behavior tests; E04-F 72-hour matrix | PARTIAL, no full live visual evidence |
 | 60–120 min real-time soak and leak assessment | Opt-in browser spec, five-minute snapshots and screenshots | NOT RUN |
 
-**Not an exhaustive 108-case Cartesian product.** 48/96 × 20/50/100 × 3 viewports × 6 clock modes is 108 primary permutations before weather variations. Current plan deliberately covers clock contract independently, weather–population–size interactions in Node, 24 visual screenshots for 20 NPC, and eight browser profiling samples. Uncovered browser combinations remain PARTIAL.
+**Not an exhaustive 108-case Cartesian product.** 48/96 × 20/50/100 × 3 viewports × 6 clock modes is 108 primary permutations before weather variations. Current plan deliberately covers clock contract independently, weather–population–size interactions in Node, 30 visual screenshots for 20 NPC, and eight browser profiling samples. Uncovered browser combinations remain PARTIAL.
 
 ## Risk and interpretation
 
