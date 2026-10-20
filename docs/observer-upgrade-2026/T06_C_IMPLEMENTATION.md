@@ -10,7 +10,7 @@
 
 ## Added tests
 - `t06c.integrity.test.ts`: forged queued IDs, synthetic pre-weather format-2 48/96 hydration, mismatch envelopes, UTF-8 8 MiB, atomic import at paused/running settings and exact 240-hour migrated 48×48 replay for 20/50/100 NPC.
-- `t06c.golden.test.ts`: seed 101/12345 × 20/50/100 × 48/96 checkpoint hashes at tick 24; generation is explicitly **source-derived, not historical user saves**. Hashes must be pinned and independently checked before declaring new goldens frozen.
+- `t06c.golden.test.ts` plus frozen `tests/fixtures/t06c-engine-checkpoints.expected.json`: 12 seed 101/12345 × 20/50/100 × 48/96 SHA-256 hashes at tick 24, captured from GitHub CI #39397276992 and pinned in independent expected data. **Source-derived, not historical user saves**.
 - `tests/e2e/t06c-save-integrity.spec.ts`: optional real Chromium forged pending-command import and localStorage/clock/Phaser smoke. Corrected stale v2 assertions in `observer-w02-e-production.spec.ts` to assert the actually deployed format 3 + weather. These tests are **NOT RUN** here.
 
 ## Out of scope and evidence limits
