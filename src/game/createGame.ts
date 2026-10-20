@@ -2,6 +2,9 @@ import Phaser from 'phaser';
 import type { WorldState } from '../sim/world';
 import type { CameraSnapshot } from './camera/types';
 import { WorldScene } from './scenes/WorldScene';
+import { getRoutingDiagnostics } from '../sim/routing';
+import { getPathfindingDiagnostics } from '../sim/pathfinding';
+import { getWeightedPathDiagnostics } from '../sim/weightedPathfinding';
 
 export function createGame(
   parent: HTMLElement,
@@ -26,6 +29,11 @@ export function createGame(
       gameObjects: scene.sys.isActive() ? scene.children.list.length : 0,
       textureCount: Object.keys(game.textures.list).length,
       rendererType: game.renderer.type,
+      phaserFps: game.loop.actualFps,
+      frameDeltaMs: game.loop.delta,
+      routeRequests: getRoutingDiagnostics().calls,
+      bfsCalls: getPathfindingDiagnostics(),
+      weightedCalls: getWeightedPathDiagnostics().calls,
     });
   }
   return { game, scene };
