@@ -50,6 +50,18 @@ export function isAmbientCandidate(world: WorldState, value: unknown): value is 
   if (event.layer !== 'cosmetic' || typeof event.type !== 'string' ||
     !AMBIENT_TYPES.some(t => t === event.type)) return false;
   const definition = AMBIENT_CATALOG[event.type as AmbientType];
+  const anchor = event.anchor;
+  if (!anchor || typeof anchor !== 'object' || typeof anchor.kind !== 'string' ||
+    typeof anchor.key !== 'string' || !anchor.tile ||
+    !Number.isSafeInteger(anchor.tile.x) || !Number.isSafeInteger(anchor.tile.y)) return false;
+  if (anchor.kind === 'site' && (!Number.isSafeInteger(anchor.siteId) ||
+    typeof anchor.siteKind !== 'string')) return false;
+  if (anchor.kind === 'poi' && (typeof anchor.poiId !== 'string' ||
+    typeof anchor.poiKind !== 'string' || typeof anchor.role !== 'string')) return false;
+  if (anchor.kind === 'road' && typeof anchor.roadKind !== 'string') return false;
+  if (anchor.kind === 'citizen' && !Number.isSafeInteger(anchor.citizenId)) return false;
+  if (anchor.kind === 'pair' && (!Array.isArray(anchor.citizenIds) ||
+    anchor.citizenIds.length !== 2 || !anchor.citizenIds.every(Number.isSafeInteger))) return false;
   if (definition.channel === 'existing' || event.category !== definition.category ||
     event.budgetClass !== definition.budgetClass || event.priority !== definition.priority ||
     event.durationMs !== definition.durationMs || !Number.isSafeInteger(event.startMs) ||
