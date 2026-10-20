@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { advanceTicks } from '../sim/engine';
 import { createWorld, type WorldState } from '../sim/world';
@@ -6,6 +7,11 @@ import { createWorld96 } from '../sim/world96';
 import { canonicalV5Projection, parseLegacySave, parseSave, serializeSave } from './save';
 
 const sha = (value: string) => createHash('sha256').update(value, 'utf8').digest('hex');
+const frozenManifest = JSON.parse(readFileSync(new URL(
+  '../../tests/fixtures/t06c-engine-checkpoints.expected.json', import.meta.url), 'utf8')) as {
+  entries: Array<{ size: number; population: number; seed: number; tick: number;
+    saveFormat: number; saveSha256: string; worldSha256: string; rngState: number }>;
+};
 type Size = 48 | 96;
 const cases = ([48, 96] as const).flatMap(size =>
   ([20, 50, 100] as const).flatMap(population =>
@@ -27,9 +33,12 @@ describe('T06-C reproducible engine-derived checkpoint hashes', () => {
         worldSha256: sha(JSON.stringify(world)),
         rngState: world.rngState,
       };
-      // A future frozen manifest is constructed from CI output only once,
-      // not by silently replacing expected digests when a regression occurs.
-      console.info('T06C_ENGINE_CHECKPOINT ' + JSON.stringify(manifestEntry));
+      // Independent SHA-256 expectations recorded by GitHub CI from the
+      // unmodified engine baseline. Never regenerate on mismatch.
+      expect(frozenManifest.entries).toHaveLength(cases.length);
+      const expected = frozenManifest.entries.find(entry =>
+        entry.size === size && entry.population === population && entry.seed === seed);
+      expect(manifestEntry).toEqual(expected);
       const loaded = size === 48 ? parseLegacySave(raw).world : parseSave(raw).world;
       expect(loaded).toEqual(world);
       expect(sha(serializeSave(loaded))).toBe(manifestEntry.saveSha256);
