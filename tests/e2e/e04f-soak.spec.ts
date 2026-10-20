@@ -21,7 +21,7 @@ test('E04-F manual real-time 96x96 / 100 NPC / rain-to-clear lifecycle soak', as
   await expect(host.locator('canvas')).toBeVisible();
   await page.getByRole('button', { name: 'Tạm dừng' }).click();
   await page.getByTestId('population-input').selectOption('100');
-  await page.getByTestId('seed-input').fill('1');
+  await page.getByLabel('Seed thế giới').fill('1');
   page.once('dialog', dialog => { void dialog.accept(); });
   await page.getByRole('button', { name: 'Tạo lại', exact: true }).click();
   await expect(host).toHaveAttribute('data-map-width', '96');
