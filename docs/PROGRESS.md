@@ -1,7 +1,7 @@
 ## Observer Plan 05 — A05-A Event Taxonomy & Instrumentation (2026-10-20)
 
-- **IN PROGRESS / PR #35 (draft)** on `feat/a05-a-event-taxonomy`, based on E04-F merge `bd43ed2d`; prior post-merge [CI #39355971369](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39355971369) PASS.
-- A05-A implements cosmetic-only catalog, real anchor indexing, budget/cooldown and read-only instrumentation, deterministic 48×48/96×96 fixtures. No gameplay/save/clock changes. Tests require Fast CI confirmation at PR final HEAD.
+- **CODE VERIFIED / PR #35 awaiting review (do not merge)** on `feat/a05-a-event-taxonomy`, based on E04-F merge `bd43ed2d`; prior post-merge [CI #39355971369](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39355971369) PASS.
+- A05-A implements cosmetic-only catalog, real anchor indexing, budget/cooldown and read-only instrumentation, deterministic 48×48/96×96 fixtures. No gameplay/save/clock changes. Code Fast CI [#39358669392](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39358669392) PASS on `16ee6590` (43 files/364 tests); final docs-only HEAD CI must be checked.
 - [Implementation](observer-upgrade-2026/A05_A_IMPLEMENTATION.md) · [Catalog](observer-upgrade-2026/A05_A_EVENT_CATALOG.md) · [Architecture](observer-upgrade-2026/A05_A_ARCHITECTURE.md) · [QA](observer-upgrade-2026/A05_A_QA.md) · [A05-B Handoff](observer-upgrade-2026/A05_A_HANDOFF.md).
 - 30-second, 5-minute, PC FPS/memory/soak targets **NOT MEASURED** (no scheduler/sprites/audio in A05-A).
 

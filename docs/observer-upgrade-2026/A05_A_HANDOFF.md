@@ -2,6 +2,8 @@
 
 **Entry:** check owner-approved PR #35 merge and exact latest `main`/CI before branching. Read Plan 05, Simulation Contract, A05-A code/QA and E04-F handoff. Never assume merge occurred.
 
+**Reusable test inputs:** `createAmbientFixture(name, population?)` and `AMBIENT_FIXTURE_SEED=107` in `src/game/ambient/fixtures.ts`. Scenarios `sign-of-life-30s`, `three-categories-5min`, `native-96`, `migrated-48`, `frozen-v5-48`, `missing-poi`, `rainy-night`, `no-nearby-citizens`, `co-located-chat`, `post-rain-puddle`. Inputs are synthetic presentation test fixtures only, never saved or used by production game.
+
 **Available APIs:** `buildAmbientAnchorIndex(world)`; `ambientCandidates(world, index, {virtualMs, rainEndedTick?})`; `isAmbientAnchorValid(world,anchor)`; `isAmbientCandidate(world,unknown)`; `AMBIENT_CATALOG`; `AMBIENT_LIMITS`; `createAmbientSession`; `tryStartAmbient`; `finishAmbient`; `resetAmbientSession`; `noteAmbientCandidates`; `noteAmbientVisibility`; `getAmbientMetrics`.
 
 **Implementation checklist A05-B:**
