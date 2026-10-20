@@ -68,6 +68,9 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
   let nextRequestId = 1;
   const listeners = new Set<() => void>();
   let timer: ReturnType<typeof setInterval> | null = null;
+  // Each React consumer owns a teardown lease. A second start() must not return a
+  // no-op disposer: the first unmount would otherwise stop the shared clock.
+  let clockUsers = 0;
   let lastMs = 0;
   const notify = () => {
     const renderPaths = takeMovement(pendingVisualMoves);
@@ -98,16 +101,23 @@ export function createLivingCoordinator(initialSeed = 12345, initialPopulation: 
       return () => { listeners.delete(listener); };
     },
     start: () => {
-      if (timer !== null) return () => { /* already running */ };
-      resetElapsed();
-      document.addEventListener('visibilitychange', onVisibility);
-      timer = setInterval(() => {
-        const now = performance.now();
-        const delta = now - lastMs;
-        lastMs = now;
-        clock.onElapsed(delta, document.visibilityState === 'visible');
-      }, 25);
+      clockUsers++;
+      if (timer === null) {
+        resetElapsed();
+        document.addEventListener('visibilitychange', onVisibility);
+        timer = setInterval(() => {
+          const now = performance.now();
+          const delta = now - lastMs;
+          lastMs = now;
+          clock.onElapsed(delta, document.visibilityState === 'visible');
+        }, 25);
+      }
+      let released = false;
       return () => {
+        if (released) return;
+        released = true;
+        clockUsers--;
+        if (clockUsers !== 0) return;
         if (timer !== null) clearInterval(timer);
         timer = null;
         document.removeEventListener('visibilitychange', onVisibility);
