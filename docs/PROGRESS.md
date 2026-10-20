@@ -1,3 +1,9 @@
+## Observer Plan 05 — A05-E Watchability Tuning & Performance (2026-10-20)
+- Preflight verified A05-D PR #38 merged into `main@c5786143`; exact post-merge [Fast CI #39381545911](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39381545911) SUCCESS. No newer merged PR at branch creation.
+- Draft [PR #39](https://github.com/giabao2605/Tiny-Civilization/pull/39), branch `feat/a05-e-watchability`, unmerged. Camera-visible ambient fairness tuning, authentic hour-07 three-category visual fixture assertion, overview silhouette scaling, allocation reduction and bounded viewport-rendered category/type instrumentation. Optional five-minute browser evidence test added; no simulation/RNG/save changes, no Pages deploy.
+- **Implementation submitted for CI; not fully VERIFIED.** Fast CI on exact final docs HEAD needs confirmation. Unit fixture is not human screenshot proof; headless real-browser 30s/5min, PC audio listening, FPS/heap before-after and 60/120min soak: **NOT RUN / NOT MEASURED**.
+- [Implementation](observer-upgrade-2026/A05_E_IMPLEMENTATION.md) · [Watchability QA](observer-upgrade-2026/A05_E_WATCHABILITY_QA.md) · [Performance QA](observer-upgrade-2026/A05_E_PERFORMANCE_QA.md) · [Regression QA](observer-upgrade-2026/A05_E_REGRESSION_QA.md) · [Handoff](observer-upgrade-2026/A05_E_HANDOFF.md).
+
 ## Observer Plan 05 — A05-D Ambient Audio & Localized SFX (2026-10-20)
 - Verified A05-C PR #37 merged: main@24573918; Fast CI #39366800211 SUCCESS.
 - Working branch `feat/a05-d-ambient-audio`: React-owned shared Web Audio mixer, canonical day/night/weather gain, transition-only bird/cart/bell/market/drip cues, world-space stereo attenuation, mute/volume buses, bounded polyphony and lifecycle cleanup. No simulation/save/RNG changes; no Pages deployment.
