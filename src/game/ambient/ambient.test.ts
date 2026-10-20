@@ -146,7 +146,8 @@ describe('A05-A immutable event taxonomy and anchor ownership', () => {
 
 describe('A05-A virtual time, budget, lifecycle, instrumentation and replay', () => {
   it('never exceeds active or per-anchor budgets, tracks reject reasons and releases references', () => {
-    const world = at(createWorld96(107, 20), 6);
+    const world = createWorld96(107, 20);
+    world.tick = 30;
     world.weather = { ...world.weather, kind: 'clear', intensity: 0 };
     const available = candidates(world, 1000);
     expect(available.length).toBeGreaterThanOrEqual(3);

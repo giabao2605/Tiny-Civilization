@@ -62,7 +62,8 @@ function cooldownKey(event: AmbientCandidate): string {
   return event.type + ':' + event.anchor.key;
 }
 export function tryStartAmbient(session: AmbientSession, world: WorldState,
-  event: unknown, nowMs: number, config = AMBIENT_LIMITS): AmbientStartResult {
+  event: unknown, nowMs: number,
+  config: Readonly<{ maxActive: number; maxPerAnchor: number; maxCooldownEntries: number }> = AMBIENT_LIMITS): AmbientStartResult {
   if (!isAmbientCandidate(world, event) ||
     !Number.isSafeInteger(nowMs) || nowMs < 0) {
     session.counters.invalidAnchor++;

@@ -25,7 +25,7 @@ function districtAt(world: WorldState, tile: TilePosition): District96Id | undef
 export function buildAmbientAnchorIndex(world: WorldState): AmbientAnchorIndex {
   const sites: SiteAnchor[] = world.sites
     .filter(s => validTile(world, s.tile))
-    .map(s => ({ kind: 'site', key: 'site:' + s.id, siteId: s.id,
+    .map((s): SiteAnchor => ({ kind: 'site', key: 'site:' + s.id, siteId: s.id,
       siteKind: s.kind, tile: { ...s.tile }, districtId: districtAt(world, s.tile) }))
     .sort((a, b) => a.siteId - b.siteId);
   const pois: PoiAnchor[] = [];
