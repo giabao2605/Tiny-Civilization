@@ -28,7 +28,7 @@ async function pauseUntilHour(page: Page, targetHour: number) {
 }
 
 async function resetWorld(page: Page, seed: number) {
-  await page.getByTestId('seed-input').fill(String(seed));
+  await page.getByLabel('Seed thế giới').fill(String(seed));
   page.once('dialog', dialog => { void dialog.accept(); });
   await page.getByRole('button', { name: 'Tạo lại', exact: true }).click();
   await expect(page.getByTestId('world-tick')).toContainText('Tick 0 ');
