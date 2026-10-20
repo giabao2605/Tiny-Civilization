@@ -22,7 +22,9 @@ test('W02-E: real Phaser production 96×96, camera, NPC, 3 districts and v6 roun
   await page.getByRole('button', { name: 'Tạm dừng' }).click();
   await page.getByTestId('save-world').click();
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('tiny-civilization:world:v1') ?? '{}'));
-  expect(saved.saveFormat).toBe(2);
+  expect(saved.saveFormat).toBe(3);
+  expect(saved.engineVersion).toBe('sim-v6-weather');
+  expect(saved.world.weather).toBeDefined();
   expect(saved.world.schemaVersion).toBe(6);
   expect(saved.world.tiles).toHaveLength(9216);
   expect(saved.world.layout.districts).toHaveLength(3);
@@ -83,7 +85,9 @@ test('W02-E: import frozen v5 -> v6 48×48, roundtrip and atomic hostile reject'
   await page.getByTestId('save-world').click();
   const saved = await page.evaluate(() => localStorage.getItem('tiny-civilization:world:v1') ?? '');
   const data = JSON.parse(saved);
-  expect(data.saveFormat).toBe(2);
+  expect(data.saveFormat).toBe(3);
+  expect(data.engineVersion).toBe('sim-v6-weather');
+  expect(data.world.weather).toBeDefined();
   expect(data.world.schemaVersion).toBe(6);
   expect(data.world.map).toEqual({ width: 48, height: 48 });
   expect(data.world.tiles).toHaveLength(2304);
