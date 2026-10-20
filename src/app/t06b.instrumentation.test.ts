@@ -108,8 +108,12 @@ describe('T06-B lease ownership and read-only diagnostics', () => {
   });
 
   it.each([
-    [48, 20, 101], [48, 50, 12345], [48, 100, 101],
-    [96, 20, 12345], [96, 50, 101], [96, 100, 12345],
+    [48, 20, 101], [48, 20, 12345],
+    [48, 50, 101], [48, 50, 12345],
+    [48, 100, 101], [48, 100, 12345],
+    [96, 20, 101], [96, 20, 12345],
+    [96, 50, 101], [96, 50, 12345],
+    [96, 100, 101], [96, 100, 12345],
   ] as const)('diagnostics parity map %i NPC %i seed %i, including RNG/save/commands', (size, population, seed) => {
     const run = (enabled: boolean) => {
       const runtime: FakeRuntime = fakeRuntime();
