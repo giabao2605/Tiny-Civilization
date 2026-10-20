@@ -7,7 +7,7 @@
 - Reused two existing E04-F test files and extended cross-phase Node and Chromium matrices.
 - Hour-by-hour path validation, resource/wealth conservation and 72-hour replay.
 - Read-only live Phaser FPS, render object, texture and routing diagnostics.
-- Short browser profiler, 24 screenshot matrix, audio/camera/pacing lifecycle scenario.
+- Short browser profiler, 30 screenshot matrix, audio/camera/pacing lifecycle scenario.
 - Opt-in 60/90/120-minute real-wall-clock soak test and manual Full E2E artifact collection.
 - Integration/performance/visual-audio documentation with explicit evidence limits.
 
