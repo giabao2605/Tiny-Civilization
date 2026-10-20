@@ -6,7 +6,7 @@ Keep three environments separate; **no performance result for E04-F is asserted 
 
 | Environment | Signals available | Evidence status |
 |---|---|---|
-| Node.js / Vitest | per-hour simulation tick P50/P95, 36-hour route requests, BFS and weighted path counts, total wall time | NOT RUN for E04-F; source instrumentation committed |
+| Node.js / Vitest | per-hour simulation tick P50/P95, 36-hour route requests, BFS and weighted path counts, total wall time | PASS on measured code SHA bf4bdfe, run #39352756469; final doc HEAD pending recheck |
 | Headless Chromium / Playwright | rAF browser frame P50/P95/mean, Phaser game-loop FPS/delta, renderer type, scene objects/textures, route delta, heap if supported | NOT RUN for E04-F; browser test available |
 | Local physical Windows PC | 1366/1920/2560 viewports, GPU-dependent real FPS, audio, memory/texture growth, 60–120m soak | NOT RUN; requires owner/operator PC execution |
 
@@ -28,4 +28,23 @@ Soak checks for one canvas, runtime errors, saved v6 and progression, and logs w
 
 ## Results
 
-**E04-F baseline:** NOT RUN/NOT MEASURED at authoring. Read the actual current PR workflow logs and any `E04F_NODE_MATRIX`, `E04F_CHROMIUM_PROFILE`, or `E04F_SOAK` JSON. Record exact commit SHA, duration, browser/CPU/GPU, FPS quantiles and memory values before updating this file to PASS/PARTIAL.
+**E04-F baseline at original authoring:** NOT RUN/NOT MEASURED. **Subsequent code-head Fast CI** is measured below. Read the actual current PR workflow logs and any `E04F_NODE_MATRIX`, `E04F_CHROMIUM_PROFILE`, or `E04F_SOAK` JSON. Record exact commit SHA, duration, browser/CPU/GPU, FPS quantiles and memory values before updating this file to PASS/PARTIAL.
+
+## Actual E04-F Node results (2026-10-20)
+
+**Source:** [GitHub Actions #39352756469](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39352756469), exact tested commit `bf4bdfe7549f4cbac414d6f9bb41352b60f31adf`. Completed SUCCESS; 42 files / **337 tests passed**, production audit/typecheck/lint/build passed. Runner reports Linux, Node v22.23.3, AMD EPYC 7763 64-Core Processor. This is a **36 hourly-tick sample per climate per combination**, not browser FPS.
+
+| Map | NPC | Initial weather | Tick P50 ms | Tick P95 ms | Route requests (first 36 h) |
+|---|---:|---|---:|---:|---:|
+| 48×48 | 100 | rain | 0.954 | 1.561 | 491 |
+| 48×48 | 100 | clear | 0.785 | 2.047 | 709 |
+| 48×48 | 100 | cloudy | 0.575 | 2.037 | 709 |
+| 48×48 | 100 | fog | 0.594 | 1.981 | 709 |
+| 96×96 | 100 | rain | 3.115 | 16.699 | 297 |
+| 96×96 | 100 | clear | 3.523 | 32.792 | 398 |
+| 96×96 | 100 | cloudy | 3.912 | 40.201 | 405 |
+| 96×96 | 100 | fog | 3.594 | 33.704 | 397 |
+
+The CI log also contains 20/50 NPC results for both map sizes and all four weathers under `E04F_NODE_MATRIX`. There were six test groups × four weather seeds; 72h of engine state per scenario with 36h pause/save continuation. No resource or currency mismatch or noncardinal movement assertion failed. The P95 values in 96/100 show nontrivial simulation tail latency in this runner, **not a proven GPU bottleneck**. Chromium FPS, heap, map load and local Windows 60–120 minute soak are still **NOT RUN / NOT MEASURED**.
+
+The present document modification is a new commit, so the HEAD SHA must be cross-checked again before final sign-off.

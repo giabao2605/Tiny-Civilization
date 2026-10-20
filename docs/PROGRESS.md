@@ -444,3 +444,9 @@ Phase 00 was merged and verified. Next task may implement Phase 01 only after re
 - **E04-F Fast CI on final HEAD: NOT RUN at authoring;** status must be updated only after checking GitHub run `head_sha`. Historical 329 tests passed on E04-E, not E04-F.
 - **E04-F browser/headless screenshot/benchmark:** NOT RUN; **Windows PC visual/audio/GPU FPS/heap/leak and 60–120 minute soak:** NOT RUN / NOT MEASURED. Observer Pace remains explicitly optional; no claim of continuous observer animation between long ticks.
 - **DoD / Plan 05 gate: PARTIAL**, review pending. No automatic merge or Pages deployment. [Implementation](observer-upgrade-2026/E04_F_IMPLEMENTATION.md) · [Integration QA](observer-upgrade-2026/E04_F_INTEGRATION_QA.md) · [Performance](observer-upgrade-2026/E04_F_PERFORMANCE.md) · [Visual/audio](observer-upgrade-2026/E04_F_VISUAL_AUDIO_QA.md) · [Handoff](observer-upgrade-2026/E04_F_HANDOFF.md).
+
+### E04-F executed CI update (2026-10-20)
+
+- [Fast CI #39352756469](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39352756469) **PASS** for exact code SHA `bf4bdfe7549f4cbac414d6f9bb41352b60f31adf`: 42/42 test files, **337/337 Vitest**, production audit/typecheck/lint/build all successful.
+- E04-F Node 48/96 × 20/50/100 × clear/cloudy/rain/fog, 72h replay and 36h per-hour routing/tick profile PASS. 96×96/100 NPC measured Node tick P95 range **16.699–40.201 ms** across four seeded weather scenarios on GitHub-hosted Linux; **not rendered FPS**.
+- This follow-up documentation commit creates a newer HEAD, so check its separate final Fast CI. Chromium E2E, Windows hardware FPS/audio and long soak still **NOT RUN**, E04-F gate still **PARTIAL**. Do not merge without explicit user approval.

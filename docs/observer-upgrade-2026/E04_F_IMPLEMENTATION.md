@@ -42,3 +42,10 @@ $env:E04F_SOAK_MINUTES = "60"
 npm run test:e2e -- tests/e2e/e04f-soak.spec.ts
 Remove-Item Env:E04F_SOAK_MINUTES
 ```
+
+## Executed Fast CI (code commit before this report)
+
+- [Run #39352756469](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39352756469) finished **SUCCESS** on exact code SHA `bf4bdfe7549f4cbac414d6f9bb41352b60f31adf`.
+- 42 Vitest files / **337 tests PASS**; `npm ci`, production audit, typecheck, lint and build PASS. 24 E04-F deterministic scenarios passed inside the suite.
+- This documentation update creates a newer HEAD: **final-head CI must be rechecked**; do not reuse #39352756469 as its result.
+- Chromium/Windows visual/audio and soak still **NOT RUN**.

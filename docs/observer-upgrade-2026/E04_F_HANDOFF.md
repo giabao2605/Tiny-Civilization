@@ -33,3 +33,7 @@
 3. On Windows PC, run `npm ci`, `npx playwright install chromium`, and E04-F Chromium spec. View screenshots and listen to actual Web Audio. Record OS, browser, GPU and reproducible steps.
 4. Run `E04F_SOAK_MINUTES=60` on physical PC with monitored heap/GPU/texture trends; annotate actual wall time and any errors.
 5. Update evidence files with real numbers only. Review PR and ask owner before merging. **Plan 05 must remain gated** by accepted Plan 04 conditions.
+
+## Verified code baseline following implementation
+
+[Fast CI #39352756469](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39352756469) passed at `bf4bdfe7549f4cbac414d6f9bb41352b60f31adf`: 337/337 tests, audit/typecheck/lint/build all PASS. Browser/PC/soak remain NOT RUN. Documentation has been updated **after** this code CI; a new final-head CI check is required. Overall QA remains **PARTIAL**.

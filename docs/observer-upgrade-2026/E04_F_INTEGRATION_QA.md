@@ -1,6 +1,6 @@
 # E04-F — Integration QA and coverage
 
-**Recorded:** 2026-10-20. Evidence fields distinguish implemented assertions from executed tests. Unrun tests are **NOT RUN**, not PASS.
+**Recorded:** 2026-10-20. Table below is the **original pre-CI test-plan snapshot**. The executed Fast CI addendum at the end supersedes Node-only NOT RUN entries; browser/hardware remains NOT RUN.
 
 | Concern | Implemented coverage | Status of E04-F evidence |
 |---|---|---|
@@ -30,3 +30,7 @@
 ## Evidence required for final acceptance
 
 Link the PR HEAD SHA to successful Fast CI; run manual Chromium Full E2E and inspect screenshots; run 60+ min local-PC soak and inspect heap/texture/scene trends; listen to audio before/after user gesture, pause and hide; add PC hardware/browser versions and measured values. Do not mark the overall E04-F phase VERIFIED before these gates have evidence.
+
+## Executed regression verification
+
+[Fast CI #39352756469](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39352756469), head SHA `bf4bdfe7549f4cbac414d6f9bb41352b60f31adf`: **PASS**, 42 test files and 337/337 Vitest tests. Dependency production audit, typecheck, lint and build all passed. The E04-F Node map/population/weather matrix and hourly route/replay/resource checks executed successfully. This is a code-head result; this document commit requires its own final-head check. Browser/physical Windows QA and soak: **NOT RUN**.
