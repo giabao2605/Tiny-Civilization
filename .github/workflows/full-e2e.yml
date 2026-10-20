@@ -72,6 +72,13 @@ jobs:
           if [ -d test-results ]; then
             find test-results -type f -name 'n03f-*' -exec cp '{}' observer-n03-f-evidence/ ';'
           fi
+      - name: Preserve E04-F integration screenshots and browser performance JSON
+        if: always()
+        run: |
+          mkdir -p observer-e04-f-evidence
+          if [ -d test-results ]; then
+            find test-results -type f -name 'e04f-*' -exec cp '{}' observer-e04-f-evidence/ ';'
+          fi
       - name: Build for GitHub Pages project path
         run: GITHUB_PAGES=true npm run build
       - name: Smoke-test the actual production build
@@ -92,6 +99,7 @@ jobs:
             observer-w02-e-evidence/
             observer-w02-f-evidence/
             observer-n03-f-evidence/
+            observer-e04-f-evidence/
             dist/
           if-no-files-found: ignore
           retention-days: 7
