@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { GameCanvas } from '../game/GameCanvas';
 import { WeatherAudio } from '../game/audio/weatherAudio';
+import type { AmbientAudioBridge } from '../game/audio/ambientBridge';
 import type { CameraSnapshot, WorldCameraControls } from '../game/camera/types';
 import { V6_ENGINE_VERSION as ENGINE_VERSION, LOCAL_SAVE_KEY, MAX_SAVE_BYTES } from '../persistence/save';
 import { dayOf, hourOf, stateDigest } from '../sim/engine';
@@ -86,7 +87,14 @@ export function App() {
   const audioRef = useRef<WeatherAudio | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [soundVolume, setSoundVolume] = useState(40);
+  const [ambientVolume, setAmbientVolume] = useState(80);
+  const [effectsVolume, setEffectsVolume] = useState(65);
   const [soundStatus, setSoundStatus] = useState('Âm thanh tắt. Bấm bật để cho phép trình duyệt phát.');
+  const ambientAudio = useMemo<AmbientAudioBridge>(() => ({
+    transitions: (changes, actors, view) => audioRef.current?.consumeTransitions(changes, actors, view),
+    viewport: view => audioRef.current?.updateViewport(view),
+    reset: () => audioRef.current?.resetEvents(),
+  }), []);
   const [cameraControls, setCameraControls] = useState<WorldCameraControls | null>(null);
   const [cameraView, setCameraView] = useState<CameraSnapshot | null>(null);
   const [timelineCategory, setTimelineCategory] = useState<TimelineCategory>('all');
@@ -141,11 +149,12 @@ export function App() {
   }, []);
   useEffect(() => {
     const updateAudio = () => audioRef.current?.setEnvironment(
-      weather, soundVolume / 100, soundEnabled, paused, document.hidden);
+      weather, soundVolume / 100, soundEnabled, paused, document.hidden,
+      world.tick % 24, ambientVolume / 100, effectsVolume / 100);
     updateAudio();
     document.addEventListener('visibilitychange', updateAudio);
     return () => document.removeEventListener('visibilitychange', updateAudio);
-  }, [weatherKind, weatherIntensity, soundVolume, soundEnabled, paused]);
+  }, [weatherKind, weatherIntensity, world.tick, soundVolume, ambientVolume, effectsVolume, soundEnabled, paused]);
 
   const toggleSound = async () => {
     if (soundEnabled) {
@@ -196,6 +205,7 @@ export function App() {
     if (!window.confirm('Tạo thế giới mới? Tiến trình chưa lưu của thế giới hiện tại sẽ mất. Bản lưu trong trình duyệt và file JSON đã xuất sẽ được giữ nguyên.')) return;
     setInspectedEventId(null);
     if (coordinator.dispatch({ type: 'reset-seed', seed: value, population: populationInput })) {
+      audioRef.current?.resetEvents();
       setSaveTick(null);
       setSaveMessage('Đã tạo thế giới mới. Bản lưu trong trình duyệt trước đó vẫn còn cho đến khi bạn lưu đè.');
     }
@@ -215,6 +225,7 @@ export function App() {
   };
   const restore = (json: string, origin: string) => {
     coordinator.importSave(json);
+    audioRef.current?.resetEvents();
     const restored = coordinator.getSnapshot().world;
     setSeedInput(String(restored.seed));
     setPopulationInput(restored.citizens.length <= 20 ? 20 : restored.citizens.length <= 50 ? 50 : 100);
@@ -296,6 +307,7 @@ export function App() {
                 onCitizenSelected={(id) => coordinator.dispatch({ type: 'select-citizen', id })}
                 onCameraReady={controls => { setCameraControls(controls); if (!controls) setCameraView(null); }}
                 onCameraChange={setCameraView}
+                 ambientAudio={ambientAudio}
               />
             </div>
             <div className="map-toolbar">
@@ -431,14 +443,22 @@ export function App() {
                 </select>
               </div>
               <p className="dashboard-note">Observer Pace chỉ là thử nghiệm. Một tick vẫn là một giờ; không tạo chuyển động liên tục giữa các giờ.</p>
-              <div className="audio-controls" aria-label="Âm thanh thời tiết">
+              <div className="audio-controls" aria-label="Âm thanh môi trường và sự kiện">
                 <button type="button" className={soundEnabled ? 'control active' : 'control'}
                   onClick={() => { void toggleSound(); }} aria-pressed={soundEnabled}
                   data-testid="toggle-weather-audio">{soundEnabled ? 'Tắt âm thanh' : 'Bật âm thanh'}</button>
-                <label htmlFor="weather-audio-volume">Âm lượng: {soundVolume}%</label>
+                <label htmlFor="weather-audio-volume">Tổng âm lượng: {soundVolume}%</label>
                 <input id="weather-audio-volume" type="range" min="0" max="100" step="5"
                   value={soundVolume} onChange={event => setSoundVolume(Number(event.target.value))}
                   aria-label="Âm lượng môi trường" />
+                <label htmlFor="ambient-audio-volume">Thiên nhiên/mưa: {ambientVolume}%</label>
+                <input id="ambient-audio-volume" type="range" min="0" max="100" step="5"
+                  value={ambientVolume} onChange={event => setAmbientVolume(Number(event.target.value))}
+                  aria-label="Âm lượng thiên nhiên và thời tiết" />
+                <label htmlFor="effects-audio-volume">Hiệu ứng địa phương: {effectsVolume}%</label>
+                <input id="effects-audio-volume" type="range" min="0" max="100" step="5"
+                  value={effectsVolume} onChange={event => setEffectsVolume(Number(event.target.value))}
+                  aria-label="Âm lượng hiệu ứng sự kiện" />
                 <p className="dashboard-note" role="status">{soundStatus}</p>
               </div>
               <div className="seed-controls">
