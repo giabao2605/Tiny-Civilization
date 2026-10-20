@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { WorldState } from '../sim/world';
 import type { CameraSnapshot } from './camera/types';
 import { WorldScene } from './scenes/WorldScene';
+import type { AmbientAudioBridge } from './audio/ambientBridge';
 import { getRoutingDiagnostics } from '../sim/routing';
 import { getPathfindingDiagnostics } from '../sim/pathfinding';
 import { getWeightedPathDiagnostics } from '../sim/weightedPathfinding';
@@ -11,8 +12,9 @@ export function createGame(
   world: WorldState,
   onCitizenSelected: (id: number) => void,
   onCameraChanged?: (camera: CameraSnapshot) => void,
+  ambientAudio?: AmbientAudioBridge,
 ): { game: Phaser.Game; scene: WorldScene } {
-  const scene = new WorldScene(world, onCitizenSelected, onCameraChanged);
+  const scene = new WorldScene(world, onCitizenSelected, onCameraChanged, ambientAudio);
   const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent,

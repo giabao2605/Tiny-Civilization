@@ -3,26 +3,30 @@ import type { LivingSnapshot } from '../app/livingCoordinator';
 import { dimensionsOf } from '../sim/world';
 import type { CameraSnapshot, WorldCameraControls } from './camera/types';
 import type { createGame } from './createGame';
+import type { AmbientAudioBridge } from './audio/ambientBridge';
 
 type Props = {
   snapshot: LivingSnapshot;
   onCitizenSelected: (id: number) => void;
   onCameraReady?: (controls: WorldCameraControls | null) => void;
   onCameraChange?: (camera: CameraSnapshot) => void;
+  ambientAudio?: AmbientAudioBridge;
 };
 
-export function GameCanvas({ snapshot, onCitizenSelected, onCameraReady, onCameraChange }: Props) {
+export function GameCanvas({ snapshot, onCitizenSelected, onCameraReady, onCameraChange, ambientAudio }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const snapshotRef = useRef(snapshot);
   const callbackRef = useRef(onCitizenSelected);
   const readyRef = useRef(onCameraReady);
   const changeRef = useRef(onCameraChange);
+  const audioBridgeRef = useRef(ambientAudio);
   const liveRef = useRef<ReturnType<typeof createGame> | null>(null);
 
   snapshotRef.current = snapshot;
   callbackRef.current = onCitizenSelected;
   readyRef.current = onCameraReady;
   changeRef.current = onCameraChange;
+  audioBridgeRef.current = ambientAudio;
 
   useEffect(() => {
     const host = hostRef.current;
@@ -35,7 +39,11 @@ export function GameCanvas({ snapshot, onCitizenSelected, onCameraReady, onCamer
         if (disposed || !host.isConnected) return;
         const current = snapshotRef.current;
         const live = createGame(host, current.world, (id) => callbackRef.current(id),
-          camera => changeRef.current?.(camera));
+          camera => changeRef.current?.(camera), {
+            transitions: (changes, actors, view) => audioBridgeRef.current?.transitions(changes, actors, view),
+            viewport: view => audioBridgeRef.current?.viewport(view),
+            reset: () => audioBridgeRef.current?.reset(),
+          });
         liveRef.current = live;
         const controls: WorldCameraControls = {
           fit: () => { if (liveRef.current === live) live.scene.fit(); },

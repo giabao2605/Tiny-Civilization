@@ -15,6 +15,7 @@ import { buildingStyle, visualHash } from '../render/visualHash';
 import { WeatherLayer } from '../render/weatherLayer';
 import { AmbientDirector } from '../ambient/director';
 import { AmbientVisuals } from '../ambient/visuals';
+import type { AmbientAudioBridge } from '../audio/ambientBridge';
 import type { Poi96Kind } from '../../sim/world96Layout';
 
 const POI_ART: Record<Poi96Kind, 'well' | 'bench' | 'fence' | 'sign' | 'crops' | 'lantern' | 'barrel' | 'crate' | 'oak' | 'pine' | 'shrub' | 'woodpile'> = {
@@ -66,6 +67,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private weatherLayer?: WeatherLayer;
   private ambientDirector?: AmbientDirector;
   private ambientVisuals?: AmbientVisuals;
+  private lastAudioViewportAt = -1000;
   private ambientShade?: Phaser.GameObjects.Rectangle;
   private windowLightLayer?: Phaser.GameObjects.Image;
   private streetLightLayer?: Phaser.GameObjects.Image;
@@ -75,7 +77,8 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private dragged = false;
 
   constructor(world: WorldState, private readonly onCitizenSelected: (id: number) => void,
-    private readonly onCameraChanged?: (camera: CameraSnapshot) => void) {
+    private readonly onCameraChanged?: (camera: CameraSnapshot) => void,
+    private readonly ambientAudio?: AmbientAudioBridge) {
     super({ key: 'WorldScene' });
     this.world = world;
   }
@@ -150,6 +153,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.labelsShown = null;
       this.movementTweens.clear();
       this.highlighter = undefined;
+      this.ambientAudio?.reset();
       this.ambientVisuals?.dispose();
       this.ambientVisuals = undefined;
       this.ambientDirector?.dispose();
@@ -415,7 +419,9 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.scene.restart();
       return;
     }
-    this.ambientDirector?.reconcile(snapshot.world);
+    const cancelled = this.ambientDirector?.reconcile(snapshot.world) ?? [];
+    if (cancelled.length) this.ambientAudio?.transitions(cancelled,
+      this.ambientDirector?.activeActors ?? [], this.audioViewport());
     // Cancels must release graphics on this exact snapshot, even while paused.
     this.syncAmbientVisuals();
     if (this.followId !== null && !followTargetIsAlive(this.world, this.followId)) {
@@ -504,6 +510,11 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       ...(this.ambientVisuals?.metrics ?? { renderedActors: 0, createdVisuals: 0, destroyedVisuals: 0 }) } : null;
   }
 
+  private audioViewport(): { x: number; y: number; width: number; height: number } {
+    const view = this.cameras.main.worldView;
+    return { x: view.x, y: view.y, width: view.width, height: view.height };
+  }
+
   private syncAmbientVisuals(): void {
     if (!this.ambientDirector || !this.ambientVisuals) return;
     this.ambientVisuals.sync(this.ambientDirector.activeActors,
@@ -515,11 +526,17 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.updateLabelVisibility();
     if (this.selectedId !== null) this.redrawHighlight();
     if (document.hidden) return;
-    this.ambientDirector?.advance(delta, {
+    const audioChanges = this.ambientDirector?.advance(delta, {
       paused: this.wasPaused, hidden: document.hidden, reducedMotion: this.isReducedMotion(),
       isVisible: anchor => this.cameras.main.worldView.contains(
         xPixel(anchor.tile.x), yPixel(anchor.tile.y)),
     });
+    if (audioChanges?.length) this.ambientAudio?.transitions(audioChanges,
+      this.ambientDirector?.activeActors ?? [], this.audioViewport());
+    if (_time - this.lastAudioViewportAt >= 100) {
+      this.lastAudioViewportAt = _time;
+      this.ambientAudio?.viewport(this.audioViewport());
+    }
     // The director owns starts/end/cancels; sync is idempotent and camera-aware.
     // PresentationMs freezes on pause, hidden and discarded frame discontinuities.
     this.syncAmbientVisuals();
