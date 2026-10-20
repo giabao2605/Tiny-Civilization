@@ -32,7 +32,17 @@ export function createGame(
     const frameTimes: number[] = [];
     let totalFrames = 0;
     let gameDestroyed = false;
+    let lastSampling = true;
+    const samplingEnabled = () =>
+      (window as Window & { __tcObserverPerfEnabled?: boolean }).__tcObserverPerfEnabled !== false;
     const onFrame = () => {
+      const enabled = samplingEnabled();
+      if (enabled !== lastSampling) {
+        frameTimes.length = 0;
+        totalFrames = 0;
+        lastSampling = enabled;
+      }
+      if (!enabled) return;
       const ms = game.loop.delta;
       if (!Number.isFinite(ms) || ms < 0) return;
       if (frameTimes.length === 120) frameTimes.shift();
@@ -55,11 +65,12 @@ export function createGame(
       rendererType: gameDestroyed ? null : game.renderer.type,
       phaserFps: gameDestroyed || !Number.isFinite(game.loop.actualFps) ? null : game.loop.actualFps,
       frameDeltaMs: gameDestroyed || !Number.isFinite(game.loop.delta) ? null : game.loop.delta,
-      frameSampleCount: frameTimes.length,
-      frameCount: totalFrames,
-      frameP50Ms: quantile(0.5),
-      frameP95Ms: quantile(0.95),
-      frameMaxMs: frameTimes.length ? Math.max(...frameTimes) : null,
+      samplingEnabled: samplingEnabled(),
+      frameSampleCount: samplingEnabled() ? frameTimes.length : 0,
+      frameCount: samplingEnabled() ? totalFrames : 0,
+      frameP50Ms: samplingEnabled() ? quantile(0.5) : null,
+      frameP95Ms: samplingEnabled() ? quantile(0.95) : null,
+      frameMaxMs: samplingEnabled() && frameTimes.length ? Math.max(...frameTimes) : null,
       ...scene.getPresentationDiagnostics(),
       ambient: scene.getAmbientDiagnostics(),
       routeRequests: getRoutingDiagnostics().calls,
