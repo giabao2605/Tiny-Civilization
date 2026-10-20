@@ -7,4 +7,6 @@ export type AmbientAudioBridge = Readonly<{
     viewport: AudioViewport) => void;
   viewport: (viewport: AudioViewport) => void;
   reset: () => void;
+  /** Optional, read-only diagnostics for opt-in local profiling only. */
+  diagnostics?: () => object | null;
 }>;
