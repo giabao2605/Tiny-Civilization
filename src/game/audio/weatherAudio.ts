@@ -58,7 +58,6 @@ export class WeatherAudio {
   private sources: AudioBufferSourceNode[] = [];
   private readonly voices = new Map<string, Voice>();
   private readonly seen = new Set<string>();
-  private viewport: AudioViewport | null = null;
   private destroyed = false;
   private last: AmbientLevels = { rain: 0, outdoors: 0 };
   private masterVolume = 0.4;
@@ -170,7 +169,6 @@ export class WeatherAudio {
   consumeTransitions(transitions: readonly AmbientTransition[],
     activeActors: readonly AmbientActorDescriptor[], viewport: AudioViewport): void {
     if (this.destroyed) return;
-    this.viewport = viewport;
     const active = new Map(activeActors.map(actor => [actor.id, actor]));
     for (const transition of transitions) {
       if (transition.status !== 'started') {
@@ -189,7 +187,6 @@ export class WeatherAudio {
   /** Called at a bounded cadence when camera follows, pans, zooms or tours. */
   updateViewport(viewport: AudioViewport): void {
     if (this.destroyed) return;
-    this.viewport = viewport;
     for (const voice of this.voices.values()) {
       const mix = spatialMix(voice.tile, viewport);
       this.ramp(voice.positionGain.gain, mix.gain, 0.12);
@@ -268,7 +265,6 @@ export class WeatherAudio {
   resetEvents(): void {
     this.clearVoices();
     this.seen.clear();
-    this.viewport = null;
   }
 
   destroy(): void {
