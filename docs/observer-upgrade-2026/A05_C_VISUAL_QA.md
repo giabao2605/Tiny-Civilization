@@ -1,7 +1,7 @@
 # A05-C — Visual QA / Evidence
 
 ## Automated coverage
-\`src/game/ambient/visualModel.test.ts\` exercises:
+`src/game/ambient/visualModel.test.ts` exercises:
 - segment-by-segment cart interpolation, invalid/noncontiguous/missing route rejection;
 - stable ID -> one handle, cull, re-enter, repeated sync, reset double-clear;
 - A05-A deterministic 30-second / 5-minute fixtures with fake handles, and no WorldState mutation;
@@ -23,4 +23,4 @@ Existing director/anchors/route tests additionally exercise rain-to-clear, ancho
 | Camera zoom/pan/follow/AFK, NPC body occlusion | Camera culling code; visual inspection pending | PARTIAL |
 | 60min/120min soak, FPS, heap, leak-free | No instrumented real-PC run | NOT MEASURED |
 
-Run local \`npm ci && npm run dev -- --host 127.0.0.1\`, add \`?observerPerf\` and compare \`?ambientVisuals=off\`. Capture exact world seed, snapshot tick, camera mode, screenshot/video, object count before/after cull/reset, Phaser FPS and heap. **Do not mark visual acceptance PASS based solely on Vitest or scheduling counters.**
+Run local `npm ci && npm run dev -- --host 127.0.0.1`, add `?observerPerf` and compare `?ambientVisuals=off`. Capture exact world seed, snapshot tick, camera mode, screenshot/video, object count before/after cull/reset, Phaser FPS and heap. **Do not mark visual acceptance PASS based solely on Vitest or scheduling counters.**

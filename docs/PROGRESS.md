@@ -1,7 +1,7 @@
 ## Observer Plan 05 — A05-C Visual Vignettes (2026-10-20)
-- Baseline A05-B PR #36 merged into \`main@a5e4d74a\`, post-merge [CI #39364001448](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39364001448) SUCCESS.
-- Implementation on \`feat/a05-c-visual-vignettes\`: bounded source-drawn cart/bird/pet/market/real-NPC-gesture/smoke/rain-shelter visuals, camera culling and scene-lifecycle handle registry; never new gameplay citizens, simulation RNG, market stock, social changes or audio.
-- Read-only \`getAmbientDiagnostics()\` now exposes **actual** live \`renderedActors\`, \`createdVisuals\`, \`destroyedVisuals\`, not A05-B's unrendered descriptor forecast. New pure model/lifecycle tests.
+- Baseline A05-B PR #36 merged into `main@a5e4d74a`, post-merge [CI #39364001448](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39364001448) SUCCESS.
+- Implementation on `feat/a05-c-visual-vignettes`: bounded source-drawn cart/bird/pet/market/real-NPC-gesture/smoke/rain-shelter visuals, camera culling and scene-lifecycle handle registry; never new gameplay citizens, simulation RNG, market stock, social changes or audio.
+- Read-only `getAmbientDiagnostics()` now exposes **actual** live `renderedActors`, `createdVisuals`, `destroyedVisuals`, not A05-B's unrendered descriptor forecast. New pure model/lifecycle tests.
 - [Implementation](observer-upgrade-2026/A05_C_IMPLEMENTATION.md) · [Architecture](observer-upgrade-2026/A05_C_VISUAL_ARCHITECTURE.md) · [Visual QA](observer-upgrade-2026/A05_C_VISUAL_QA.md) · [Lifecycle QA](observer-upgrade-2026/A05_C_LIFECYCLE_QA.md) · [A05-D handoff](observer-upgrade-2026/A05_C_HANDOFF.md).
 - Final branch CI: PENDING VERIFICATION. Browser screenshots, real-PC 30s/5min watchability and FPS/heap/soak: **NOT RUN / NOT MEASURED**. No merge or Pages deployment.
 
