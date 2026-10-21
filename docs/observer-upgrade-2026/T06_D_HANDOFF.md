@@ -1,0 +1,11 @@
+# T06-D — Handoff / next task T06-E
+
+Current scope: local-PC playable game, no automated Chromium performance checks, no Android, no deployment. Draft [PR #44](https://github.com/giabao2605/Tiny-Civilization/pull/44) on `feat/t06-d-render-map-performance`; owner approval still required to merge. Dependency: T06-C PR #43 merged with post-merge CI success.
+
+T06-D now includes a small pure camera-geometry culling helper and tests, plus scene-level presentation-only forest decoration visibility changes. Existing simulated world, save formats 1/2/3, 8 MiB max, genuine v5 fixture and 12 frozen golden checkpoints retained. Browser benchmark workflow and two task-specific Playwright specs were deliberately removed. Fast CI on the exact final HEAD must be checked before declaring code verified. Physical PC FPS was not measured; no numerical speedup claim. T06-F soak remains deferred.
+
+## Prompt for a new independent task — T06-E Local / Offline Packaging & Runtime Smoke
+
+Implement T06-E directly in [Tiny-Civilization](https://github.com/giabao2605/Tiny-Civilization) only after checking that PR #44 was actually merged into main and that post-merge Fast CI passed. If not merged, report dependency blocker rather than working from an outdated base. Read README, PROGRESS, SIMULATION_CONTRACT, Observer Upgrade Master Plan, Plan 06, all T06-D QA/handoff documents and current source. Create `feat/t06-e-local-offline` from verified main.
+
+Target ONLY desktop PC local play: `npm ci`, `npm run dev`, `npm run build`, `npm run preview`, no installer or Android/cloud required. Audit offline and network dependencies, asset loading, desktop viewport, save to localStorage, export/import JSON, genuine v5 48×48 migration, v6 96×96 format 2/3 reader, 8 MiB cap and corrupt import atomicity. Preserve seed replay, gameplay RNG, command queue IDs, stable NPC IDs, frozen golden fixtures. Run lightweight npm Fast CI validation and build; **do not add heavy automated Chromium/Playwright benchmarks**. Document optional brief manual PC smoke for camera pan/follow/zoom, pause/resume, 1×/5×/20× and save/load, without claiming it has run. Write handoff and update PROGRESS, push a Draft PR to main, verify exact final HEAD Fast CI. Do not merge or deploy; do not implement T06-F.

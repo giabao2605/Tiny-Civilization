@@ -9,6 +9,7 @@ import { AFK_DEFAULT_TIMEOUT_MS, AFK_MAX_TIMEOUT_MS, AFK_MIN_TIMEOUT_MS, AFK_SCE
 import type { CameraMode, CameraSnapshot, WorldCameraControls } from '../camera/types';
 import { ensureArtKit, imageArt } from '../render/artKit';
 import { drawTerrain } from '../render/terrain';
+import { forestCameraView, forestDecorationVisible } from '../render/forestCulling';
 import { approachLighting, lightingAtTick, streetLightsForWorld, windowLightsForWorld,
   type LightingState } from '../render/lighting';
 import { buildingStyle, visualHash } from '../render/visualHash';
@@ -56,6 +57,10 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private labelsShown: boolean | null = null;
   private movementTweens = new Map<number, Phaser.Tweens.Tween>();
   private resourceMarkers = new Map<number, Phaser.GameObjects.Graphics>();
+  // Decorative trees are not authoritative entities. Keep their sprites for camera re-entry.
+  private forestDecorations: Phaser.GameObjects.Image[] = [];
+  private lastForestView: { left: number; top: number; right: number; bottom: number } | null = null;
+  private visibleForestDecorations = 0;
   private constructionMarkers = new Map<number, Phaser.GameObjects.Graphics>();
   private constructionPaintKeys = new Map<number, string>();
   private paintedSites = new Set<number>();
@@ -148,6 +153,9 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       this.input.off(Phaser.Input.Events.POINTER_UP, this.onUp);
       this.input.off(Phaser.Input.Events.POINTER_WHEEL, this.onWheel);
       this.resourceMarkers.clear();
+      this.forestDecorations.length = 0;
+      this.lastForestView = null;
+      this.visibleForestDecorations = 0;
       this.resourceStocks.clear();
       this.constructionMarkers.clear();
       this.constructionPaintKeys.clear();
@@ -519,6 +527,8 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       camera: camera ? { mode: this.cameraMode, zoom: camera.zoom,
         viewportWidth: camera.width, viewportHeight: camera.height } : null,
       weatherParticles: this.weatherLayer?.diagnostics ?? null,
+      forestDecorationsTotal: this.forestDecorations.length,
+      forestDecorationsVisible: this.visibleForestDecorations,
     };
   }
 
@@ -544,6 +554,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     this.updateLabelVisibility();
     if (this.selectedId !== null) this.redrawHighlight();
     if (document.hidden) return;
+    this.syncForestVisibility();
     const audioChanges = this.ambientDirector?.advance(delta, {
       paused: this.wasPaused, hidden: document.hidden, reducedMotion: this.isReducedMotion(),
       isVisible: anchor => this.cameras.main.worldView.contains(
@@ -610,6 +621,7 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
     camera.setZoom(newZoom);
     camera.centerOn(nextX, nextY);
     this.clampCamera();
+    this.syncForestVisibility();
     if (now - this.lastCameraBroadcastMs >= 900) this.announceCamera();
   }
 
@@ -705,8 +717,33 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
       const variation = visualHash(this.world.seed, x, y, 11);
       if (variation % 7 !== 0) continue;
       const kind = variation % 3 === 0 ? 'pine' : variation % 3 === 1 ? 'oak' : 'shrub';
-      imageArt(this, kind, xPixel(x), (y + 1) * TILE_PIXELS);
+      this.forestDecorations.push(imageArt(this, kind, xPixel(x), (y + 1) * TILE_PIXELS));
     }
+  }
+
+  /** Culls only static noninteractive trees; never pauses an NPC, route or simulation tick.
+   * The 30px overscan covers the entire pixel silhouette as the camera moves.
+   * A camera-only change never destroys or allocates display objects.
+   */
+  private syncForestVisibility(): void {
+    if (!this.forestDecorations.length) return;
+    const camera = this.cameras.main;
+    const { left, top, right, bottom } = forestCameraView({
+      scrollX: camera.scrollX, scrollY: camera.scrollY,
+      width: camera.width, height: camera.height, zoom: camera.zoom,
+    });
+    const previous = this.lastForestView;
+    if (previous?.left === left && previous.top === top &&
+        previous.right === right && previous.bottom === bottom) return;
+    this.lastForestView = { left, top, right, bottom };
+    let visible = 0;
+    for (const tree of this.forestDecorations) {
+      const inView = forestDecorationVisible({ x: tree.x, y: tree.y },
+        { left, top, right, bottom });
+      if (tree.visible !== inView) tree.setVisible(inView);
+      if (inView) visible++;
+    }
+    this.visibleForestDecorations = visible;
   }
 
   /** Road hierarchy, authentic entrances and inert observer POIs from v6 metadata. */
