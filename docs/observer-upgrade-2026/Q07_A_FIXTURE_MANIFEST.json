@@ -1,0 +1,348 @@
+{
+  "version": 1,
+  "baseCommit": "be7965292023c554baeca2728057378454b0c148",
+  "usage": "Specification, not execution log. Synthetic setups never serialized as production truth.",
+  "seedMatrix": {
+    "map": [
+      96,
+      96
+    ],
+    "populations": [
+      20,
+      50,
+      100
+    ],
+    "seeds": [
+      101,
+      103,
+      107,
+      109,
+      113,
+      127,
+      131,
+      137,
+      139,
+      149,
+      12345
+    ],
+    "combinations": 33,
+    "existingProvenSubset": "src/sim/world96.test.ts tests 10 seeds (excludes 12345); coverage status NOT RUN on Q07-A branch"
+  },
+  "legacy": {
+    "schemaVersion": 5,
+    "map": [
+      48,
+      48
+    ],
+    "saveFormat": 1,
+    "file": "tests/fixtures/legacy-v5-48x48.json.gz.b64"
+  },
+  "saveFormats": [
+    {
+      "format": 1,
+      "label": "legacy v5"
+    },
+    {
+      "format": 2,
+      "label": "historical pre-weather v6; synthetic fixtures in tests"
+    },
+    {
+      "format": 3,
+      "label": "current v6 weather"
+    }
+  ],
+  "golden": {
+    "path": "tests/fixtures/t06c-engine-checkpoints.expected.json",
+    "count": 12,
+    "immutable": true
+  },
+  "weather": [
+    "clear",
+    "cloudy",
+    "rain",
+    "fog"
+  ],
+  "viewports": [
+    [
+      1366,
+      768
+    ],
+    [
+      1920,
+      1080
+    ],
+    [
+      3440,
+      1440
+    ]
+  ],
+  "clockSpeeds": [
+    0,
+    1,
+    5,
+    20
+  ],
+  "observerPace": "record separately when used",
+  "scenarios": [
+    {
+      "id": "Q07-normal-life",
+      "seed": 101,
+      "population": 20,
+      "map": [
+        96,
+        96
+      ],
+      "startTick": 0,
+      "tickRange": [
+        0,
+        48
+      ],
+      "speed": "1x unless manual/virtual",
+      "setup": "Natural creation; observe daily schedule",
+      "expected": "work/home/needs; capture reason and tick",
+      "test": "src/sim/engine.test.ts",
+      "status": "PARTIAL",
+      "mode": "natural or manual"
+    },
+    {
+      "id": "Q07-work-home",
+      "seed": 103,
+      "population": 50,
+      "map": [
+        96,
+        96
+      ],
+      "startTick": 0,
+      "tickRange": [
+        0,
+        48
+      ],
+      "speed": "1x unless manual/virtual",
+      "setup": "Natural replay",
+      "expected": "Commute obeys route and clock",
+      "test": "src/sim/n03d.routines.test.ts",
+      "status": "PARTIAL",
+      "mode": "natural or manual"
+    },
+    {
+      "id": "Q07-market-visit",
+      "seed": 107,
+      "population": 20,
+      "map": [
+        96,
+        96
+      ],
+      "startTick": 0,
+      "tickRange": [
+        0,
+        72
+      ],
+      "speed": "1x unless manual/virtual",
+      "setup": "Natural replay",
+      "expected": "Trade debits/credits correct owners",
+      "test": "src/sim/economy.test.ts",
+      "status": "PARTIAL",
+      "mode": "natural or manual"
+    },
+    {
+      "id": "Q07-social-encounter",
+      "seed": 109,
+      "population": 50,
+      "map": [
+        96,
+        96
+      ],
+      "startTick": 0,
+      "tickRange": [
+        0,
+        72
+      ],
+      "speed": "1x unless manual/virtual",
+      "setup": "Natural replay",
+      "expected": "Social graph stable and replayable",
+      "test": "src/sim/social.test.ts",
+      "status": "PARTIAL",
+      "mode": "natural or manual"
+    },
+    {
+      "id": "Q07-blocked-route",
+      "seed": 109,
+      "population": 20,
+      "map": [
+        96,
+        96
+      ],
+      "startTick": 0,
+      "tickRange": [
+        0,
+        2
+      ],
+      "speed": "1x unless manual/virtual",
+      "setup": "TEST-ONLY set water barrier at x=70",
+      "expected": "Finite path failure; no teleport",
+      "test": "src/sim/world96.test.ts",
+      "status": "PARTIAL",
+      "mode": "synthetic/test-only"
+    },
+    {
+      "id": "Q07-unreachable-target",
+      "seed": 113,
+      "population": 20,
+      "map": [
+        96,
+        96
+      ],
+      "startTick": 17,
+      "tickRange": [
+        17,
+        19
+      ],
+      "speed": "1x unless manual/virtual",
+      "setup": "TEST-ONLY water at owned home",
+      "expected": "BlockedGoal and retryAfterTick",
+      "test": "src/sim/weatherShelter.test.ts",
+      "status": "PARTIAL",
+      "mode": "synthetic/test-only"
+    },
+    {
+      "id": "Q07-rain-shelter",
+      "seed": 1,
+      "population": 100,
+      "map": [
+        96,
+        96
+      ],
+      "startTick": 17,
+      "tickRange": [
+        17,
+        19
+      ],
+      "speed": "1x unless manual/virtual",
+      "setup": "TEST-ONLY weather rain intensity .95 and needs prepared",
+      "expected": "Return to owned home, preserve cash",
+      "test": "src/sim/weatherShelter.test.ts",
+      "status": "PARTIAL",
+      "mode": "synthetic/test-only"
+    },
+    {
+      "id": "Q07-weather-transition",
+      "seed": 127,
+      "population": 20,
+      "map": [
+        96,
+        96
+      ],
+      "startTick": 0,
+      "tickRange": [
+        0,
+        96
+      ],
+      "speed": "1x unless manual/virtual",
+      "setup": "Natural weather RNG replay",
+      "expected": "Four state enum and deterministic transitions",
+      "test": "src/sim/weather.test.ts",
+      "status": "PARTIAL",
+      "mode": "natural or manual"
+    },
+    {
+      "id": "Q07-ambient-virtual",
+      "seed": 107,
+      "population": 20,
+      "map": [
+        96,
+        96
+      ],
+      "startTick": 7,
+      "tickRange": [
+        7,
+        12
+      ],
+      "speed": "1x unless manual/virtual",
+      "setup": "TEST-ONLY ambient fixture three-categories-5min; virtualMs 300000",
+      "expected": "Candidate categories only; rendered UX unverified",
+      "test": "src/game/ambient/ambient.test.ts",
+      "status": "PARTIAL",
+      "mode": "synthetic/test-only"
+    },
+    {
+      "id": "Q07-camera-follow-death",
+      "seed": 131,
+      "population": 20,
+      "map": [
+        96,
+        96
+      ],
+      "startTick": 0,
+      "tickRange": [
+        0,
+        48
+      ],
+      "speed": "1x unless manual/virtual",
+      "setup": "Manual follow selected ID, death/reset then resize",
+      "expected": "Follow disengages safely, no jump",
+      "test": "src/game/camera/afkDirector.test.ts",
+      "status": "NOT RUN",
+      "mode": "natural or manual"
+    },
+    {
+      "id": "Q07-governance-pending",
+      "seed": 137,
+      "population": 50,
+      "map": [
+        96,
+        96
+      ],
+      "startTick": 0,
+      "tickRange": [
+        0,
+        48
+      ],
+      "speed": "1x unless manual/virtual",
+      "setup": "Queue valid governance command",
+      "expected": "Pending IDs and nextRequestId survive roundtrip",
+      "test": "src/sim/governance.test.ts",
+      "status": "PARTIAL",
+      "mode": "natural or manual"
+    },
+    {
+      "id": "Q07-legacy-v5-import",
+      "seed": 101,
+      "population": 20,
+      "map": [
+        48,
+        48
+      ],
+      "startTick": 0,
+      "tickRange": [
+        0,
+        24
+      ],
+      "speed": "1x unless manual/virtual",
+      "setup": "Read genuine compressed legacy fixture, format 1",
+      "expected": "Retain IDs, inventory, economy; migrated stays 48",
+      "test": "src/persistence/legacy-v5.fixture.test.ts",
+      "status": "PARTIAL",
+      "mode": "natural or manual"
+    },
+    {
+      "id": "Q07-invalid-json",
+      "seed": 101,
+      "population": 20,
+      "map": [
+        96,
+        96
+      ],
+      "startTick": 0,
+      "tickRange": [
+        0,
+        0
+      ],
+      "speed": "1x unless manual/virtual",
+      "setup": "TEST-ONLY malformed JSON input",
+      "expected": "Atomic rejection; live state unchanged",
+      "test": "src/persistence/save.test.ts",
+      "status": "PARTIAL",
+      "mode": "synthetic/test-only"
+    }
+  ]
+}
