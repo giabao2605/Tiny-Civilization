@@ -1,0 +1,5 @@
+# T06-E Local runtime and asset audit
+
+Source findings: .nvmrc specifies Node 22 and package.json engines >=22.12.0 <23, package scripts are npm ci (via npm), dev (vite), preview (vite preview), build (tsc --noEmit && vite build), typecheck, lint, test. React 19.2.0, Phaser 3.90.0, Vite 7.1.11, TypeScript 5.9.3. vite.config.ts uses '/' base by default; only an explicit GITHUB_PAGES=true uses /Tiny-Civilization/. index.html's favicon uses %BASE_URL%favicon.svg, main module is /src/main.tsx, favicon is local public/favicon.svg. Phaser scene creates procedural textures; no separate API or backend needed by the inspected entrypoints.
+
+Runtime validation: direct git clone/npm ci/npm dev/npm preview unavailable in this execution environment (terminal DNS cannot resolve github.com); no actual local PC browser opened. Fast CI on PR final HEAD must establish typecheck/lint/Vitest/build independently, and manual developer check is separate. Test 1366x768 and 1920x1080 via checklist, not claimed here.
