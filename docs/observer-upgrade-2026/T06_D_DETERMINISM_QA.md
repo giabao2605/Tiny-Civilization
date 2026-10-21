@@ -1,7 +1,7 @@
-# T06-D deterministic and save correctness QA
+# T06-D — Determinism and save regression QA
 
-Authoritative sim and `src/persistence/save.ts` are unchanged by T06-D; fixed forest visibility consumes no gameplay/weather PRNG, creates no clock and does not affect engine ticks. Main baseline and culling candidate both use unchanged 12 frozen SHA-256 checkpoints and genuine v5 fixture.
+T06-D changes only presentation code and pure camera geometry. Authoritative `src/sim`, save code, weather/gameplay RNG, stable NPC IDs, movement and governance commands remain untouched. Genuine historical v5 48×48 fixture and 12 frozen T06-C SHA-256 checkpoints were not rewritten.
 
-Fast CI [#39530519830](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39530519830) at `f22c8382` SUCCESS, **51/51 Vitest files and 444/444 tests** including T06-C golden, save migration, atomic invalid imports, clock and diagnostics parity. Production dependency audit, typecheck/lint/build also PASS. Latest branch HEAD after benchmark harness maintenance: exact-final-HEAD Fast CI **PENDING**, do not copy earlier PASS to final SHA.
+At [Fast CI #39531644349](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39531644349), code HEAD `7b16e8b3`: npm ci, production dependency audit, typecheck, lint, 51/51 Vitest files, **444/444 tests**, build all SUCCESS. These include existing golden fixtures, v5/v6 save compatibility, atomic import and determinism/diagnostics regressions. Latest HEAD after scope reduction adds fast pure culling geometry unit tests and removes dedicated Chromium tests; rerun Fast CI and report exact final SHA separately.
 
-Browser v5 48x48 fixture import, zoom/fit stability and canvas count checked by the new targeted E2E test when run. Full cross-matrix regression, physical Windows, E2E full suite and soak: NOT RUN/NOT MEASURED. Never rewrite golden expected hashes.
+Physical Windows browser visual checks, audible audio and 60–120 minute soak are NOT MEASURED / NOT RUN, not new mandatory gates. Existing optional E2E remains separate from Fast CI.

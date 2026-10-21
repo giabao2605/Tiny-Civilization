@@ -1,8 +1,9 @@
-# T06-D performance QA and acceptance
+# T06-D — Performance QA (local PC first)
 
-- Baseline source: PR #43 merge main@00e87069.
-- Candidate tree-culling renderer: static decorative sprite presentation only, no world/engine changes.
-- Historical Node CPU evidence: [#39529797892](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39529797892), 96x96/100 NPC seed 12345, tick p50=1.803 ms and p95=13.322 ms; these are not browser FPS.
-- Paired browser test in separate `T06-D Headless Browser Profile` workflow: Chromium headless Linux, 36 warmed rAF samples across 12 scenarios, exact baseline and candidate same runner, hardware report. Workload configured afresh before 20x to avoid Playwright camera-click starvation. Results PENDING; do not claim speedup or 60 FPS.
-- Diagnostic toggles OFF/ON and two effects variants are presentation-only; benchmark does not change gameplay RNG. Browser profiler with ?observerPerf=1 has sampling overhead and headless hardware can vary, so report source and limits.
-- Physical Windows GPU frame time, process CPU/RAM, audio, 60-120min soak: NOT MEASURED. Full 48/96×20/50/100×seeds101/12345×viewport matrix: NOT RUN on browser; Node seeded 48/96 test exists and ran as part of Fast CI. T06-F soak remains deferred.
+Revised policy from owner: **no Chromium benchmark, no heavy browser E2E gate, no deployment**. Use existing Fast CI (production audit, typecheck, lint, Vitest, build) and lightweight pure geometry tests; verify gameplay manually on a PC whenever convenient. Local run: `npm ci` then `npm run dev`; or `npm run build` and `npm run preview`. No Android requirement.
+
+Observed Node/Vitest baseline: 96×96, 100 NPC, seed 12345, 72 ticks, p50=1.803 ms, p95=13.322 ms at #39529797892; routing data is in T06_D_BASELINE_PROFILE.md. These values represent simulation CPU, not FPS. One historical optional Chromium paired run #39531644418 SUCCESS with median rAF FPS 4.26 for both baseline and candidate in CI; no demonstrable aggregate browser benefit. The workflow was removed at user's request.
+
+Code scope: preserve existing static terrain caching; cull only noninteractive static forest images by viewport. No additional clocks, route caches, particle pooling, skipping ticks, heavy benchmark matrix or Web Worker.
+
+PC Windows FPS, GPU/frame-time, heap growth, audio, 60–120-minute soak: NOT MEASURED, not a blocker under updated user scope. If actual local gameplay exhibits regression, revert the culling optimization.

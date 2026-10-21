@@ -1,7 +1,9 @@
-# T06-D render lifecycle QA
+# T06-D — Render lifecycle QA
 
-Source audit: GameCanvas destroys Phaser on remount, disconnects ResizeObserver and removes host instrumentation. WorldScene releases input/visibility/reduced-motion listeners, weather/ambient adapters and generated lights on SHUTDOWN; now also resets the decorative tree array and cached viewport. No extra timer/listener introduced.
+Source audit: GameCanvas destroys Phaser instances at remount, disconnects ResizeObserver, cancels animation frames and deletes optional diagnostics closure. WorldScene shutdown unsubscribes input, visibility and reduced-motion listeners; disposes weather/ambient objects and generated lighting textures. Forest culling adds an array of static tree handles and last camera bounds, both cleared on scene shutdown. Visibility checks never create new textures or destroy sprites during zoom/follow/pan.
 
-New browser tests under `tests/e2e/t06d-forest-culling.spec.ts` assert viewport zoom reduces visible decorative sprites, fit restores them, total sprites/textures/canvas remain stable and paused world tick/digest does not change. A second test imports the **genuine** 48x48/50 NPC v5 fixture, camera zoom/fit then checks paused tick and one canvas. Actual Chromium test conclusion PENDING.
+Fast `forestCulling.test.ts` covers camera scroll/zoom bounds, margin, hide-and-return and non-square viewport, with no browser/GPU installation.
 
-Unmeasured: 60-120min Windows soak, all 48x48 speed/seed combinations, hardware GPU/resource residency, repeated 100-cycle pan/remount and audio listening. A source cleanup path alone is NOT a leak proof.
+Earlier, the optional full Chromium T06-D run [#39531644418](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39531644418) completed SUCCESS before the owner opted out of browser benchmarking. Its dedicated tests/workflow are now removed to keep CI fast. It is not physical-PC leak certification.
+
+Browser lifecycle soak, real GPU resources and audio listening: NOT MEASURED. No assertion that a real-device visual acceptance was performed.

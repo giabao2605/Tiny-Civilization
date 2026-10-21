@@ -9,6 +9,7 @@ import { AFK_DEFAULT_TIMEOUT_MS, AFK_MAX_TIMEOUT_MS, AFK_MIN_TIMEOUT_MS, AFK_SCE
 import type { CameraMode, CameraSnapshot, WorldCameraControls } from '../camera/types';
 import { ensureArtKit, imageArt } from '../render/artKit';
 import { drawTerrain } from '../render/terrain';
+import { forestCameraView, forestDecorationVisible } from '../render/forestCulling';
 import { approachLighting, lightingAtTick, streetLightsForWorld, windowLightsForWorld,
   type LightingState } from '../render/lighting';
 import { buildingStyle, visualHash } from '../render/visualHash';
@@ -727,19 +728,18 @@ export class WorldScene extends Phaser.Scene implements WorldCameraControls {
   private syncForestVisibility(): void {
     if (!this.forestDecorations.length) return;
     const camera = this.cameras.main;
-    const zoom = Math.max(0.1, camera.zoom);
-    const width = camera.width / zoom, height = camera.height / zoom;
-    const left = camera.scrollX + (camera.width - width) / 2;
-    const top = camera.scrollY + (camera.height - height) / 2;
-    const right = left + width, bottom = top + height;
+    const { left, top, right, bottom } = forestCameraView({
+      scrollX: camera.scrollX, scrollY: camera.scrollY,
+      width: camera.width, height: camera.height, zoom: camera.zoom,
+    });
     const previous = this.lastForestView;
     if (previous?.left === left && previous.top === top &&
         previous.right === right && previous.bottom === bottom) return;
     this.lastForestView = { left, top, right, bottom };
     let visible = 0;
     for (const tree of this.forestDecorations) {
-      const inView = tree.x >= left - 30 && tree.x <= right + 30 &&
-        tree.y >= top - 30 && tree.y <= bottom + 30;
+      const inView = forestDecorationVisible({ x: tree.x, y: tree.y },
+        { left, top, right, bottom });
       if (tree.visible !== inView) tree.setVisible(inView);
       if (inView) visible++;
     }

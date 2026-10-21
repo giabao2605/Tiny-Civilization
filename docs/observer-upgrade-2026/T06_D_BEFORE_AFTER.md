@@ -1,8 +1,16 @@
-# T06-D paired before/after method and evidence
+# T06-D — Before / after evidence and acceptance
 
-- Baseline: `main@00e8706998d3c55d195ad06242ad1eb3c01d7b46` with benchmark test copied unchanged from candidate, not different instrumentation.
-- Candidate: feature branch, exact SHA recorded in `T06-D Headless Browser Profile` CI logs and artifact.
-- Same GitHub-hosted Ubuntu 24.04 runner in one workflow job; Node, CPU and browser version disclosed by job. 96x96/100 NPC/seed12345/1920x1080, 1x/20x, fit/zoom/follow, effects on/off, three 500ms-warmed 1100ms rAF samples.
-- Metrics: rAF FPS and frame p95, Phaser object count, texture count, forest visible total (candidate), weather/ambient counters, coordinator tick/routing metrics from DEV instrumentation. CPU tick/save bytes in independent Fast CI.
-- **Browser baseline/candidate values PENDING paired workflow**. No percent improvement claimed from incomplete samples. Do not infer physical GPU performance from headless runner.
-- Caution: runs compare reset seed/world and camera, but frame scheduling/world ticks while running may diverge under different speed/CPU load. Evaluate significant regressions before keeping culling. Source commit is purely presentation; simulation metrics should not be interpreted as optimization of routing.
+The owner changed scope on 2026-10-21: only playable locally on PC, no mandatory Chromium benchmarks or automated FPS gate. The dedicated T06-D browser benchmarking workflow and its tests have been removed; Fast CI and pure Vitest remain.
+
+For traceability, the last optional paired Chromium run completed **SUCCESS** at [#39531644418](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39531644418). Identical test code was used with baseline main `00e87069` and proposed culling implementation, sequentially on the same Ubuntu runner with Chromium 141.0.7390.37.
+
+| Metric (96×96 / 100 NPC / seed 12345, aggregate 36 samples each) | Baseline | Candidate |
+| --- | ---: | ---: |
+| Median rAF-estimated FPS | 4.26 | 4.26 |
+| Median per-sample frame-p95 (ms) | 250 | 250 |
+
+This run **does not demonstrate a measurable aggregate FPS gain**. Headless CI was heavily CPU-bound; it is not equivalent to GPU frame time or a user desktop PC, so no performance improvement claim or 60 FPS claim is justified. Static culling reduces displayed offscreen tree instances in close-up views by design; quantitative local PC benefit is unknown.
+
+The T06-A Node benchmark applies equally to both versions because the authoritative simulation code is unchanged; do not mistake it for a renderer before/after.
+
+Any future manual PC comparison is optional, not a T06-D merge gate. Remaining risks: camera-changed visibility scan overhead, external machine/browser differences and lack of long soak.
