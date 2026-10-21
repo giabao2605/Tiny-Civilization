@@ -1,3 +1,9 @@
+## Observer Plan 06 — T06-D Render / Map Performance Audit (2026-10-21)
+- Verified T06-C [PR #43](https://github.com/giabao2605/Tiny-Civilization/pull/43) MERGED at main@00e8706998d3c55d195ad06242ad1eb3c01d7b46; [post-merge Fast CI #39399807790](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39399807790) SUCCESS.
+- Created `feat/t06-d-render-map-performance` from verified main. Source audit identified one-time scene terrain painting, high-speed snapshot batching, and explicit shutdown cleanup; these are code observations only.
+- **T06-D PARTIAL / NOT CODE VERIFIED / NOT PERFORMANCE VERIFIED.** No profile-backed optimization has been implemented. Browser FPS, frame p95, memory, routing calls and before/after: NOT MEASURED. Local npm and Playwright: NOT RUN (terminal cannot resolve github.com for clone). No simulation/save/golden changes.
+- Eight T06-D audit, architecture, QA, before/after and handoff documents at `docs/observer-upgrade-2026/T06_D_*.md`. No deploy or merge; physical-PC measurements and actual code optimization remain open.
+
 ## Observer Plan 06 — T06-C Save Compatibility & Integrity (2026-10-20)
 - Verified [T06-B PR #42](https://github.com/giabao2605/Tiny-Civilization/pull/42) merged in `main@d91a1b0b772ac25ba86edb159c017fde3b2ad51b`; its exact post-merge [Fast CI #39394639636](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39394639636) is **SUCCESS**, 49/49 files and 421/421 Vitest tests.
 - **Draft [PR #43](https://github.com/giabao2605/Tiny-Civilization/pull/43)** on `feat/t06-c-save-compatibility` (not merged). Existing format 1/2/3 readers, migration, weather and 8 MiB writer remain unchanged. Fixed missing `leaderId` cross-reference validation in queued governance commands (reader and writer); no on-disk format, economy, weather RNG, clock or renderer changes.
