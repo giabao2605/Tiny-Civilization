@@ -1,0 +1,7 @@
+# T06-E Save integrity QA
+
+Source audit: App.tsx writes coordinator.exportSave() synchronously using localStorage.setItem; errors are caught and suggest exporting JSON. Loading gets the key, validates via coordinator.importSave, then reinitializes the canvas and marks UI paused. Export is a local Blob URL and import first rejects File.size > MAX_SAVE_BYTES before file.text and coordinator validation. MAX_SAVE_BYTES remains 8*1024*1024 measured in UTF-8 bytes. New-world creation does not clear saved slot; re-save overwrites it. localStorage is origin-specific (dev :5173 versus preview :4173), so JSON export/import is recommended across ports.
+
+Parser accepts legacy v5 format 1/sim-v5-phase06, old v6 format 2/sim-v6-map and weather v6 format 3/sim-v6-weather. parseEnvelope validates schema, pending governance commands and nextRequestId before restoration; livingCoordinator.importSave commits restored state only after parseSave succeeds, sets paused and preserves queued governance state and request ID. No changes to formats, parser or test fixtures in T06-E.
+
+Existing source test suites: legacy-v5.fixture.test.ts, save.test.ts, v6.test.ts, t06c.integrity.test.ts and t06c.golden.test.ts include legacy migration, atomic invalid import, save format paths and frozen checkpoints. Historical v5 fixture is genuine; 12 T06-C checkpoints are engine-derived. Final exact-HEAD CI PASS, not this audit alone, is required for PASS status. Browser quota/reload/restore testing remains NOT RUN.

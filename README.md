@@ -42,29 +42,47 @@ Tài liệu chi tiết dùng thuật ngữ tiếng Anh để người viết cod
 
 [Repository GitHub](https://github.com/giabao2605/Tiny-Civilization)
 
-## Chạy Tiny Civilization MVP release candidate 0.9.0
+## Chơi trên PC local (ưu tiên, không cần deploy)
 
-Yêu cầu Node.js **22.12+ (major 22)** và npm **10**; dùng phiên bản trong `.nvmrc`. Sau khi checkout branch triển khai và khi đã có `package-lock.json` được commit:
+Cần **Node.js 22.12 trở lên, nhưng vẫn thuộc major 22** (xem `.nvmrc`), **npm 10** và một trình duyệt desktop hiện đại. Lần đầu tải mã nguồn và chạy `npm ci` cần mạng; sau khi phụ thuộc đã được cài, game không cần backend/cloud hay Internet khi chơi trên localhost.
 
 ```bash
+git clone https://github.com/giabao2605/Tiny-Civilization.git
+cd Tiny-Civilization
+node --version
+npm --version
 npm ci
 npm run dev
 ```
 
-Mở URL Vite in ra trong terminal (thường là `http://localhost:5173`). Nhấn cư dân trên bản đồ hoặc trong danh sách để mở inspector; **Tạm dừng / Tiếp tục**, **1× / 5× / 20×**, ô **Seed** và **Tạo lại** điều khiển simulation thật. Cuộn chuột để zoom, kéo để pan; nút **Khởi tạo lại canvas** kiểm tra vòng đời Phaser. Phase 03 có lựa chọn 20/50/100 NPC và các giao dịch food/wood qua một chợ chung. Để xem, chọn dân số rồi nhấn **Tạo lại**.
+Mở URL Vite in trong terminal, thông thường **http://localhost:5173/**. Giữ terminal chạy trong lúc chơi. Nếu cổng bận, Vite có thể chọn cổng khác: luôn đọc URL thực tế từ terminal.
 
-### Kiểm tra kỹ thuật
+**Chạy production build tại máy:**
 
 ```bash
+npm run build
+npm run preview
+```
+
+Mở URL do Vite preview in ra, thông thường **http://localhost:4173/**. Build bình thường không đặt `GITHUB_PAGES=true`: base path local là `/`. Không dùng `file://index.html`, không cần Pages, Android, installer hay dịch vụ nền. Build và preview cần localhost server; offline ở đây nghĩa là không cần Internet ngoài máy sau khi đã có công cụ và assets.
+
+**Cách chơi:** chọn số dân 20/50/100 rồi **Tạo lại** để sinh thế giới 96×96 từ seed. Nhấn NPC để mở inspector; dùng **Tạm dừng / Tiếp tục**, **1× / 5× / 20×**, camera Fit/Reset/Follow, zoom/pan và **Khởi tạo lại canvas**.
+
+**Lưu và sao lưu:** **Lưu thế giới** ghi vào localStorage theo origin hiện tại; **Tải bản lưu** khôi phục snapshot rồi tự pause. **Xuất JSON** tạo bản sao độc lập, **Nhập JSON** đọc lại (tối đa **8 MiB**). Khi đang pause, lưu không thêm tick. Lần lưu sau ghi đè slot localStorage hiện có. LocalStorage của `localhost:5173` và `localhost:4173` là hai origin khác nhau, nên để chuyển từ dev sang preview hãy **Xuất JSON** rồi **Nhập JSON**. Giữ file JSON ở nơi an toàn vì xóa dữ liệu website, đổi profile/trình duyệt hoặc chế độ ẩn danh có thể xóa save.
+
+**Khắc phục lỗi:** nếu `node` không chạy hoặc sai major, cài Node 22.12+ và mở terminal mới. Nếu `npm ci` lỗi, kiểm tra kết nối mạng khi cài, npm version và lockfile, tránh sửa tay `node_modules`. Nếu port bận, mở đúng URL Vite hiển thị. Nếu trang trắng, kiểm tra Console/terminal, chạy lại `npm ci` và `npm run build`, đảm bảo preview dùng build local (không dùng `GITHUB_PAGES=true`). Nếu lưu thất bại do storage bị chặn/hết quota, giải phóng dung lượng và thử **Xuất JSON**; đừng xóa site data trước khi sao lưu. Nếu import bị từ chối, kiểm tra file JSON đúng định dạng và giới hạn 8 MiB; world đang chơi vẫn được giữ nguyên.
+
+### Kiểm tra kỹ thuật nhẹ (không yêu cầu Chromium)
+
+```bash
+npm audit --omit=dev --audit-level=high
 npm run typecheck
 npm run lint
 npm run test
 npm run build
-npx playwright install chromium
-npm run test:e2e
 ```
 
-Playwright tự khởi động Vite tại port 4173 và kiểm tra Chromium desktop/mobile. Nếu thiếu thư viện hệ điều hành cần thiết cho Chromium, thử `npx playwright install --with-deps chromium` (Linux). Xem kết quả CI và screenshot trong artifact GitHub Actions.
+Fast CI cũng chạy những bước trên; Playwright lịch sử chỉ là kiểm thử tùy chọn và không thuộc T06-E. Smoke trên PC thật cần được ghi nhận riêng, không suy ra từ test Node.
 
 ### Cấu trúc chính
 
