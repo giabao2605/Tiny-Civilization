@@ -15,6 +15,8 @@ Mục đích của bộ kế hoạch: một ChatGPT Task/AI coding agent đọc 
 
 **Các trạng thái:** PROPOSED (ý tưởng) → READY (đủ contract, phụ thuộc) → IN PROGRESS → VERIFIED (CI + bằng chứng) → MERGED. Bản plan READY không chứng nhận feature đã có.
 
+**Plan 06 closure note (2026-10-21):** T06-A…F đã merge; engineering implementation scope CLOSED sau exact-head PR CI PASS. Đây **không phải** Observer Upgrade product acceptance: local PC visual, audio, FPS, GPU/memory và soak chưa đo, giao Plan 07 tiếp nhận. Xem [Plan 06 closeout](PLAN_06_CLOSEOUT.md).
+
 ## 1. North Star và ranh giới sản phẩm
 
 **North Star:** “Một ngôi làng nhỏ tự sống: người xem có thể không chạm chuột, nhưng vẫn thấy cư dân có mục đích, không gian có bản sắc, ánh sáng/thời tiết chuyển đổi và những chuyện nhỏ phát sinh có nguyên nhân.”
@@ -100,7 +102,7 @@ createWorld(seed, size) -> WorldState + map metadata (48 legacy / 96 new)
 | G3 | [03 NPC Navigation](plans/03_NPC_AI_AND_NAVIGATION.md): weighted routing + readable routines, giữ goal/economy | G2 | Full weather response |
 | G4 | [04 Day/Night & Weather](plans/04_DAY_NIGHT_AND_WEATHER.md): time visuals, clock ADR, 4-layer weather | G3 | Gameplay weather không có test |
 | G5 | [05 Ambient & Audio](plans/05_AMBIENT_EVENTS_AND_AUDIO.md): deterministic scheduler + 3 event categories/5min | G4 | Large festivals |
-| G6 | [06 Technical/Local/Performance](plans/06_TECHNICAL_LOCAL_AND_PERFORMANCE.md): save migration, profiling, optimize | Bắt đầu hỗ trợ từ G0; chốt sau G5 | Worker rewrite |
+| G6 | [06 Technical/Local/Performance](plans/06_TECHNICAL_LOCAL_AND_PERFORMANCE.md): **ENGINEERING CLOSED 2026-10-21** (T06-A…F merged; Fast CI PR HEAD PASS); hardware PC/FPS/soak vẫn NOT RUN / NOT MEASURED và chuyển sang G7 | Bắt đầu hỗ trợ từ G0; chốt sau G5 | Worker rewrite |
 | G7 | [07 QA/Polish](plans/07_QA_BALANCING_AND_POLISH.md): matrix, soak, visual/observer gate | G1–G6 | Claim release-ready |
 
 Plan 06 (kỹ thuật) **không chờ đến cuối mới bắt đầu**: preflight và save contract phải thực hiện trước G2, performance profile chạy ở từng gate. Plan 07 cũng chạy test ở mỗi PR, chỉ nghiệm thu tổng ở G7. Các estimate 1–2 tuần trong nghiên cứu chỉ là tham chiếu, không phải deadline.
