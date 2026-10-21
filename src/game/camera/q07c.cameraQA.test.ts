@@ -12,7 +12,7 @@ describe('Q07-C desktop camera geometry regression (pure logic, not browser evid
     expect(zoom).toBeGreaterThan(0);
     expect(MAP * zoom).toBeLessThanOrEqual(width + 0.000001);
     expect(MAP * zoom).toBeLessThanOrEqual(height + 0.000001);
-    for (const [extent, viewport] of [[MAP, width], [MAP, height]]) {
+    for (const [extent, viewport] of [[MAP, width], [MAP, height]] as const) {
       const [lo, hi] = cameraCenterBounds(extent, viewport, zoom);
       expect(Number.isFinite(lo) && Number.isFinite(hi)).toBe(true);
       expect(lo).toBeLessThanOrEqual(hi);
@@ -23,7 +23,7 @@ describe('Q07-C desktop camera geometry regression (pure logic, not browser evid
   it.each(VIEWPORTS)('preserves cursor world point when zooming at %ix%i', (width, height) => {
     const oldZoom = fitZoom(width, height, MAP, MAP);
     const newZoom = Math.min(3, oldZoom * 1.14);
-    for (const [x, y] of [[0, 0], [width / 2, height / 2], [width, height]]) {
+    for (const [x, y] of [[0, 0], [width / 2, height / 2], [width, height]] as const) {
       const worldX = MAP / 2 + (x - width / 2) / oldZoom;
       const worldY = MAP / 2 + (y - height / 2) / oldZoom;
       const centerX = zoomAnchorCenter(worldX, x, width, newZoom);
