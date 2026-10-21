@@ -36,6 +36,48 @@ describe('E04-E weather audio mix and browser policies', () => {
     expect(await controller.unlock()).toBe(false);
   });
 
+  it('does not access a destroyed AudioContext when a pending unlock resumes', async () => {
+    let finishResume: (() => void) | undefined;
+    let closeCalls = 0;
+    class DelayedAudioContext {
+      state = 'suspended';
+      currentTime = 0;
+      sampleRate = 8000;
+      destination = {};
+      createBuffer(_channels: number, length: number) {
+        return { getChannelData: () => new Float32Array(length) };
+      }
+      createGain() {
+        const gain = { value: 0, cancelScheduledValues: () => {},
+          setValueAtTime(value: number) { this.value = value; },
+          linearRampToValueAtTime(value: number) { this.value = value; } };
+        return { gain, connect: () => {}, disconnect: () => {} };
+      }
+      createBiquadFilter() {
+        return { type: 'lowpass', frequency: { value: 0 }, connect: () => {}, disconnect: () => {} };
+      }
+      createBufferSource() {
+        return { buffer: null, loop: false, connect: () => {}, disconnect: () => {},
+          start: () => {}, stop: () => {} };
+      }
+      resume() {
+        return new Promise<void>(resolve => { finishResume = resolve; });
+      }
+      async close() { closeCalls++; this.state = 'closed'; }
+    }
+    vi.stubGlobal('AudioContext', DelayedAudioContext);
+    const audio = new WeatherAudio();
+    const pending = audio.unlock();
+    expect(finishResume).toBeTypeOf('function');
+    audio.destroy();
+    finishResume!();
+    expect(await pending).toBe(false);
+    expect(closeCalls).toBe(1);
+    expect(audio.diagnostics.unlockFailures).toBe(0);
+    expect(audio.diagnostics.activeLoops).toBe(0);
+    expect(await audio.unlock()).toBe(false);
+  });
+
   it('creates only two loop sources after a gesture, reuses context and cleans up', async () => {
     const created: MockAudioContext[] = [];
     class MockAudioContext {

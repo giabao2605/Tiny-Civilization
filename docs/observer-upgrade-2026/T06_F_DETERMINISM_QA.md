@@ -1,0 +1,2 @@
+# T06-F determinism and save boundary
+No edits to `src/sim`, `src/persistence/save.ts`, fixtures, save hashes or clocks. The change is exclusively to React-owned Web Audio cleanup across an awaited browser resume. The 12 frozen SHA-256 checkpoints and v5 legacy fixture remain unmodified. Existing test suite covers formats 1, 2, 3, queued commands/nextRequestId, 8 MiB max and diagnostics ON/OFF parity. Claims of PASS require the final SHA Fast CI; local tests NOT RUN.

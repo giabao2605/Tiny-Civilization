@@ -1,3 +1,8 @@
+## Observer Plan 06 — T06-F long-run reliability (2026-10-21)
+- Preflight: T06-E PR #45 merged at `main@2d8c8f2b9d040e917f988d9eb964972f0f30b6db`, post-merge CI #39539128248 `completed/success` at exact SHA.
+- Branch `feat/t06-f-long-run-reliability`: Web Audio async unlock/destroy race fixed with a delayed-resume regression. Coordinator lease, Scene shutdown, AmbientDirector disposal and save import atomicity inspected; no simulation, RNG, save schema, frozen fixtures or deployment changes.
+- Direct npm and PC smoke: NOT RUN here (sandbox cannot resolve GitHub); hardware memory/FPS/GPU/soak: NOT MEASURED. Draft PR exact-head CI must be checked before CODE VERIFIED. See T06_F_* documents for boundaries and handoff.
+
 ## Observer Plan 06 — T06-E PC local/offline packaging (2026-10-21)
 - Verified T06-D PR #44 MERGED at main@`a005f5dba6ab6e36b362a2328505db59250b139c`; post-merge [Fast CI #39536526844](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39536526844) completed/success on exact main SHA. Implementation on `feat/t06-e-local-offline`, **Draft PR pending** until created; no merge/deploy.
 - Audited Vite local root base, localhost scripts, bundled assets, optional external GitHub Issues link and localStorage/JSON import/export. Current save format 1/2/3, 8 MiB, atomic import and T06-C frozen fixtures remain unchanged. Added lightweight static local/offline entrypoint regression checks, expanded README with PC local start/build/preview, backup and troubleshooting.

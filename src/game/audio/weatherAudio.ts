@@ -132,10 +132,13 @@ export class WeatherAudio {
           else this.outdoorsGain = gain;
         }
       }
-      await this.context.resume();
-      if (this.destroyed) return false;
+      // Keep the context local across await: React may destroy this owner while
+      // a browser permission / resume promise is still pending.
+      const context = this.context;
+      await context.resume();
+      if (this.destroyed || this.context !== context) return false;
       this.apply();
-      return this.context.state === 'running';
+      return context.state === 'running';
     } catch {
       this.failureCount++;
       // No unhandled rejection, no second context on a subsequent gesture.
