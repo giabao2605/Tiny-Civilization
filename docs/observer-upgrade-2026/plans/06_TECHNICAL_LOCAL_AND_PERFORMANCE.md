@@ -1,8 +1,10 @@
 # Plan 06 — Technical / Local Save / Performance | Implementation Specification v2
 
-**Status:** READY FOR TASKING; **cross-cutting** từ G0, không đợi sau Plan 05 mới làm.  
+**Status:** **ENGINEERING IMPLEMENTATION CLOSED 2026-10-21**: T06-A…F MERGED; T06-F final PR SHA Fast CI PASS. **PC HARDWARE / LONG-RUN ACCEPTANCE PARTIAL / NOT MEASURED**; evidence chuyển sang Plan 07, không tự coi Plan 06 đạt toàn bộ physical performance gates.  
 **Goal:** nâng presentation/map/ambient trên stack hiện tại, giữ deterministic simulation, save an toàn, PC local chạy ổn và có số đo hiệu năng.  
 **Nguồn:** [Master](../MASTER_PLAN.md) · [Research](../RESEARCH_SOURCE.md) · [Contract](../../SIMULATION_CONTRACT.md).
+
+**Closure record:** [PLAN_06_CLOSEOUT.md](../PLAN_06_CLOSEOUT.md) ghi merge SHA, QA evidence, giới hạn và Q07-A handoff. Task breakdown bên dưới là baseline lịch sử, không phải các task chưa bắt đầu.
 
 ## 1. Baseline code và contract
 

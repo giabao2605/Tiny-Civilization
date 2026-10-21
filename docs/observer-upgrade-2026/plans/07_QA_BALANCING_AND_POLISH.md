@@ -1,8 +1,10 @@
 # Plan 07 — QA / Balancing / Polish | Implementation Specification v2
 
-**Status:** READY FOR TASKING, nghiệm thu tổng ở G7; **QA chạy xuyên suốt mọi PR**.  
+**Status:** READY FOR Q07-A (2026-10-21), nghiệm thu tổng ở G7; **QA chạy xuyên suốt mọi PR**. Plan 06 A–F đã merge; PC-hardware acceptance vẫn PARTIAL.  
 **Goal:** chứng minh game quan sát sống động, đúng simulation, lưu được, chạy PC local ổn định; không đánh dấu hoàn thành bằng cảm giác hoặc một screenshot.  
 **Nguồn:** [Master](../MASTER_PLAN.md) · [Research](../RESEARCH_SOURCE.md) · [Contract](../../SIMULATION_CONTRACT.md).
+
+**Owner scope after Plan 06:** Chỉ cần game chạy trên PC qua localhost; không Android, cloud, installer hay deploy. Fast CI (production audit, typecheck, lint, Vitest, build) là merge gate; Chromium/Playwright tự động và 60–120 phút soak **không bắt buộc cho Q07-A hoặc merge gate**. Không xóa test E2E lịch sử. Thiếu browser/PC/hardware evidence phải ghi NOT RUN / NOT MEASURED, và không được tự đổi QA-10/QA-11 hay product GO sang PASS. Các bước Q07-C/D/E/F chỉ nghiệm thu thực tế khi có môi trường; không suy diễn từ Vitest.
 
 ## 1. Baseline test infrastructure
 
