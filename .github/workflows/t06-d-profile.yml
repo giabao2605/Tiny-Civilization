@@ -1,0 +1,32 @@
+name: T06-D Headless Browser Profile
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tests/e2e/t06d-render-benchmark.spec.ts'
+      - 'src/game/**'
+      - 'src/app/**'
+      - '.github/workflows/t06-d-profile.yml'
+concurrency:
+  group: t06-d-profile-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  profile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/e2e/t06d-render-benchmark.spec.ts --workers=1 --retries=0 --reporter=line
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: t06-d-headless-chromium-profile
+          path: test-results/
+          retention-days: 7
