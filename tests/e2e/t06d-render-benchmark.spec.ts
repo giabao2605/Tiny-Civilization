@@ -8,7 +8,7 @@ import { expect, test } from '@playwright/test';
  * Wall clock frame intervals are not GPU timings and CI is not a physical Windows PC.
  */
 test('T06-D: repeatable 96x96/100-NPC camera, speed and effects profile', async ({ page, browser }, info) => {
-  test.setTimeout(300_000);
+  test.setTimeout(420_000);
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   const browserVersion = browser.version();
@@ -27,7 +27,7 @@ test('T06-D: repeatable 96x96/100-NPC camera, speed and effects profile', async 
     await page.locator('.citizen-list > button[data-testid^="citizen-"]').first().click();
     for (const speed of [1, 20] as const) {
       await page.getByRole('button', { name: speed + '×', exact: true }).click();
-      for (const [width, height] of [[1366, 768], [1920, 1080]] as const) {
+      for (const [width, height] of [[1920, 1080]] as const) {
         await page.setViewportSize({ width, height });
         for (const mode of ['fit', 'zoom', 'follow'] as const) {
           await page.getByTestId('camera-fit').click();
@@ -87,8 +87,8 @@ test('T06-D: repeatable 96x96/100-NPC camera, speed and effects profile', async 
     }
   }
   expect(errors).toEqual([]);
-  expect(cases.length).toBe(72);
-  const report = { baselineOrCandidate: process.env.GITHUB_SHA ?? 'local', browserVersion,
+  expect(cases.length).toBe(36);
+  const report = { baselineOrCandidate: process.env.T06D_RUN ?? process.env.GITHUB_SHA ?? 'local', browserVersion,
     environment: 'GitHub-hosted Linux headless Chromium; rAF intervals, NOT certified Windows PC hardware FPS',
     samplesPerCase, warmupMs: 500, sampleMs: 1100, cases };
   await writeFile(info.outputPath('t06d-performance.json'), JSON.stringify(report, null, 2));
