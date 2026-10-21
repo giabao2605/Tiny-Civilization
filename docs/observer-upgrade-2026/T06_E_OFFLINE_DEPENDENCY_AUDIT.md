@@ -1,0 +1,5 @@
+# T06-E Offline dependency audit
+
+Meaning of offline: dependencies and assets downloaded/built previously, local Vite HTTP server stays running, Internet can be disconnected, no external backend required. Not file:// launch and not offline npm ci. package.json runtime dependencies are local bundled react/react-dom/phaser; npm registry access only during installation. HTML's module, favicon and CSS use local paths; procedurally rendered Phaser assets do not require hosted sprite sheets. Runtime references in React include a voluntary link to GitHub Issues, which is **not** a startup requirement. No remote fonts, CDN, analytics, required fetch/WebSocket or OAuth observed in examined entrypoints.
+
+Guard: src/app/localRuntime.test.ts checks root-base defaults, local entrypoint and favicon, excludes external HTML script/style references and remote CSS @import, and checks selected runtime entrypoints for network API construction. Limit: static guards do not prove absence of network requests made by all transitive libraries; real offline browser network smoke is NOT RUN. Other references to GitHub documentation are navigation only.
