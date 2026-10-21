@@ -1,8 +1,9 @@
-## Observer Plan 06 — T06-D Render / Map Performance Audit (2026-10-21)
-- Verified T06-C [PR #43](https://github.com/giabao2605/Tiny-Civilization/pull/43) MERGED at main@00e8706998d3c55d195ad06242ad1eb3c01d7b46; [post-merge Fast CI #39399807790](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39399807790) SUCCESS.
-- Created `feat/t06-d-render-map-performance` from verified main. Source audit identified one-time scene terrain painting, high-speed snapshot batching, and explicit shutdown cleanup; these are code observations only.
-- **T06-D PARTIAL / NOT CODE VERIFIED / NOT PERFORMANCE VERIFIED.** No profile-backed optimization has been implemented. Browser FPS, frame p95, memory, routing calls and before/after: NOT MEASURED. Local npm and Playwright: NOT RUN (terminal cannot resolve github.com for clone). No simulation/save/golden changes.
-- Eight T06-D audit, architecture, QA, before/after and handoff documents at `docs/observer-upgrade-2026/T06_D_*.md`. No deploy or merge; physical-PC measurements and actual code optimization remain open.
+## Observer Plan 06 — T06-D Renderer / Map optimization (2026-10-21)
+- T06-C PR #43 MERGED at `main@00e8706998d3c55d195ad06242ad1eb3c01d7b46`; post-merge CI #39399807790 SUCCESS.
+- [Draft PR #44](https://github.com/giabao2605/Tiny-Civilization/pull/44), branch `feat/t06-d-render-map-performance`: code candidate to cull static decorative forest sprites outside camera with 30px overscan and reuse on re-entry. No authoritative simulation, RNG, save schema, clock or golden changes.
+- [Fast CI #39530519830](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39530519830) on earlier code SHA `f22c8382` SUCCESS (51/51 Vitest files, 444/444 tests, production audit/typecheck/lint/build). New final HEAD must be reverified.
+- Paired Chromium baseline/candidate workflow and forest+genuine v5 48x48 browser E2E: RUNNING / NOT YET VERIFIED. Browser before/after and benefit: PENDING. Windows PC FPS/audio/soak: NOT MEASURED. No merge/deploy.
+- Documentation `docs/observer-upgrade-2026/T06_D_*.md` contains implementation, method, QA and independent T06-E prompt.
 
 ## Observer Plan 06 — T06-C Save Compatibility & Integrity (2026-10-20)
 - Verified [T06-B PR #42](https://github.com/giabao2605/Tiny-Civilization/pull/42) merged in `main@d91a1b0b772ac25ba86edb159c017fde3b2ad51b`; its exact post-merge [Fast CI #39394639636](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39394639636) is **SUCCESS**, 49/49 files and 421/421 Vitest tests.

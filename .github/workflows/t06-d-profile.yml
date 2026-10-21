@@ -26,6 +26,14 @@ jobs:
         with:
           node-version-file: .nvmrc
       - run: npm ci
+      - name: Hardware and runtime disclosure
+        run: |
+          uname -a
+          node --version
+          npm --version
+          lscpu | grep -E 'Model name|CPU\\(s\\)|Vendor ID' || true
+          free -h || true
+          command -v glxinfo >/dev/null && glxinfo -B || echo 'GPU driver info unavailable / headless'
       - run: npx playwright install --with-deps chromium
       - name: Run baseline on same runner
         working-directory: t06d-baseline

@@ -53,7 +53,8 @@ test('T06-D: 96x96/100 NPC paired camera and effect profile', async ({ page, bro
               requestAnimationFrame(warm);
             });
             const frameMs: number[] = [];
-            let last = performance.now(), start = last;
+            let last = performance.now();
+            const start = last;
             await new Promise<void>(resolve => {
               function frame(now: number) {
                 frameMs.push(now - last);

@@ -1,7 +1,7 @@
-# T06-D renderer lifecycle QA
+# T06-D render lifecycle QA
 
-Source audit: WorldScene creates listeners for input, visibility and prefers-reduced-motion, then removes them on SHUTDOWN; weather and ambient adapter/director are disposed; generated lighting textures are removed. This is **code observation**, NOT leak certification.
+Source audit: GameCanvas destroys Phaser on remount, disconnects ResizeObserver and removes host instrumentation. WorldScene releases input/visibility/reduced-motion listeners, weather/ambient adapters and generated lights on SHUTDOWN; now also resets the decorative tree array and cached viewport. No extra timer/listener introduced.
 
-**NOT RUN**: repeated scene restart/remount, camera fit/follow/zoom/pan, 48x48/96x96 load, weather transitions, effects off/on, frame screenshots, hidden-tab, long-run cleanup, actual count of active timers/listeners and canvas recreation.
+New browser tests under `tests/e2e/t06d-forest-culling.spec.ts` assert viewport zoom reduces visible decorative sprites, fit restores them, total sprites/textures/canvas remain stable and paused world tick/digest does not change. A second test imports the **genuine** 48x48/50 NPC v5 fixture, camera zoom/fit then checks paused tick and one canvas. Actual Chromium test conclusion PENDING.
 
-Capture baseline and candidate object/texture counts, heap and screenshot parity after each repeated cycle before asserting fixed leaks.
+Unmeasured: 60-120min Windows soak, all 48x48 speed/seed combinations, hardware GPU/resource residency, repeated 100-cycle pan/remount and audio listening. A source cleanup path alone is NOT a leak proof.
