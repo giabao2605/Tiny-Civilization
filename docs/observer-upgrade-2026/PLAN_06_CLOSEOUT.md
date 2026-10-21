@@ -14,7 +14,7 @@
 | T06-E Local/offline guardrails | [#45](https://github.com/giabao2605/Tiny-Civilization/pull/45) | `2d8c8f2b9d040e917f988d9eb964972f0f30b6db` |
 | T06-F Long-run lifecycle | [#46](https://github.com/giabao2605/Tiny-Civilization/pull/46) | `b144272857dd202dcf6106cd29c4c7dc7207444c` |
 
-T06-F final PR HEAD `2ace30a4afc46a66ae5d83c18c2278b9e3bde816`: [Fast CI #39540632573](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39540632573) **PASS** (npm ci, production audit, typecheck, lint, Vitest and build). Exact post-merge main [run #39541678338](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39541678338) must be checked independently; do not assign PASS until completed/success.
+T06-F final PR HEAD `2ace30a4afc46a66ae5d83c18c2278b9e3bde816`: [Fast CI #39540632573](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39540632573) **PASS** (npm ci, production audit, typecheck, lint, Vitest and build). Exact post-merge main [run #39541678338](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39541678338) **completed/success** on `b144272857dd202dcf6106cd29c4c7dc7207444c`; confirmed independently from PR CI.
 
 ## Explicitly unresolved evidence
 - Real PC local browser dev/preview, audio, resize, camera and save smoke: **NOT RUN** in this execution.
