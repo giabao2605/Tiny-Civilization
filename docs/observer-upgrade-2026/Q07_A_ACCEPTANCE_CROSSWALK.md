@@ -18,3 +18,14 @@ Source-of-truth criteria transcribed from Plan 07 §3; statuses reflect incomple
 | QA-12 | PC localhost no backend; mute/reduced motion, HUD map usable | Offline cold-cache and 3-viewport local smoke; Q07-normal-life | `src/app/localRuntime.test.ts`, `src/game/audio/soundModel.test.ts` | Actual localhost offline/reduced-motion/mute manual | manual+automated | PARTIAL | P1 | Q07-C/E |
 
 **Rules:** COVERED means a named test *passed on the exact logged commit*. PARTIAL is behavioral or scope coverage without full end-to-end acceptance. NOT COVERED means no appropriate test; NOT RUN means test exists but wasn't executed in this task; NOT MEASURED for absent hardware metric. Q07-B adds regression assertions; Q07-C supplies visual/UX captures; Q07-D measures real observer sessions; Q07-E measures performance/soak/save; Q07-F makes final GO/NO-GO. No CI assertion about camera mathematics substitutes for browser interaction.
+
+
+## Q07-E QA-09/10/11 evidence addendum (2026-10-22)
+
+| Gate | Evidence added | Code verification | Product acceptance |
+|---|---|---|---|
+| QA-09 Save integrity/replay | `q07e.atomic.test.ts` 20/50/100 NPC invalid coordinator import invariance and 96×96 split continuation; existing `t06c.integrity.test.ts` format 1/2/3 | SUBMITTED; exact final Fast CI required | PARTIAL: browser quota/storage and all-device recovery not measured |
+| QA-10 Desktop performance | Existing Node benchmark harness reviewed; no fresh timing results | NOT MEASURED | NOT MEASURED: FPS/frame-time/hardware profiling missing |
+| QA-11 Soak & lifecycle | Coordinator teardown audited in source | PARTIAL | NOT RUN: 60–120 min soak, resource trends and remount cycles missing |
+
+No release GO/NO-GO decision is inferred from test code or earlier CI.

@@ -1,3 +1,7 @@
+## Q07-E — save safety regression and performance gates (2026-10-22)
+
+Draft [PR #52](https://github.com/giabao2605/Tiny-Civilization/pull/52), branch `feat/q07-e-performance-soak`, from verified Q07-D merged `main@42b7b6fd8c107a4bef0414a55ae17b3b9300e020` ([post-merge CI PASS](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39710052800)). Added coordinator atomic invalid-import regression for 20/50/100 NPC, v6 split continuation and eight QA evidence docs. New tests submitted to CI; do not mark CODE VERIFIED until Fast CI passes exact final PR SHA. Real desktop FPS/frame time/memory NOT MEASURED; 60–120 minute hardware soak NOT RUN. QA-09 partial until complete verification; QA-10/11 remain PARTIAL. No merge/deploy.
+
 ## Q07-D — Watchability evidence gate (2026-10-22)
 
 Branch `feat/q07-d-watchability` from verified Q07-C merge `main@cae75df7695ab6bff1e869b1135d86b1de5be43e` (CI #39575483638 completed/success on exact SHA). Added observation-only category counting and Vitest regression preventing virtual scheduled candidates, offscreen or unrendered effects from being counted as real witnessed events. Documents Q07_D_IMPLEMENTATION/WATCHABILITY_MATRIX/EVENT_TIMELINE/TEST_EVIDENCE/KNOWN_ISSUES/HANDOFF and QA-08 addendum. **30s, five-minute and 20–30-minute real browser viewing NOT RUN; FPS/heap/GPU NOT MEASURED**. Fast CI on exact final Draft PR SHA must be confirmed before CODE VERIFIED. No simulation/RNG/save/golden/Playwright changes. No merge or deploy.

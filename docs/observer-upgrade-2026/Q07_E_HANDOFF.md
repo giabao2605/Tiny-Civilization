@@ -1,0 +1,7 @@
+# Q07-E handoff to Q07-F
+
+Q07-E branch `feat/q07-e-performance-soak`; main baseline `42b7b6fd8c107a4bef0414a55ae17b3b9300e020` with verified Q07-D CI #39710052800. Q07-E adds atomic import/replay regressions. Real desktop FPS, resource measurements and real-time soak NOT RUN/NOT MEASURED. Avoid asserting QA-10/QA-11 PASS or release GO.
+
+## Q07-F detailed execution prompt
+
+Act as release candidate reviewer for Tiny Civilization on GitHub. Preflight latest main and Q07-E draft PR final SHA, confirm exact Fast CI completed/success before any merge proposal. Review all Q07-A to E acceptance crosswalk and new Q07-E evidence, compare real versus virtual measurements, enumerate unresolved P0/P1 and acceptance gaps. Verify legacy v5/historical v6/current weather v6 saves, deterministic golden SHA-256 checkpoints, no accidental simulation balance changes, and historical Playwright untouched. Check QA-01 through QA-12 independently with PASS/PARTIAL/FAIL/NOT RUN/NOT MEASURED grounded in actual evidence. For desktop FPS, watchability and 60–120 minute soak, require measured PC session with viewport, browser version, hardware and sample windows; never replace this with Node/Vitest claims. Review risk, rollback, local-only installation instructions and user-visible known issues. Produce a candidate decision table and explicit GO/NO-GO with blockers; default NO-GO if required hardware/product evidence is missing. Use a separate branch/PR for Q07-F changes; do not deploy or merge without explicit instruction. Include exact commit/CI links and final handoff.
