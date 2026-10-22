@@ -29,3 +29,8 @@ Source-of-truth criteria transcribed from Plan 07 §3; statuses reflect incomple
 | QA-11 Soak & lifecycle | Coordinator teardown audited in source | PARTIAL | NOT RUN: 60–120 min soak, resource trends and remount cycles missing |
 
 No release GO/NO-GO decision is inferred from test code or earlier CI.
+
+
+## Q07-F final acceptance addendum (2026-10-22)
+
+Q07-E merged at `71aedc08fce9b3e78cf2d4f5df296c16fb955809` and [main CI PASS](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39714112744) on exact merge SHA. See [Q07-F final QA matrix](Q07_F_FINAL_ACCEPTANCE_MATRIX.md) and [GO/NO-GO](Q07_F_GO_NO_GO_DECISION.md) for current summary (PASS 0, PARTIAL 9, FAIL 0, NOT RUN 2, NOT MEASURED 1). Source test coverage is not product PASS; owner-reported PC smoke qualitative only. Final Q07-F PR HEAD CI is an independent requirement.

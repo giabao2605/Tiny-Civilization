@@ -1,3 +1,7 @@
+## Q07-F release candidate review (2026-10-22)
+
+Q07-E PR #52 merged at `main@71aedc08fce9b3e78cf2d4f5df296c16fb955809`; post-merge CI [#39714112744](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39714112744) completed/success on exact SHA. Q07-F branch `feat/q07-f-release-review` performs docs-only final risk and QA-01..12 audit; Draft PR exact-head Fast CI must pass before engineering verification. Owner-reported PC smoke PASS is qualitative, not a 60 FPS or long-soak measurement. Product acceptance: 0 PASS / 9 PARTIAL / 0 FAIL / 2 NOT RUN / 1 NOT MEASURED; unconditional release recommendation NO-GO until evidence gates or owner-approved explicit exception. No Q07-F merge/deploy.
+
 ## Q07-E — save safety regression and performance gates (2026-10-22)
 
 Draft [PR #52](https://github.com/giabao2605/Tiny-Civilization/pull/52), branch `feat/q07-e-performance-soak`, from verified Q07-D merged `main@42b7b6fd8c107a4bef0414a55ae17b3b9300e020` ([post-merge CI PASS](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39710052800)). Added coordinator atomic invalid-import regression for 20/50/100 NPC, v6 split continuation and eight QA evidence docs. New tests submitted to CI; do not mark CODE VERIFIED until Fast CI passes exact final PR SHA. Real desktop FPS/frame time/memory NOT MEASURED; 60–120 minute hardware soak NOT RUN. QA-09 partial until complete verification; QA-10/11 remain PARTIAL. No merge/deploy.
