@@ -1,3 +1,7 @@
+## Q07-D — Watchability evidence gate (2026-10-22)
+
+Branch `feat/q07-d-watchability` from verified Q07-C merge `main@cae75df7695ab6bff1e869b1135d86b1de5be43e` (CI #39575483638 completed/success on exact SHA). Added observation-only category counting and Vitest regression preventing virtual scheduled candidates, offscreen or unrendered effects from being counted as real witnessed events. Documents Q07_D_IMPLEMENTATION/WATCHABILITY_MATRIX/EVENT_TIMELINE/TEST_EVIDENCE/KNOWN_ISSUES/HANDOFF and QA-08 addendum. **30s, five-minute and 20–30-minute real browser viewing NOT RUN; FPS/heap/GPU NOT MEASURED**. Fast CI on exact final Draft PR SHA must be confirmed before CODE VERIFIED. No simulation/RNG/save/golden/Playwright changes. No merge or deploy.
+
 ## Q07-C — Camera/visual/UX source review in progress (2026-10-21)
 
 Branch `feat/q07-c-visual-qa` started from verified Q07-B merged main `e5df78b4b2729deb0583b2e74e383ec47123eef1`. Adds desktop camera geometry/AFK Vitest assertions and manual reproducibility matrix covering QA-01/02/03/06/07/12. Draft PR only, no merge or deploy. Source inspection does NOT establish actual screenshot/PC UX acceptance. Browser/manual/audio NOT RUN; FPS/memory NOT MEASURED. Fast CI final PR SHA pending confirmation. See `docs/observer-upgrade-2026/Q07_C_HANDOFF.md`.
