@@ -553,3 +553,10 @@ Phase 00 was merged and verified. Next task may implement Phase 01 only after re
 - [Fast CI #39352756469](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39352756469) **PASS** for exact code SHA `bf4bdfe7549f4cbac414d6f9bb41352b60f31adf`: 42/42 test files, **337/337 Vitest**, production audit/typecheck/lint/build all successful.
 - E04-F Node 48/96 × 20/50/100 × clear/cloudy/rain/fog, 72h replay and 36h per-hour routing/tick profile PASS. 96×96/100 NPC measured Node tick P95 range **16.699–40.201 ms** across four seeded weather scenarios on GitHub-hosted Linux; **not rendered FPS**.
 - This follow-up documentation commit creates a newer HEAD, so check its separate final Fast CI. Chromium E2E, Windows hardware FPS/audio and long soak still **NOT RUN**, E04-F gate still **PARTIAL**. Do not merge without explicit user approval.
+## Phase 08A preproduction feasibility (2026-10-22)
+
+- Baseline `main@52a06752c949fe9f1956d304fcd9aec433c6bddb`, Q07-F PR #53 merged, [post-merge CI #39717445823](https://github.com/giabao2605/Tiny-Civilization/actions/runs/39717445823) completed/success on that exact SHA.
+- Phase-08A feasibility: **CONDITIONAL**. Q07-F product acceptance remains NO-GO; no independent player value study, measured target-PC FPS/frame-time, memory/soak or two-settlement perf headroom.
+- Draft review: [PR #54](https://github.com/giabao2605/Tiny-Civilization/pull/54), `feat/phase-08a-multi-settlement`. Added ten `docs/phase-08/` preproduction audit, ADR and handoff files. **No production multi-settlement, save migration, trade engine, tests or UI implemented.**
+- Existing 3 save readers, 12 golden checkpoints and single-village behavior untouched. New Phase-08 tests: NOT RUN (not authored). Hardware evidence: NOT MEASURED. Fast CI must pass exact final PR HEAD before docs are considered verified.
+- Next gate: owner decision on product scope and targeted on-PC watchability/performance evidence; only then isolated deterministic shipment prototype and migration fixtures, not automatic production integration.
